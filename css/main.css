@@ -299,6 +299,41 @@ body::before {
   background: var(--page-overlay);
 }
 
+/* 主页：不铺半透明衬底与侧栏/页脚色块，直接透出 body 背景图 */
+.main:has(#view-home:not([hidden])) {
+  background: transparent;
+}
+
+.layout:has(#view-home:not([hidden])) .sidebar {
+  background: transparent;
+  border-right-color: transparent;
+}
+
+#app:has(#view-home:not([hidden])) .site-footer {
+  background: transparent;
+  border-top-color: transparent;
+}
+
+.layout:has(#view-home:not([hidden])) .sidebar-title {
+  color: var(--klein-800);
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.9),
+    0 1px 10px rgba(244, 247, 253, 0.95);
+}
+
+#app:has(#view-home:not([hidden])) .footer-note {
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.85),
+    0 1px 10px rgba(244, 247, 253, 0.95);
+}
+
+.main:has(#view-home:not([hidden])) .main-title,
+.main:has(#view-home:not([hidden])) .main-lead {
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.85),
+    0 1px 12px rgba(244, 247, 253, 0.95);
+}
+
 .main:focus-visible {
   outline: 2px solid var(--klein-500);
   outline-offset: 3px;
@@ -317,42 +352,6 @@ body::before {
   max-width: 42em;
   color: var(--text-muted);
   font-size: 1.05rem;
-}
-
-.hero-wrap {
-  position: relative;
-  margin-top: var(--space-lg);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  aspect-ratio: 16 / 9;
-  background: linear-gradient(145deg, var(--klein-200) 0%, var(--klein-50) 40%, var(--klein-100) 100%);
-}
-
-.hero-img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-img.is-missing {
-  display: none;
-}
-
-.hero-fallback {
-  display: none;
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 40%),
-    radial-gradient(ellipse 70% 60% at 50% 100%, var(--klein-300), transparent),
-    linear-gradient(165deg, var(--klein-200), var(--klein-100));
-}
-
-.hero-img.is-missing ~ .hero-fallback,
-.hero-wrap:has(.hero-img.is-missing) .hero-fallback {
-  display: block;
 }
 
 .view.is-hidden {

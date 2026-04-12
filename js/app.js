@@ -13,13 +13,6 @@
     yearEl.textContent = String(new Date().getFullYear());
   }
 
-  var heroImg = document.querySelector(".hero-img");
-  if (heroImg) {
-    heroImg.addEventListener("error", function () {
-      heroImg.classList.add("is-missing");
-    });
-  }
-
   function getRouteFromHash() {
     var h = (window.location.hash || "").replace(/^#\/?/, "").toLowerCase();
     if (!h || h === "") return DEFAULT_ROUTE;
