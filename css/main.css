@@ -196,8 +196,26 @@ body::before {
   gap: var(--space-md);
   min-height: var(--header-h);
   padding: var(--space-sm) var(--space-section);
-  background: linear-gradient(180deg, var(--klein-800) 0%, var(--klein-700) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 42, 102, 0.52) 0%,
+    rgba(0, 47, 167, 0.48) 100%
+  );
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: linear-gradient(
+      180deg,
+      rgba(18, 42, 102, 0.72) 0%,
+      rgba(0, 47, 167, 0.68) 100%
+    );
+  }
 }
 
 .site-logo {
