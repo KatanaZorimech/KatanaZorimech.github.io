@@ -31,12 +31,12 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   var controls = null;
   var earthGroup = null;
   var markersGroup = null;
-  var markerMeshes = [];
   var animationId = null;
   var resizeObserver = null;
   var ready = false;
-  var pointerDown = null;
   var selectedId = null;
+  var pointerStart = null;
+  var lastPickAt = 0;
 
   function getRouteFromHash() {
     var h = (window.location.hash || "").replace(/^#\/?/, "").toLowerCase();
@@ -163,7 +163,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         }
       });
     }
-    markerMeshes = [];
   }
 
   function makeMarkerMesh(trip) {
@@ -195,7 +194,18 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     );
     g.add(halo);
 
-    g.userData.pickMeshes = [core, halo];
+    /* 不可见放大碰撞体：标记在屏幕上极小，纯射线很难点中 */
+    var hitMat = new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      depthTest: true,
+      side: THREE.DoubleSide,
+    });
+    var hitSphere = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 20), hitMat);
+    hitSphere.name = "marker-hit";
+    g.add(hitSphere);
+
     return g;
   }
 
@@ -203,9 +213,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     clearMarkers3D();
     if (!markersGroup) return;
     trips.forEach(function (t) {
-      var m = makeMarkerMesh(t);
-      markersGroup.add(m);
-      markerMeshes.push({ group: m, tripId: t.id, pickMeshes: m.userData.pickMeshes });
+      markersGroup.add(makeMarkerMesh(t));
     });
   }
 
@@ -331,8 +339,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       controls.enableDamping = false;
     }
 
-    canvas.addEventListener("pointerdown", onPointerDown);
-    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointerdown", onPointerStart);
+    canvas.addEventListener("pointerup", onPointerEnd);
 
     resizeObserver = new ResizeObserver(function () {
       if (getRouteFromHash() === "travel") resizeRenderer();
@@ -353,8 +361,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   function disposeScene() {
     stopLoop();
     if (canvas) {
-      canvas.removeEventListener("pointerdown", onPointerDown);
-      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointerdown", onPointerStart);
+      canvas.removeEventListener("pointerup", onPointerEnd);
     }
     if (resizeObserver) {
       resizeObserver.disconnect();
@@ -382,7 +390,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     camera = null;
     earthGroup = null;
     markersGroup = null;
-    markerMeshes = [];
     ready = false;
   }
 
@@ -414,39 +421,45 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     }
   }
 
-  function onPointerDown(e) {
-    pointerDown = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  function onPointerStart(e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    pointerStart = { x: e.clientX, y: e.clientY, id: e.pointerId };
   }
 
-  function onPointerUp(e) {
-    if (!pointerDown || e.pointerId !== pointerDown.id) return;
-    var dx = e.clientX - pointerDown.x;
-    var dy = e.clientY - pointerDown.y;
-    pointerDown = null;
-    if (dx * dx + dy * dy > 36) return;
+  function onPointerEnd(e) {
+    /* 触摸屏上 button 常为 -1，不能按左键判断 */
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (!pointerStart || e.pointerId !== pointerStart.id) {
+      pointerStart = null;
+      return;
+    }
+    var dx = e.clientX - pointerStart.x;
+    var dy = e.clientY - pointerStart.y;
+    pointerStart = null;
+    /* 明显拖拽（旋转地球）时不拾取；轻微手抖仍算点击 */
+    if (dx * dx + dy * dy > 400) return;
     pickMarker(e.clientX, e.clientY);
   }
 
   function pickMarker(clientX, clientY) {
     if (!camera || !markersGroup) return;
+    var now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    if (now - lastPickAt < 90) return;
+    lastPickAt = now;
+    if (scene) scene.updateMatrixWorld(true);
     var shell = canvas.getBoundingClientRect();
     var x = ((clientX - shell.left) / shell.width) * 2 - 1;
     var y = -((clientY - shell.top) / shell.height) * 2 + 1;
     var raycaster = new THREE.Raycaster();
-    raycaster.params.Mesh = { threshold: 0 };
     raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
 
-    var pickList = [];
-    markerMeshes.forEach(function (m) {
-      m.pickMeshes.forEach(function (mesh) {
-        pickList.push(mesh);
-      });
-    });
-    var hits = raycaster.intersectObjects(pickList, false);
+    var hits = raycaster.intersectObjects(markersGroup.children, true);
     if (!hits.length) return;
     var obj = hits[0].object;
-    var group = obj.parent;
-    while (group && !group.userData.tripId) group = group.parent;
+    var group = obj;
+    while (group && !group.userData.tripId) {
+      group = group.parent;
+    }
     if (group && group.userData.tripId) {
       selectTrip(group.userData.tripId);
     }
