@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Sparkling Valentine";
+  src: url("../assets/fonts/SparklingValentine.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Design tokens — Klein blue scale */
 :root {
   --klein-950: #0a1433;
@@ -121,13 +129,13 @@ body::before {
   position: relative;
   z-index: 2;
   margin: 0;
-  max-width: min(92vw, 36rem);
-  font-family: "Great Vibes", "Segoe Script", "Snell Roundhand", cursive;
-  font-size: clamp(2.5rem, 8vw, 4.25rem);
+  max-width: min(92vw, 38rem);
+  font-family: "Sparkling Valentine", "Segoe Script", cursive;
+  font-size: clamp(2.25rem, 7.5vw, 3.75rem);
   font-weight: 400;
   font-style: normal;
-  letter-spacing: 0.02em;
-  line-height: 1.35;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
   text-align: center;
   color: var(--paper);
   text-shadow:
