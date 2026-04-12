@@ -95,7 +95,7 @@
           >
             <h1 id="travel-title" class="main-title">旅行地图</h1>
             <p class="main-lead">
-              拖拽旋转地球，光点标记足迹；数据保存在本机浏览器。点击光点可在左侧查看照片与随笔。
+              拖拽旋转地球，光点标记足迹；输入地点名称后会自动解析经纬度。数据保存在本机浏览器，点击光点可在左侧查看照片与随笔。
             </p>
             <div id="travel-map-slot" class="content-slot travel-map-slot">
               <div class="travel-globe-shell" aria-label="三维地球">
@@ -123,32 +123,6 @@
                     <span class="travel-label">旅行日期</span>
                     <input type="date" id="travel-date" name="date" required />
                   </label>
-                  <label class="travel-field">
-                    <span class="travel-label">纬度</span>
-                    <input
-                      type="number"
-                      id="travel-lat"
-                      name="lat"
-                      required
-                      step="any"
-                      min="-90"
-                      max="90"
-                      placeholder="如 64.1466"
-                    />
-                  </label>
-                  <label class="travel-field">
-                    <span class="travel-label">经度</span>
-                    <input
-                      type="number"
-                      id="travel-lon"
-                      name="lon"
-                      required
-                      step="any"
-                      min="-180"
-                      max="180"
-                      placeholder="如 -21.9426"
-                    />
-                  </label>
                   <label class="travel-field travel-field-full">
                     <span class="travel-label">照片（可选）</span>
                     <input
@@ -170,10 +144,13 @@
                   </label>
                 </div>
                 <p class="travel-form-note">
-                  经纬度可用地图应用或搜索引擎查询；照片会压缩后存于本地，请勿上传隐私敏感内容。
+                  提交时会根据地点名称在线解析经纬度（Open-Meteo
+                  地理编码，需联网）。照片会压缩后存于本地，请勿上传隐私敏感内容。
                 </p>
                 <div class="travel-form-actions">
-                  <button type="submit" class="travel-btn travel-btn-primary">添加到地球</button>
+                  <button type="submit" class="travel-btn travel-btn-primary" id="travel-submit">
+                    添加到地球
+                  </button>
                   <button type="reset" class="travel-btn travel-btn-ghost">清空表单</button>
                 </div>
               </form>

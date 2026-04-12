@@ -71,7 +71,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: url("../assets/主页图片1.png") center / cover no-repeat;
+  background: url("../assets/主页图片1.webp") center / cover no-repeat;
   opacity: var(--site-bg-image-opacity);
   pointer-events: none;
 }
@@ -93,7 +93,7 @@ body::before {
 .splash-bg {
   position: absolute;
   inset: 0;
-  background-image: url("../assets/主页图片4.png");
+  background-image: url("../assets/主页图片4.webp");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -592,6 +592,13 @@ body::before {
 
 .travel-btn-primary:active {
   transform: translateY(1px);
+}
+
+.travel-btn:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 12px rgba(0, 47, 167, 0.2);
 }
 
 .travel-btn-ghost {

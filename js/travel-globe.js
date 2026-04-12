@@ -8,8 +8,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   "use strict";
 
   var STORAGE_KEY = "katana-travel-trips";
+  /* 日间贴图（r160 仓库无 daymap，使用官方 dev 分支的地球昼面纹理，陆地与海洋更清晰） */
   var EARTH_TEX =
-    "https://raw.githubusercontent.com/mrdoob/three.js/r160/examples/textures/planets/earth_atmos_2048.jpg";
+    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_day_4096.jpg";
 
   var ROUTES = ["home", "travel", "movies", "books", "french"];
 
@@ -117,6 +118,38 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     reader.readAsDataURL(file);
   }
 
+  function formatGeocodeLabel(r) {
+    if (!r) return "";
+    var parts = [];
+    if (r.name) parts.push(r.name);
+    if (r.admin1 && r.admin1 !== r.name) parts.push(r.admin1);
+    if (r.country) parts.push(r.country);
+    return parts.length ? parts.join(" · ") : "";
+  }
+
+  function geocodePlace(query) {
+    var q = query.trim();
+    if (!q) return Promise.resolve(null);
+    var url =
+      "https://geocoding-api.open-meteo.com/v1/search?name=" +
+      encodeURIComponent(q) +
+      "&count=5&language=zh&format=json";
+    return fetch(url, { method: "GET" }).then(function (res) {
+      if (!res.ok) throw new Error("geocode_http");
+      return res.json();
+    }).then(function (data) {
+      if (!data || !data.results || !data.results.length) return null;
+      var r = data.results[0];
+      var lat = r.latitude;
+      var lon = r.longitude;
+      if (typeof lat !== "number" || typeof lon !== "number") return null;
+      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
+      var label = formatGeocodeLabel(r);
+      if (!label) label = q;
+      return { lat: lat, lon: lon, label: label };
+    });
+  }
+
   function clearMarkers3D() {
     if (!markersGroup) return;
     while (markersGroup.children.length) {
@@ -222,16 +255,16 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
+    renderer.toneMappingExposure = 1.42;
 
     earthGroup = new THREE.Group();
     scene.add(earthGroup);
 
     var atmGeo = new THREE.SphereGeometry(1.07, 48, 48);
     var atmMat = new THREE.MeshBasicMaterial({
-      color: 0x6b8fe8,
+      color: 0x9db6f2,
       transparent: true,
-      opacity: 0.06,
+      opacity: 0.1,
       side: THREE.BackSide,
       depthWrite: false,
     });
@@ -239,11 +272,11 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     var sphereGeo = new THREE.SphereGeometry(1, 64, 64);
     var sphereMat = new THREE.MeshStandardMaterial({
-      color: 0xb4c4f5,
-      metalness: 0.08,
-      roughness: 0.88,
-      emissive: 0x0a1433,
-      emissiveIntensity: 0.12,
+      color: 0xffffff,
+      metalness: 0.04,
+      roughness: 0.78,
+      emissive: 0x1e3a7a,
+      emissiveIntensity: 0.22,
     });
     var earthMesh = new THREE.Mesh(sphereGeo, sphereMat);
     earthGroup.add(earthMesh);
@@ -268,17 +301,20 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     scene.add(buildStars());
 
-    var amb = new THREE.AmbientLight(0xd8e2fc, 0.38);
+    var amb = new THREE.AmbientLight(0xeef2fc, 0.58);
     scene.add(amb);
-    var key = new THREE.DirectionalLight(0xffffff, 1.05);
+    var key = new THREE.DirectionalLight(0xffffff, 1.38);
     key.position.set(4, 2.5, 5);
     scene.add(key);
-    var fill = new THREE.PointLight(0x6b8fe8, 0.55, 12, 2);
+    var fill = new THREE.PointLight(0xa8c0fa, 0.82, 16, 1.8);
     fill.position.set(-3.5, -1.2, 2);
     scene.add(fill);
-    var rim = new THREE.DirectionalLight(0x9db6f2, 0.35);
+    var rim = new THREE.DirectionalLight(0xc8d6fa, 0.55);
     rim.position.set(-4, -1, -3);
     scene.add(rim);
+    var bounce = new THREE.DirectionalLight(0xf0f4fd, 0.42);
+    bounce.position.set(0, 5, 1);
+    scene.add(bounce);
 
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -560,35 +596,28 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       e.preventDefault();
       var placeEl = document.getElementById("travel-place");
       var dateEl = document.getElementById("travel-date");
-      var latEl = document.getElementById("travel-lat");
-      var lonEl = document.getElementById("travel-lon");
       var notesEl = document.getElementById("travel-notes");
       var photoEl = document.getElementById("travel-photo");
+      var submitBtn = document.getElementById("travel-submit");
 
-      var place = (placeEl && placeEl.value.trim()) || "";
+      var query = (placeEl && placeEl.value.trim()) || "";
       var date = (dateEl && dateEl.value) || "";
-      var lat = latEl ? parseFloat(latEl.value) : NaN;
-      var lon = lonEl ? parseFloat(lonEl.value) : NaN;
       var notes = notesEl ? notesEl.value.trim() : "";
 
-      if (!place || !date || isNaN(lat) || isNaN(lon)) {
-        alert("请填写地点、日期与有效的经纬度。");
-        return;
-      }
-      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-        alert("纬度需在 -90～90，经度需在 -180～180。");
+      if (!query || !date) {
+        alert("请填写地点名称与旅行日期。");
         return;
       }
 
       var file = photoEl && photoEl.files && photoEl.files[0] ? photoEl.files[0] : null;
 
-      function finish(photoDataUrl) {
+      function finishTrip(placeLabel, lat, lon, photoDataUrl) {
         var trip = {
           id:
             typeof crypto !== "undefined" && crypto.randomUUID
               ? crypto.randomUUID()
               : "t-" + Date.now() + "-" + Math.random().toString(36).slice(2, 9),
-          place: place,
+          place: placeLabel,
           date: date,
           lat: lat,
           lon: lon,
@@ -604,13 +633,39 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         if (photoEl) photoEl.value = "";
       }
 
-      if (file) {
-        compressImageFile(file, 1280, 0.82, function (dataUrl) {
-          finish(dataUrl);
-        });
-      } else {
-        finish(null);
+      function afterGeocode(geo) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "添加到地球";
+        }
+        if (!geo) {
+          alert(
+            "未找到与「" + query + "」匹配的位置，请尝试更具体的名称（例如城市名、区名或带上国家）。"
+          );
+          return;
+        }
+        if (file) {
+          compressImageFile(file, 1280, 0.82, function (dataUrl) {
+            finishTrip(geo.label, geo.lat, geo.lon, dataUrl);
+          });
+        } else {
+          finishTrip(geo.label, geo.lat, geo.lon, null);
+        }
       }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "正在解析地点…";
+      }
+      geocodePlace(query)
+        .then(afterGeocode)
+        .catch(function () {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "添加到地球";
+          }
+          alert("无法连接地理编码服务，请检查网络后重试。");
+        });
     });
   }
 
