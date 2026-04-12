@@ -242,7 +242,7 @@ body {
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(200px, 26%) 1fr;
+  grid-template-columns: minmax(133px, 17.33%) 1fr;
   gap: 0;
   width: 100%;
   max-width: var(--max-content);
