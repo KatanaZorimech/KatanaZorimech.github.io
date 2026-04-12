@@ -28,8 +28,7 @@
   --max-content: 1280px;
   --ripple-duration: 0.78s;
   --app-fade: 0.22s;
-  --site-bg-image-opacity: 0.3;
-  --page-overlay: rgba(244, 247, 253, 0.82);
+  --site-bg-image-opacity: 0.5;
 }
 
 *,
@@ -266,12 +265,8 @@ body::before {
 }
 
 .sidebar {
-  background: linear-gradient(
-    180deg,
-    rgba(232, 238, 252, 0.92) 0%,
-    rgba(255, 255, 255, 0.9) 55%
-  );
-  border-right: 1px solid var(--border-subtle);
+  background: transparent;
+  border-right: none;
 }
 
 .sidebar-inner {
@@ -287,7 +282,10 @@ body::before {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--klein-600);
+  color: var(--klein-800);
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.9),
+    0 1px 10px rgba(244, 247, 253, 0.95);
 }
 
 .sidebar-body {
@@ -296,39 +294,11 @@ body::before {
 
 .main {
   padding: var(--space-xl) var(--space-section);
-  background: var(--page-overlay);
-}
-
-/* 主页：不铺半透明衬底与侧栏/页脚色块，直接透出 body 背景图 */
-.main:has(#view-home:not([hidden])) {
   background: transparent;
 }
 
-.layout:has(#view-home:not([hidden])) .sidebar {
-  background: transparent;
-  border-right-color: transparent;
-}
-
-#app:has(#view-home:not([hidden])) .site-footer {
-  background: transparent;
-  border-top-color: transparent;
-}
-
-.layout:has(#view-home:not([hidden])) .sidebar-title {
-  color: var(--klein-800);
-  text-shadow:
-    0 0 1px rgba(255, 255, 255, 0.9),
-    0 1px 10px rgba(244, 247, 253, 0.95);
-}
-
-#app:has(#view-home:not([hidden])) .footer-note {
-  text-shadow:
-    0 0 1px rgba(255, 255, 255, 0.85),
-    0 1px 10px rgba(244, 247, 253, 0.95);
-}
-
-.main:has(#view-home:not([hidden])) .main-title,
-.main:has(#view-home:not([hidden])) .main-lead {
+.main .main-title,
+.main .main-lead {
   text-shadow:
     0 0 1px rgba(255, 255, 255, 0.85),
     0 1px 12px rgba(244, 247, 253, 0.95);
@@ -350,7 +320,7 @@ body::before {
 .main-lead {
   margin: 0 0 var(--space-xl);
   max-width: 42em;
-  color: var(--text-muted);
+  color: rgba(26, 29, 38, 0.88);
   font-size: 1.05rem;
 }
 
@@ -360,9 +330,9 @@ body::before {
 
 .content-slot {
   min-height: 12rem;
+  border: none;
   border-radius: var(--radius);
-  border: 1px dashed var(--border-subtle);
-  background: rgba(255, 255, 255, 0.6);
+  background: transparent;
 }
 
 .placeholder-grid {
@@ -375,14 +345,17 @@ body::before {
 .placeholder-card {
   aspect-ratio: 3 / 4;
   border-radius: var(--radius);
-  background: linear-gradient(160deg, var(--klein-100), var(--paper));
-  border: 1px solid var(--border-subtle);
+  background: transparent;
+  border: none;
 }
 
 .placeholder-list {
   margin: var(--space-lg) 0 0;
   padding-left: 1.25rem;
-  color: var(--text-muted);
+  color: rgba(26, 29, 38, 0.88);
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.85),
+    0 1px 8px rgba(244, 247, 253, 0.9);
 }
 
 .french-slot {
@@ -391,14 +364,17 @@ body::before {
 
 .site-footer {
   padding: var(--space-md) var(--space-section);
-  border-top: 1px solid var(--border-subtle);
-  background: rgba(255, 255, 255, 0.9);
+  border-top: none;
+  background: transparent;
 }
 
 .footer-note {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: rgba(26, 29, 38, 0.82);
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.85),
+    0 1px 10px rgba(244, 247, 253, 0.95);
 }
 
 /* ——— Responsive ——— */
@@ -410,7 +386,7 @@ body::before {
   .sidebar {
     order: -1;
     border-right: none;
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: none;
   }
 
   .sidebar-inner {
