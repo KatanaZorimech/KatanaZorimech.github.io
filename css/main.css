@@ -121,23 +121,30 @@ body::before {
   position: relative;
   z-index: 2;
   margin: 0;
-  max-width: min(90vw, 28em);
-  font-size: clamp(1.35rem, 4vw, 1.85rem);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  max-width: min(92vw, 36rem);
+  font-family: "Great Vibes", "Segoe Script", "Snell Roundhand", cursive;
+  font-size: clamp(2.5rem, 8vw, 4.25rem);
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
   text-align: center;
   color: var(--paper);
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.25);
+  text-shadow:
+    0 2px 28px rgba(0, 0, 0, 0.35),
+    0 0 40px rgba(0, 30, 90, 0.45);
 }
 
 .splash-hint {
   position: relative;
   z-index: 2;
   margin: var(--space-xl) 0 0;
-  font-size: 0.875rem;
+  font-family: "Cormorant Garamond", "Source Serif 4", Georgia, serif;
+  font-size: 1.05rem;
+  font-style: italic;
   font-weight: 400;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.52);
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.58);
 }
 
 /* ——— Ripple overlay (injected by JS) ——— */
