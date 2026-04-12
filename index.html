@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="KatanaZorimech 的个人主页" />
+    <title>KatanaZorimech</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8,60,400;0,8,60,600;1,8,60,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <div
+      id="splash"
+      class="splash"
+      role="button"
+      tabindex="0"
+      aria-label="欢迎屏，点击或按回车进入站点"
+    >
+      <div class="splash-bg" aria-hidden="true"></div>
+      <div class="splash-noise" aria-hidden="true"></div>
+      <p class="splash-quote">人生如逆旅，我亦是行人。</p>
+      <p class="splash-hint">点击任意处进入</p>
+    </div>
+
+    <div id="app" class="app" inert>
+      <header class="site-header">
+        <a class="site-logo" href="#/">KatanaZorimech</a>
+        <nav class="site-nav" aria-label="主导航">
+          <ul class="site-nav-list">
+            <li>
+              <a href="#/" data-route="home">主页</a>
+            </li>
+            <li>
+              <a href="#/travel" data-route="travel">旅行地图</a>
+            </li>
+            <li>
+              <a href="#/movies" data-route="movies">电影</a>
+            </li>
+            <li>
+              <a href="#/books" data-route="books">书评</a>
+            </li>
+            <li>
+              <a href="#/french" data-route="french">法语笔记</a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar" aria-label="侧栏">
+          <div class="sidebar-inner">
+            <h2 class="sidebar-title">站点</h2>
+            <div class="sidebar-body"></div>
+          </div>
+        </aside>
+
+        <main id="main" class="main" tabindex="-1">
+          <section
+            id="view-home"
+            class="view"
+            data-view="home"
+            aria-labelledby="home-title"
+          >
+            <h1 id="home-title" class="main-title">欢迎</h1>
+            <p class="main-lead">这是一处安静的个人页面，克莱因蓝与留白之间，慢慢添置内容。</p>
+            <div class="hero-wrap">
+              <img
+                class="hero-img"
+                src="assets/hero.jpg"
+                alt=""
+                width="1200"
+                height="675"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="hero-fallback" aria-hidden="true"></div>
+            </div>
+          </section>
+
+          <section
+            id="view-travel"
+            class="view is-hidden"
+            data-view="travel"
+            hidden
+            aria-labelledby="travel-title"
+          >
+            <h1 id="travel-title" class="main-title">旅行地图</h1>
+            <p class="main-lead">内容整理中。</p>
+            <div id="travel-map-slot" class="content-slot"></div>
+          </section>
+
+          <section
+            id="view-movies"
+            class="view is-hidden"
+            data-view="movies"
+            hidden
+            aria-labelledby="movies-title"
+          >
+            <h1 id="movies-title" class="main-title">电影</h1>
+            <p class="main-lead">片单与随笔将放在这里。</p>
+            <div class="card-grid placeholder-grid" aria-hidden="true">
+              <div class="placeholder-card"></div>
+              <div class="placeholder-card"></div>
+              <div class="placeholder-card"></div>
+            </div>
+          </section>
+
+          <section
+            id="view-books"
+            class="view is-hidden"
+            data-view="books"
+            hidden
+            aria-labelledby="books-title"
+          >
+            <h1 id="books-title" class="main-title">书评</h1>
+            <p class="main-lead">读书笔记与摘录，稍后更新。</p>
+            <ul class="book-list placeholder-list">
+              <li>暂无条目</li>
+            </ul>
+          </section>
+
+          <section
+            id="view-french"
+            class="view is-hidden"
+            data-view="french"
+            hidden
+            aria-labelledby="french-title"
+          >
+            <h1 id="french-title" class="main-title">法语笔记</h1>
+            <p class="main-lead">词汇、语法与阅读笔记将整理于此。</p>
+            <div class="content-slot french-slot"></div>
+          </section>
+        </main>
+      </div>
+
+      <footer class="site-footer">
+        <p class="footer-note">© <span id="year"></span> KatanaZorimech</p>
+      </footer>
+    </div>
+
+    <script src="js/app.js" defer></script>
+  </body>
+</html>
