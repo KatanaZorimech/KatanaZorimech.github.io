@@ -8,11 +8,24 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   "use strict";
 
   var STORAGE_KEY = "katana-travel-trips";
-  var EARTH_TEX_URLS = [
-    "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/planets/earth_day_4096.jpg",
-    "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
-    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_day_4096.jpg",
-  ];
+  /** 同源贴图优先，避免仅依赖外网 CDN 时 CORS/网络导致始终占位 */
+  function getEarthTextureUrls() {
+    var base =
+      typeof document !== "undefined" && document.baseURI
+        ? document.baseURI
+        : typeof window !== "undefined" && window.location
+          ? window.location.href
+          : "";
+    var local = base ? new URL("textures/earth_day_4096.jpg", base).href : "textures/earth_day_4096.jpg";
+    return [
+      local,
+      "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/planets/earth_day_4096.jpg",
+      "https://threejs.org/examples/textures/planets/earth_day_4096.jpg",
+      "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_day_4096.jpg",
+    ];
+  }
+
+  var earthTexLoadGen = 0;
 
   function createPlaceholderEarthTexture() {
     var c = document.createElement("canvas");
@@ -122,10 +135,13 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     sphereMat.userData = sphereMat.userData || {};
     sphereMat.userData.isPlaceholder = false;
     sphereMat.userData.hasRealMap = true;
+    sphereMat.color.setHex(0xffffff);
+    sphereMat.emissive.setHex(0x000000);
+    sphereMat.emissiveIntensity = 0;
     sphereMat.needsUpdate = true;
   }
 
-  function tryLoadEarthTexture(urls, index, loader, sphereMat, renderer, onDone) {
+  function tryLoadEarthTexture(urls, index, loader, sphereMat, renderer, onDone, shouldApply) {
     if (!urls || index >= urls.length) {
       if (typeof console !== "undefined" && console.warn) {
         console.warn("地球贴图全部加载失败，保留占位纹理。");
@@ -137,12 +153,35 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     loader.load(
       url,
       function (tex) {
-        finalizeEarthTextureFromImage(tex, sphereMat, renderer);
+        if (typeof shouldApply === "function" && !shouldApply()) {
+          tex.dispose();
+          if (typeof onDone === "function") onDone();
+          return;
+        }
+        try {
+          finalizeEarthTextureFromImage(tex, sphereMat, renderer);
+        } catch (err) {
+          if (typeof console !== "undefined" && console.warn) {
+            console.warn("地球贴图后处理失败，使用原图。", err);
+          }
+          tex.colorSpace = THREE.SRGBColorSpace;
+          if (sphereMat.map && sphereMat.userData && sphereMat.userData.isPlaceholder) {
+            sphereMat.map.dispose();
+          }
+          sphereMat.map = tex;
+          sphereMat.userData = sphereMat.userData || {};
+          sphereMat.userData.isPlaceholder = false;
+          sphereMat.userData.hasRealMap = true;
+          sphereMat.color.setHex(0xffffff);
+          sphereMat.emissive.setHex(0x000000);
+          sphereMat.emissiveIntensity = 0;
+          sphereMat.needsUpdate = true;
+        }
         if (typeof onDone === "function") onDone();
       },
       undefined,
       function () {
-        tryLoadEarthTexture(urls, index + 1, loader, sphereMat, renderer, onDone);
+        tryLoadEarthTexture(urls, index + 1, loader, sphereMat, renderer, onDone, shouldApply);
       }
     );
   }
@@ -424,7 +463,18 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     if (typeof texLoader.setCrossOrigin === "function") {
       texLoader.setCrossOrigin("anonymous");
     }
-    tryLoadEarthTexture(EARTH_TEX_URLS, 0, texLoader, sphereMat, renderer, null);
+    var loadGen = earthTexLoadGen;
+    tryLoadEarthTexture(
+      getEarthTextureUrls(),
+      0,
+      texLoader,
+      sphereMat,
+      renderer,
+      null,
+      function () {
+        return loadGen === earthTexLoadGen && !!scene && !!sphereMat;
+      }
+    );
 
     markersGroup = new THREE.Group();
     earthGroup.add(markersGroup);
@@ -481,6 +531,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   }
 
   function disposeScene() {
+    earthTexLoadGen++;
     stopLoop();
     if (canvas) {
       canvas.removeEventListener("pointerdown", onPointerStart);
