@@ -12,6 +12,14 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/main.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
   </head>
   <body>
     <div
@@ -58,8 +66,12 @@
       <div class="layout">
         <aside class="sidebar" aria-label="侧栏">
           <div class="sidebar-inner">
-            <h2 class="sidebar-title">站点</h2>
-            <div class="sidebar-body"></div>
+            <h2 class="sidebar-title" id="sidebar-title">站点</h2>
+            <div class="sidebar-body" id="sidebar-body">
+              <p class="sidebar-blurb">
+                侧栏用于各栏目的附注与摘要；在「旅行地图」中，点击地球上的光点可在此查看详情。
+              </p>
+            </div>
           </div>
         </aside>
 
@@ -82,8 +94,95 @@
             aria-labelledby="travel-title"
           >
             <h1 id="travel-title" class="main-title">旅行地图</h1>
-            <p class="main-lead">内容整理中。</p>
-            <div id="travel-map-slot" class="content-slot"></div>
+            <p class="main-lead">
+              拖拽旋转地球，光点标记足迹；数据保存在本机浏览器。点击光点可在左侧查看照片与随笔。
+            </p>
+            <div id="travel-map-slot" class="content-slot travel-map-slot">
+              <div class="travel-globe-shell" aria-label="三维地球">
+                <canvas id="travel-globe-canvas"></canvas>
+                <p class="travel-globe-hint" id="travel-globe-hint">
+                  拖拽旋转 · 滚轮缩放 · 点击光点查看详情
+                </p>
+              </div>
+              <form id="travel-form" class="travel-form" novalidate>
+                <h2 class="travel-form-title">录入足迹</h2>
+                <div class="travel-form-grid">
+                  <label class="travel-field">
+                    <span class="travel-label">地点名称</span>
+                    <input
+                      type="text"
+                      id="travel-place"
+                      name="place"
+                      required
+                      maxlength="120"
+                      placeholder="例如：雷克雅未克"
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="travel-field">
+                    <span class="travel-label">旅行日期</span>
+                    <input type="date" id="travel-date" name="date" required />
+                  </label>
+                  <label class="travel-field">
+                    <span class="travel-label">纬度</span>
+                    <input
+                      type="number"
+                      id="travel-lat"
+                      name="lat"
+                      required
+                      step="any"
+                      min="-90"
+                      max="90"
+                      placeholder="如 64.1466"
+                    />
+                  </label>
+                  <label class="travel-field">
+                    <span class="travel-label">经度</span>
+                    <input
+                      type="number"
+                      id="travel-lon"
+                      name="lon"
+                      required
+                      step="any"
+                      min="-180"
+                      max="180"
+                      placeholder="如 -21.9426"
+                    />
+                  </label>
+                  <label class="travel-field travel-field-full">
+                    <span class="travel-label">照片（可选）</span>
+                    <input
+                      type="file"
+                      id="travel-photo"
+                      name="photo"
+                      accept="image/*"
+                    />
+                  </label>
+                  <label class="travel-field travel-field-full">
+                    <span class="travel-label">随笔（可选）</span>
+                    <textarea
+                      id="travel-notes"
+                      name="notes"
+                      rows="3"
+                      maxlength="4000"
+                      placeholder="几句心情或备忘……"
+                    ></textarea>
+                  </label>
+                </div>
+                <p class="travel-form-note">
+                  经纬度可用地图应用或搜索引擎查询；照片会压缩后存于本地，请勿上传隐私敏感内容。
+                </p>
+                <div class="travel-form-actions">
+                  <button type="submit" class="travel-btn travel-btn-primary">添加到地球</button>
+                  <button type="reset" class="travel-btn travel-btn-ghost">清空表单</button>
+                </div>
+              </form>
+              <div class="travel-list-wrap">
+                <h2 class="travel-list-title">已保存的足迹</h2>
+                <ul class="travel-trip-list" id="travel-trip-list" aria-label="足迹列表"></ul>
+                <p class="travel-list-empty" id="travel-list-empty">暂无足迹，请先在上方录入。</p>
+              </div>
+            </div>
           </section>
 
           <section
@@ -136,5 +235,6 @@
     </div>
 
     <script src="js/app.js" defer></script>
+    <script type="module" src="js/travel-globe.js"></script>
   </body>
 </html>
