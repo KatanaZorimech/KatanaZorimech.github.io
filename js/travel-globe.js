@@ -8,9 +8,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   "use strict";
 
   var STORAGE_KEY = "katana-travel-trips";
-  /** 与站点 assets/地球.png 插画一致：青绿海洋、手绘陆地；优先使用本地文件 */
-  var LOCAL_EARTH_TEXTURE = "assets/地球.png";
-  /* 本地失败时的 CDN 备选；会做油画化处理以接近插画感 */
   var EARTH_TEX_URLS = [
     "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/planets/earth_day_4096.jpg",
     "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
@@ -23,41 +20,20 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     c.height = 256;
     var ctx = c.getContext("2d");
     if (!ctx) return null;
-    /* 参照 地球.png：青绿海洋、插画感块面 */
     var g = ctx.createLinearGradient(0, 0, c.width, c.height);
-    g.addColorStop(0, "#1a4a5c");
-    g.addColorStop(0.25, "#2d7a94");
-    g.addColorStop(0.5, "#3085a3");
-    g.addColorStop(0.72, "#266d88");
-    g.addColorStop(1, "#0c2834");
+    g.addColorStop(0, "#1a3a8a");
+    g.addColorStop(0.35, "#3d6ad4");
+    g.addColorStop(0.55, "#6b8fe8");
+    g.addColorStop(0.72, "#2d5099");
+    g.addColorStop(1, "#0f1f4d");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, c.width, c.height);
-    ctx.globalAlpha = 0.45;
-    var patches = [
-      { x: 0.08, y: 0.35, w: 0.22, h: 0.28, c: "#6cb85c" },
-      { x: 0.35, y: 0.2, w: 0.18, h: 0.35, c: "#8bc34a" },
-      { x: 0.55, y: 0.45, w: 0.25, h: 0.22, c: "#c4a35a" },
-      { x: 0.72, y: 0.25, w: 0.2, h: 0.3, c: "#5a9f6e" },
-      { x: 0.2, y: 0.62, w: 0.35, h: 0.2, c: "#d4b87a" },
-    ];
-    patches.forEach(function (p) {
-      ctx.fillStyle = p.c;
-      ctx.beginPath();
-      ctx.ellipse(
-        p.x * c.width,
-        p.y * c.height,
-        p.w * c.width * 0.5,
-        p.h * c.height * 0.5,
-        Math.random() * 0.5,
-        0,
-        Math.PI * 2
-      );
-      ctx.fill();
-    });
-    ctx.globalAlpha = 0.2;
-    ctx.fillStyle = "#e8f4fc";
-    ctx.fillRect(c.width * 0.02, c.height * 0.08, c.width * 0.12, c.height * 0.15);
-    ctx.fillRect(c.width * 0.78, c.height * 0.7, c.width * 0.15, c.height * 0.18);
+    ctx.globalAlpha = 0.18;
+    var i;
+    for (i = 0; i < 60; i++) {
+      ctx.fillStyle = i % 2 ? "#c8d6fa" : "#9db6f2";
+      ctx.fillRect((i * 37) % c.width, (i * 23) % c.height, 80, 40);
+    }
     ctx.globalAlpha = 1;
     var tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -65,9 +41,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     return tex;
   }
 
-  /**
-   * 色阶量化 + 冷色微调，接近手绘/油画块面感（在 Canvas 内完成，兼容无 shader）。
-   */
   function stylizeEarthToCanvas(img) {
     var maxW = 1100;
     var w = img.width || img.videoWidth;
@@ -92,28 +65,28 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       var d = imgData.data;
       var levels = 7;
       var step = 255 / Math.max(1, levels - 1);
-      var i;
-      for (i = 0; i < d.length; i += 4) {
-        d[i] = Math.min(255, Math.round(d[i] / step) * step);
-        d[i + 1] = Math.min(255, Math.round(d[i + 1] / step) * step);
-        d[i + 2] = Math.min(255, Math.round(d[i + 2] / step) * step);
-        var lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      var j;
+      for (j = 0; j < d.length; j += 4) {
+        d[j] = Math.min(255, Math.round(d[j] / step) * step);
+        d[j + 1] = Math.min(255, Math.round(d[j + 1] / step) * step);
+        d[j + 2] = Math.min(255, Math.round(d[j + 2] / step) * step);
+        var lum = 0.299 * d[j] + 0.587 * d[j + 1] + 0.114 * d[j + 2];
         if (lum < 95) {
-          d[i] = d[i] * 0.82 + 28;
-          d[i + 1] = d[i + 1] * 0.88 + 22;
-          d[i + 2] = Math.min(255, d[i + 2] * 1.1 + 26);
+          d[j] = d[j] * 0.82 + 28;
+          d[j + 1] = d[j + 1] * 0.88 + 22;
+          d[j + 2] = Math.min(255, d[j + 2] * 1.1 + 26);
         } else if (lum > 175) {
-          d[i] = Math.min(255, d[i] * 1.04 + 8);
-          d[i + 1] = Math.min(255, d[i + 1] * 1.02 + 4);
-          d[i + 2] = Math.min(255, d[i + 2] * 1.02);
+          d[j] = Math.min(255, d[j] * 1.04 + 8);
+          d[j + 1] = Math.min(255, d[j + 1] * 1.02 + 4);
+          d[j + 2] = Math.min(255, d[j + 2] * 1.02);
         } else {
-          d[i + 1] = d[i + 1] * 0.96 + 6;
-          d[i + 2] = Math.min(255, d[i + 2] * 1.05 + 10);
+          d[j + 1] = d[j + 1] * 0.96 + 6;
+          d[j + 2] = Math.min(255, d[j + 2] * 1.05 + 10);
         }
       }
       ctx.putImageData(imgData, 0, 0);
     } catch (err) {
-      /* 跨域污染等：保留已绘制的原图 */
+      /* 跨域等：保留已绘制原图 */
     }
     var out = document.createElement("canvas");
     out.width = w;
@@ -125,29 +98,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     return out;
   }
 
-  function createToonGradientMap() {
-    var c = document.createElement("canvas");
-    c.width = 8;
-    c.height = 1;
-    var ctx = c.getContext("2d");
-    if (!ctx) return null;
-    var g = ctx.createLinearGradient(0, 0, 8, 0);
-    g.addColorStop(0, "#2a2a38");
-    g.addColorStop(0.35, "#6a6a78");
-    g.addColorStop(0.65, "#b8b8c8");
-    g.addColorStop(1, "#ffffff");
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 8, 1);
-    var t = new THREE.CanvasTexture(c);
-    t.minFilter = THREE.LinearFilter;
-    t.magFilter = THREE.LinearFilter;
-    t.wrapS = THREE.ClampToEdgeWrapping;
-    t.wrapT = THREE.ClampToEdgeWrapping;
-    t.needsUpdate = true;
-    return t;
-  }
-
-  function finalizeEarthTextureFromImage(tex, sphereMat, renderer, applyStylize) {
+  function finalizeEarthTextureFromImage(tex, sphereMat, renderer) {
     tex.colorSpace = THREE.SRGBColorSpace;
     if (renderer && renderer.capabilities) {
       tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
@@ -157,18 +108,14 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     if (sphereMat.map && sphereMat.userData && sphereMat.userData.isPlaceholder) {
       sphereMat.map.dispose();
     }
-    if (applyStylize) {
-      var img = tex.image;
-      var canvas = stylizeEarthToCanvas(img);
-      if (canvas) {
-        var ctex = new THREE.CanvasTexture(canvas);
-        ctex.colorSpace = THREE.SRGBColorSpace;
-        ctex.needsUpdate = true;
-        tex.dispose();
-        sphereMat.map = ctex;
-      } else {
-        sphereMat.map = tex;
-      }
+    var img = tex.image;
+    var canvas = stylizeEarthToCanvas(img);
+    if (canvas) {
+      var ctex = new THREE.CanvasTexture(canvas);
+      ctex.colorSpace = THREE.SRGBColorSpace;
+      ctex.needsUpdate = true;
+      tex.dispose();
+      sphereMat.map = ctex;
     } else {
       sphereMat.map = tex;
     }
@@ -190,28 +137,12 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     loader.load(
       url,
       function (tex) {
-        finalizeEarthTextureFromImage(tex, sphereMat, renderer, true);
+        finalizeEarthTextureFromImage(tex, sphereMat, renderer);
         if (typeof onDone === "function") onDone();
       },
       undefined,
       function () {
         tryLoadEarthTexture(urls, index + 1, loader, sphereMat, renderer, onDone);
-      }
-    );
-  }
-
-  function tryLoadLocalEarthThenFallback(loader, sphereMat, renderer) {
-    loader.load(
-      LOCAL_EARTH_TEXTURE,
-      function (tex) {
-        finalizeEarthTextureFromImage(tex, sphereMat, renderer, false);
-      },
-      undefined,
-      function () {
-        if (typeof console !== "undefined" && console.warn) {
-          console.warn("未加载到 " + LOCAL_EARTH_TEXTURE + "，使用在线备选贴图。");
-        }
-        tryLoadEarthTexture(EARTH_TEX_URLS, 0, loader, sphereMat, renderer, null);
       }
     );
   }
@@ -418,11 +349,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   }
 
   function buildStars() {
-    var count = 1200;
+    var count = 900;
     var positions = new Float32Array(count * 3);
-    var colors = new Float32Array(count * 3);
-    var i;
-    for (i = 0; i < count; i++) {
+    for (var i = 0; i < count; i++) {
       var r = 5 + Math.random() * 8;
       var u = Math.random();
       var v = Math.random();
@@ -431,31 +360,15 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = r * Math.cos(phi);
-      var t = Math.random();
-      if (t < 0.55) {
-        colors[i * 3] = 0.88;
-        colors[i * 3 + 1] = 0.92;
-        colors[i * 3 + 2] = 1;
-      } else if (t < 0.82) {
-        colors[i * 3] = 1;
-        colors[i * 3 + 1] = 0.94;
-        colors[i * 3 + 2] = 0.78;
-      } else {
-        colors[i * 3] = 0.72;
-        colors[i * 3 + 1] = 0.86;
-        colors[i * 3 + 2] = 1;
-      }
     }
     var geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     var mat = new THREE.PointsMaterial({
-      size: 0.038,
+      color: 0xc8d6fa,
+      size: 0.035,
       transparent: true,
-      opacity: 0.62,
+      opacity: 0.55,
       depthWrite: false,
-      vertexColors: true,
-      sizeAttenuation: true,
     });
     return new THREE.Points(geo, mat);
   }
@@ -464,7 +377,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     if (ready || !canvas) return;
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0e18);
+    scene.background = null;
 
     camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
     camera.position.set(0, 0.25, 2.45);
@@ -472,23 +385,22 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       antialias: true,
-      alpha: false,
+      alpha: true,
       powerPreference: "high-performance",
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.08;
+    renderer.toneMappingExposure = 1.42;
 
     earthGroup = new THREE.Group();
     scene.add(earthGroup);
 
-    /* 轻微外圈柔光即可，避免写实大气；色彩贴近插画的青蓝 */
-    var atmGeo = new THREE.SphereGeometry(1.05, 48, 48);
+    var atmGeo = new THREE.SphereGeometry(1.07, 48, 48);
     var atmMat = new THREE.MeshBasicMaterial({
-      color: 0x4a9ec4,
+      color: 0x9db6f2,
       transparent: true,
-      opacity: 0.06,
+      opacity: 0.1,
       side: THREE.BackSide,
       depthWrite: false,
     });
@@ -496,53 +408,43 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     var sphereGeo = new THREE.SphereGeometry(1, 64, 64);
     var placeholderTex = createPlaceholderEarthTexture();
-    var toonGrad = createToonGradientMap();
-    var sphereMat = new THREE.MeshToonMaterial({
+    var sphereMat = new THREE.MeshStandardMaterial({
       map: placeholderTex || undefined,
-      gradientMap: toonGrad || undefined,
-      color: placeholderTex ? 0xffffff : 0x3d8fb8,
-      emissive: 0x0a1420,
-      emissiveIntensity: placeholderTex ? 0.06 : 0.2,
+      color: placeholderTex ? 0xffffff : 0x5c7ec4,
+      metalness: 0.02,
+      roughness: 0.82,
+      emissive: 0x1e3a7a,
+      emissiveIntensity: placeholderTex ? 0.12 : 0.28,
     });
     sphereMat.userData = { isPlaceholder: !!placeholderTex };
-    /* 卡通描边：略放大的背面深色壳，与参考图线稿轮廓感呼应 */
-    var outlineGeo = new THREE.SphereGeometry(1, 64, 64);
-    var outlineMat = new THREE.MeshBasicMaterial({
-      color: 0x141c2e,
-      side: THREE.BackSide,
-    });
-    var earthOutline = new THREE.Mesh(outlineGeo, outlineMat);
-    earthOutline.scale.setScalar(1.022);
-    earthOutline.name = "earth-cartoon-outline";
-    earthGroup.add(earthOutline);
-
     var earthMesh = new THREE.Mesh(sphereGeo, sphereMat);
-    earthMesh.name = "earth-cartoon";
-    earthMesh.renderOrder = 1;
     earthGroup.add(earthMesh);
 
     var texLoader = new THREE.TextureLoader();
     if (typeof texLoader.setCrossOrigin === "function") {
       texLoader.setCrossOrigin("anonymous");
     }
-    tryLoadLocalEarthThenFallback(texLoader, sphereMat, renderer);
+    tryLoadEarthTexture(EARTH_TEX_URLS, 0, texLoader, sphereMat, renderer, null);
 
     markersGroup = new THREE.Group();
     earthGroup.add(markersGroup);
 
     scene.add(buildStars());
 
-    /* 卡通平面感：整体偏均匀照明，避免过强体积光；略偏暖主光保留一点球体感 */
-    var amb = new THREE.AmbientLight(0xa8c8e0, 0.62);
+    var amb = new THREE.AmbientLight(0xeef2fc, 0.58);
     scene.add(amb);
-    var key = new THREE.DirectionalLight(0xfff8f0, 0.72);
-    key.position.set(5, 2.2, 4);
+    var key = new THREE.DirectionalLight(0xffffff, 1.38);
+    key.position.set(4, 2.5, 5);
     scene.add(key);
-    var hemi = new THREE.HemisphereLight(0xc8ddf0, 0x203050, 0.35);
-    scene.add(hemi);
-    var rim = new THREE.DirectionalLight(0x6a8ab0, 0.18);
+    var fill = new THREE.PointLight(0xa8c0fa, 0.82, 16, 1.8);
+    fill.position.set(-3.5, -1.2, 2);
+    scene.add(fill);
+    var rim = new THREE.DirectionalLight(0xc8d6fa, 0.55);
     rim.position.set(-4, -1, -3);
     scene.add(rim);
+    var bounce = new THREE.DirectionalLight(0xf0f4fd, 0.42);
+    bounce.position.set(0, 5, 1);
+    scene.add(bounce);
 
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
