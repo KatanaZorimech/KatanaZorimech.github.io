@@ -69,7 +69,7 @@
             <h2 class="sidebar-title" id="sidebar-title">站点</h2>
             <div class="sidebar-body" id="sidebar-body">
               <p class="sidebar-blurb">
-                侧栏用于各栏目的附注与摘要；在「旅行地图」中，点击地球上的光点可在此查看详情。
+                侧栏用于各栏目的附注与摘要；旅行足迹的详情展示在「旅行地图」内地球旁的面板中。
               </p>
             </div>
           </div>
@@ -95,14 +95,26 @@
           >
             <h1 id="travel-title" class="main-title">旅行地图</h1>
             <p class="main-lead">
-              拖拽旋转地球，光点标记足迹；输入地点名称后会自动解析经纬度。数据保存在本机浏览器，点击光点可在左侧查看照片与随笔。
+              拖拽旋转地球，光点标记足迹；输入地点名称后会自动解析经纬度。数据保存在本机浏览器，点击光点可在地球旁查看照片与随笔。
             </p>
             <div id="travel-map-slot" class="content-slot travel-map-slot">
-              <div class="travel-globe-shell" aria-label="三维地球">
-                <canvas id="travel-globe-canvas"></canvas>
-                <p class="travel-globe-hint" id="travel-globe-hint">
-                  拖拽旋转 · 滚轮缩放 · 点击光点查看详情
-                </p>
+              <div class="travel-globe-row">
+                <div class="travel-globe-main">
+                  <div class="travel-globe-shell" aria-label="三维地球">
+                    <canvas id="travel-globe-canvas"></canvas>
+                  </div>
+                </div>
+                <aside class="travel-detail-aside" aria-label="足迹详情">
+                  <div id="travel-detail-panel" class="travel-detail-panel">
+                    <div class="travel-detail-empty" id="travel-detail-empty">
+                      <p class="travel-detail-empty-title">尚未选择足迹</p>
+                      <p class="travel-detail-empty-text">
+                        点击地球上的光点，或从下方列表选择一条，即可在此查看详情。
+                      </p>
+                    </div>
+                    <div id="travel-detail-content" class="travel-detail-content" hidden></div>
+                  </div>
+                </aside>
               </div>
               <form id="travel-form" class="travel-form" novalidate>
                 <h2 class="travel-form-title">录入足迹</h2>
@@ -119,10 +131,30 @@
                       autocomplete="off"
                     />
                   </label>
-                  <label class="travel-field">
-                    <span class="travel-label">旅行日期</span>
-                    <input type="date" id="travel-date" name="date" required />
-                  </label>
+                  <div class="travel-field">
+                    <span class="travel-label" id="travel-date-label">旅行日期</span>
+                    <div class="travel-date-wrap">
+                      <button
+                        type="button"
+                        class="travel-date-trigger"
+                        id="travel-date-trigger"
+                        aria-haspopup="dialog"
+                        aria-expanded="false"
+                        aria-labelledby="travel-date-label"
+                      >
+                        <span class="travel-date-trigger-text" id="travel-date-trigger-text">选择日期</span>
+                      </button>
+                      <input type="hidden" id="travel-date" name="date" value="" />
+                      <div
+                        class="travel-datepicker"
+                        id="travel-datepicker"
+                        hidden
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="日历"
+                      ></div>
+                    </div>
+                  </div>
                   <label class="travel-field travel-field-full">
                     <span class="travel-label">照片（可选）</span>
                     <input

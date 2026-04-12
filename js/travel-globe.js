@@ -1,5 +1,5 @@
 /**
- * Travel map: Three.js globe, localStorage trips, sidebar detail.
+ * Travel map: Three.js globe, localStorage trips, in-column detail panel.
  */
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -14,13 +14,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
   var ROUTES = ["home", "travel", "movies", "books", "french"];
 
-  var sidebarTitle = document.getElementById("sidebar-title");
-  var sidebarBody = document.getElementById("sidebar-body");
-  var defaultSidebarHTML = sidebarBody ? sidebarBody.innerHTML : "";
-  var defaultSidebarTitle = sidebarTitle ? sidebarTitle.textContent : "";
-
   var canvas = document.getElementById("travel-globe-canvas");
-  var globeHint = document.getElementById("travel-globe-hint");
+  var detailEmptyEl = document.getElementById("travel-detail-empty");
+  var detailContentEl = document.getElementById("travel-detail-content");
   var form = document.getElementById("travel-form");
   var tripList = document.getElementById("travel-trip-list");
   var listEmpty = document.getElementById("travel-list-empty");
@@ -300,7 +296,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       },
       undefined,
       function () {
-        if (globeHint) globeHint.textContent = "贴图加载失败，已使用纯色地球；可刷新重试。";
+        if (typeof console !== "undefined" && console.warn) {
+          console.warn("地球贴图加载失败，已使用纯色地球。");
+        }
       }
     );
 
@@ -473,65 +471,310 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       .replace(/"/g, "&quot;");
   }
 
-  function formatDate(iso) {
-    if (!iso) return "";
-    var d = new Date(iso);
-    if (isNaN(d.getTime())) return escapeHtml(iso);
-    var y = d.getFullYear();
-    var m = String(d.getMonth() + 1).padStart(2, "0");
-    var day = String(d.getDate()).padStart(2, "0");
-    return y + "年" + m + "月" + day + "日";
+  function parseISOLocal(iso) {
+    if (!iso || typeof iso !== "string") return null;
+    var p = iso.split("-");
+    if (p.length !== 3) return null;
+    var y = parseInt(p[0], 10);
+    var m = parseInt(p[1], 10) - 1;
+    var d = parseInt(p[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+    return new Date(y, m, d);
   }
 
-  function renderSidebarTrip(trip) {
-    if (!sidebarBody || !sidebarTitle) return;
-    sidebarTitle.textContent = "足迹详情";
+  function pad2(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function isoFromDate(d) {
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+
+  /** 中文日期，月日不补零，如 2026年4月12日 */
+  function formatDateCN(iso) {
+    var d = parseISOLocal(iso);
+    if (!d || isNaN(d.getTime())) return escapeHtml(String(iso || ""));
+    return (
+      d.getFullYear() +
+      "年" +
+      (d.getMonth() + 1) +
+      "月" +
+      d.getDate() +
+      "日"
+    );
+  }
+
+  function renderTravelDetail(trip) {
+    if (!detailEmptyEl || !detailContentEl) return;
     if (!trip) {
-      sidebarBody.innerHTML =
-        '<div class="travel-sidebar-card">' +
-        '<p class="travel-sidebar-lead">点击地球上的柔光标记，或从下方列表选择一条足迹，即可在此查看日期、照片与随笔。</p>' +
-        "</div>";
+      detailEmptyEl.hidden = false;
+      detailContentEl.hidden = true;
+      detailContentEl.innerHTML = "";
       return;
     }
-    var imgBlock = trip.photoDataUrl
-      ? '<div class="travel-sidebar-photo"><img src="' +
-        trip.photoDataUrl +
-        '" alt="" loading="lazy" /></div>'
-      : "";
-    var notesBlock = trip.notes
-      ? '<div class="travel-sidebar-notes"><p class="travel-notes-label">随笔</p><p class="travel-notes-body">' +
-        escapeHtml(trip.notes).replace(/\n/g, "<br />") +
-        "</p></div>"
-      : '<p class="travel-sidebar-muted">未填写随笔</p>';
+    detailEmptyEl.hidden = true;
+    detailContentEl.hidden = false;
 
-    sidebarBody.innerHTML =
-      '<div class="travel-sidebar-card">' +
-      '<h3 class="travel-sidebar-place">' +
+    var photoSection = trip.photoDataUrl
+      ? '<figure class="travel-detail-photo">' +
+        '<div class="travel-detail-photo-frame">' +
+        '<img src="' +
+        trip.photoDataUrl +
+        '" alt="" loading="lazy" />' +
+        "</div>" +
+        '<figcaption class="travel-detail-photo-cap">旅行照片</figcaption>' +
+        "</figure>"
+      : '<div class="travel-detail-block travel-detail-block-muted"><p class="travel-detail-muted">未添加照片</p></div>';
+
+    var notesSection = trip.notes
+      ? '<section class="travel-detail-block travel-detail-notes">' +
+        '<h4 class="travel-detail-block-title">随笔</h4>' +
+        '<div class="travel-detail-notes-body">' +
+        escapeHtml(trip.notes).replace(/\n/g, "<br />") +
+        "</div></section>"
+      : '<div class="travel-detail-block travel-detail-block-muted"><p class="travel-detail-muted">未填写随笔</p></div>';
+
+    detailContentEl.innerHTML =
+      '<article class="travel-detail-card">' +
+      '<header class="travel-detail-card-header">' +
+      '<span class="travel-detail-pill">足迹</span>' +
+      '<h3 class="travel-detail-card-title">' +
       escapeHtml(trip.place) +
-      "</h3>" +
-      '<p class="travel-sidebar-meta">' +
-      formatDate(trip.date) +
-      "</p>" +
-      '<p class="travel-sidebar-coords">纬度 ' +
-      trip.lat +
-      " · 经度 " +
-      trip.lon +
-      "</p>" +
-      imgBlock +
-      notesBlock +
-      "</div>";
+      "</h3></header>" +
+      '<div class="travel-detail-card-body">' +
+      '<div class="travel-detail-kv">' +
+      '<div class="travel-detail-kv-row">' +
+      '<span class="travel-detail-k">日期</span>' +
+      '<span class="travel-detail-v">' +
+      formatDateCN(trip.date) +
+      "</span></div>" +
+      '<div class="travel-detail-kv-row">' +
+      '<span class="travel-detail-k">坐标</span>' +
+      '<span class="travel-detail-v travel-detail-coords">' +
+      escapeHtml(formatLatLonLine(trip.lat, trip.lon)) +
+      "</span></div></div>" +
+      photoSection +
+      notesSection +
+      "</div></article>";
   }
 
-  function restoreSidebarDefault() {
-    if (sidebarBody) sidebarBody.innerHTML = defaultSidebarHTML;
-    if (sidebarTitle) sidebarTitle.textContent = defaultSidebarTitle;
+  function formatLatLonLine(lat, lon) {
+    var la = Number(lat);
+    var lo = Number(lon);
+    var ns = la >= 0 ? "北纬" : "南纬";
+    var ew = lo >= 0 ? "东经" : "西经";
+    return (
+      ns +
+      " " +
+      Math.abs(la).toFixed(4) +
+      " · " +
+      ew +
+      " " +
+      Math.abs(lo).toFixed(4)
+    );
+  }
+
+  var travelDateUI = {
+    reset: function () {},
+  };
+
+  function initTravelDatePicker() {
+    var trigger = document.getElementById("travel-date-trigger");
+    var hidden = document.getElementById("travel-date");
+    var pop = document.getElementById("travel-datepicker");
+    var textEl = document.getElementById("travel-date-trigger-text");
+    var wrap = document.querySelector(".travel-date-wrap");
+    if (!trigger || !hidden || !pop || !textEl || !wrap) return;
+
+    var viewYear = new Date().getFullYear();
+    var viewMonth = new Date().getMonth();
+    var open = false;
+
+    var WEEK_LABELS = ["日", "一", "二", "三", "四", "五", "六"];
+
+    function syncTrigger() {
+      if (!hidden.value) {
+        textEl.textContent = "选择日期";
+        return;
+      }
+      var d = parseISOLocal(hidden.value);
+      textEl.textContent = d && !isNaN(d.getTime()) ? formatDateCN(hidden.value) : "选择日期";
+    }
+
+    function closePop() {
+      open = false;
+      pop.hidden = true;
+      trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function openPop() {
+      open = true;
+      pop.hidden = false;
+      trigger.setAttribute("aria-expanded", "true");
+      if (hidden.value) {
+        var sd = parseISOLocal(hidden.value);
+        if (sd) {
+          viewYear = sd.getFullYear();
+          viewMonth = sd.getMonth();
+        }
+      }
+      renderMonth();
+    }
+
+    function renderMonth() {
+      var y = viewYear;
+      var m = viewMonth;
+      var first = new Date(y, m, 1);
+      var pad = first.getDay();
+      var dim = new Date(y, m + 1, 0).getDate();
+      var today = new Date();
+      var todayY = today.getFullYear();
+      var todayM = today.getMonth();
+      var todayD = today.getDate();
+
+      var sel = hidden.value ? parseISOLocal(hidden.value) : null;
+
+      var head =
+        '<div class="travel-dp-head">' +
+        '<button type="button" class="travel-dp-nav" data-act="prev" aria-label="上个月">‹</button>' +
+        '<span class="travel-dp-title">' +
+        y +
+        "年" +
+        (m + 1) +
+        "月</span>" +
+        '<button type="button" class="travel-dp-nav" data-act="next" aria-label="下个月">›</button>' +
+        "</div>";
+
+      var wk =
+        '<div class="travel-dp-weekdays">' +
+        WEEK_LABELS.map(function (w) {
+          return '<span class="travel-dp-wd">' + w + "</span>";
+        }).join("") +
+        "</div>";
+
+      var cells = [];
+      var i;
+      for (i = 0; i < pad; i++) {
+        cells.push('<span class="travel-dp-cell travel-dp-pad"></span>');
+      }
+      for (i = 1; i <= dim; i++) {
+        var isToday = y === todayY && m === todayM && i === todayD;
+        var isSel =
+          sel &&
+          sel.getFullYear() === y &&
+          sel.getMonth() === m &&
+          sel.getDate() === i;
+        var cls = "travel-dp-cell travel-dp-day";
+        if (isToday) cls += " is-today";
+        if (isSel) cls += " is-selected";
+        cells.push(
+          '<button type="button" class="' +
+            cls +
+            '" data-day="' +
+            i +
+            '">' +
+            i +
+            "</button>"
+        );
+      }
+      while (cells.length % 7 !== 0) {
+        cells.push('<span class="travel-dp-cell travel-dp-pad"></span>');
+      }
+
+      pop.innerHTML =
+        head +
+        wk +
+        '<div class="travel-dp-grid">' +
+        cells.join("") +
+        "</div>" +
+        '<div class="travel-dp-foot">' +
+        '<button type="button" class="travel-dp-today" data-act="today">今天</button>' +
+        "</div>";
+
+      pop.querySelectorAll("[data-act=prev]")[0].addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        viewMonth--;
+        if (viewMonth < 0) {
+          viewMonth = 11;
+          viewYear--;
+        }
+        renderMonth();
+      });
+      pop.querySelectorAll("[data-act=next]")[0].addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        viewMonth++;
+        if (viewMonth > 11) {
+          viewMonth = 0;
+          viewYear++;
+        }
+        renderMonth();
+      });
+      pop.querySelectorAll("[data-act=today]")[0].addEventListener("click", function (ev) {
+        ev.stopPropagation();
+        var t = new Date();
+        hidden.value = isoFromDate(t);
+        syncTrigger();
+        closePop();
+      });
+
+      pop.querySelectorAll(".travel-dp-day").forEach(function (btn) {
+        btn.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          var day = parseInt(btn.getAttribute("data-day"), 10);
+          var dt = new Date(y, m, day);
+          hidden.value = isoFromDate(dt);
+          syncTrigger();
+          closePop();
+        });
+      });
+    }
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (open) {
+        closePop();
+      } else {
+        openPop();
+      }
+    });
+
+    document.addEventListener("mousedown", function (e) {
+      if (!open) return;
+      if (wrap.contains(e.target)) return;
+      closePop();
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && open) {
+        closePop();
+      }
+    });
+
+    travelDateUI.reset = function () {
+      hidden.value = "";
+      syncTrigger();
+      closePop();
+      var n = new Date();
+      viewYear = n.getFullYear();
+      viewMonth = n.getMonth();
+    };
+
+    if (form) {
+      form.addEventListener("reset", function () {
+        window.setTimeout(function () {
+          travelDateUI.reset();
+        }, 0);
+      });
+    }
+
+    syncTrigger();
   }
 
   function selectTrip(id) {
     selectedId = id;
     var trips = loadTrips();
     var trip = trips.filter(function (t) { return t.id === id; })[0] || null;
-    renderSidebarTrip(trip);
+    renderTravelDetail(trip);
     renderTripList();
   }
 
@@ -541,7 +784,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     saveTrips(trips);
     if (selectedId === id) {
       selectedId = null;
-      renderSidebarTrip(null);
+      renderTravelDetail(null);
     }
     rebuildMarkers(trips);
     renderTripList();
@@ -564,7 +807,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
           '<button type="button" class="travel-trip-select">' +
           escapeHtml(t.place) +
           '<span class="travel-trip-date">' +
-          escapeHtml(t.date) +
+          escapeHtml(formatDateCN(t.date)) +
           "</span></button>" +
           '<button type="button" class="travel-trip-delete" aria-label="删除「' +
           escapeHtml(t.place) +
@@ -582,8 +825,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   }
 
   function onTravelEnter() {
-    if (sidebarTitle) sidebarTitle.textContent = "足迹详情";
-    renderSidebarTrip(
+    renderTravelDetail(
       selectedId
         ? loadTrips().filter(function (t) { return t.id === selectedId; })[0] || null
         : null
@@ -595,7 +837,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   function onTravelLeave() {
     disposeScene();
     selectedId = null;
-    restoreSidebarDefault();
+    renderTravelDetail(null);
   }
 
   function applyRoute() {
@@ -644,6 +886,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         selectTrip(trip.id);
         form.reset();
         if (photoEl) photoEl.value = "";
+        travelDateUI.reset();
       }
 
       function afterGeocode(geo) {
@@ -684,8 +927,12 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
   window.addEventListener("hashchange", applyRoute);
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyRoute);
+    document.addEventListener("DOMContentLoaded", function () {
+      initTravelDatePicker();
+      applyRoute();
+    });
   } else {
+    initTravelDatePicker();
     applyRoute();
   }
 })();
