@@ -28,6 +28,8 @@
   --max-content: 1280px;
   --ripple-duration: 0.78s;
   --app-fade: 0.22s;
+  --site-bg-image-opacity: 0.3;
+  --page-overlay: rgba(244, 247, 253, 0.82);
 }
 
 *,
@@ -53,7 +55,18 @@ body {
   font-size: 1rem;
   line-height: 1.8;
   color: var(--text);
-  background: var(--klein-50);
+  background-color: var(--klein-50);
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: url("../assets/主页图片1.png") center / cover no-repeat;
+  opacity: var(--site-bg-image-opacity);
+  pointer-events: none;
 }
 
 /* ——— Splash ——— */
@@ -72,33 +85,35 @@ body {
 
 .splash-bg {
   position: absolute;
-  inset: -20%;
-  background:
-    radial-gradient(ellipse 80% 70% at 50% 45%, var(--klein-600) 0%, transparent 55%),
-    radial-gradient(ellipse 60% 50% at 70% 80%, var(--klein-800) 0%, transparent 50%),
-    linear-gradient(165deg, var(--klein-950) 0%, var(--klein-800) 45%, var(--klein-700) 100%);
+  inset: 0;
+  background-image: url("../assets/主页图片4.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.04);
   animation: splash-drift 72s ease-in-out infinite alternate;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .splash-bg {
     animation: none;
+    transform: scale(1.04);
   }
 }
 
 @keyframes splash-drift {
   0% {
-    transform: translate(0, 0) scale(1);
+    transform: scale(1.04) translate(0, 0);
   }
   100% {
-    transform: translate(-3%, 2%) scale(1.05);
+    transform: scale(1.08) translate(-1.5%, 1.2%);
   }
 }
 
 .splash-noise {
   position: absolute;
   inset: 0;
-  opacity: 0.04;
+  opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   pointer-events: none;
 }
@@ -251,7 +266,11 @@ body {
 }
 
 .sidebar {
-  background: linear-gradient(180deg, var(--klein-100) 0%, var(--paper) 55%);
+  background: linear-gradient(
+    180deg,
+    rgba(232, 238, 252, 0.92) 0%,
+    rgba(255, 255, 255, 0.9) 55%
+  );
   border-right: 1px solid var(--border-subtle);
 }
 
@@ -277,7 +296,7 @@ body {
 
 .main {
   padding: var(--space-xl) var(--space-section);
-  background: var(--klein-50);
+  background: var(--page-overlay);
 }
 
 .main:focus-visible {
@@ -374,7 +393,7 @@ body {
 .site-footer {
   padding: var(--space-md) var(--space-section);
   border-top: 1px solid var(--border-subtle);
-  background: var(--paper);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .footer-note {
