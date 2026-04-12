@@ -125,6 +125,28 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     return out;
   }
 
+  function createToonGradientMap() {
+    var c = document.createElement("canvas");
+    c.width = 8;
+    c.height = 1;
+    var ctx = c.getContext("2d");
+    if (!ctx) return null;
+    var g = ctx.createLinearGradient(0, 0, 8, 0);
+    g.addColorStop(0, "#2a2a38");
+    g.addColorStop(0.35, "#6a6a78");
+    g.addColorStop(0.65, "#b8b8c8");
+    g.addColorStop(1, "#ffffff");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 8, 1);
+    var t = new THREE.CanvasTexture(c);
+    t.minFilter = THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.wrapS = THREE.ClampToEdgeWrapping;
+    t.wrapT = THREE.ClampToEdgeWrapping;
+    t.needsUpdate = true;
+    return t;
+  }
+
   function finalizeEarthTextureFromImage(tex, sphereMat, renderer, applyStylize) {
     tex.colorSpace = THREE.SRGBColorSpace;
     if (renderer && renderer.capabilities) {
@@ -442,7 +464,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     if (ready || !canvas) return;
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x03050c);
+    scene.background = new THREE.Color(0x0a0e18);
 
     camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
     camera.position.set(0, 0.25, 2.45);
@@ -456,16 +478,17 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.18;
+    renderer.toneMappingExposure = 1.08;
 
     earthGroup = new THREE.Group();
     scene.add(earthGroup);
 
-    var atmGeo = new THREE.SphereGeometry(1.07, 48, 48);
+    /* 轻微外圈柔光即可，避免写实大气；色彩贴近插画的青蓝 */
+    var atmGeo = new THREE.SphereGeometry(1.05, 48, 48);
     var atmMat = new THREE.MeshBasicMaterial({
-      color: 0x3085a3,
+      color: 0x4a9ec4,
       transparent: true,
-      opacity: 0.12,
+      opacity: 0.06,
       side: THREE.BackSide,
       depthWrite: false,
     });
@@ -473,16 +496,29 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     var sphereGeo = new THREE.SphereGeometry(1, 64, 64);
     var placeholderTex = createPlaceholderEarthTexture();
-    var sphereMat = new THREE.MeshStandardMaterial({
+    var toonGrad = createToonGradientMap();
+    var sphereMat = new THREE.MeshToonMaterial({
       map: placeholderTex || undefined,
-      color: placeholderTex ? 0xffffff : 0x3085a3,
-      metalness: 0,
-      roughness: 0.94,
-      emissive: 0x061018,
-      emissiveIntensity: placeholderTex ? 0.1 : 0.28,
+      gradientMap: toonGrad || undefined,
+      color: placeholderTex ? 0xffffff : 0x3d8fb8,
+      emissive: 0x0a1420,
+      emissiveIntensity: placeholderTex ? 0.06 : 0.2,
     });
     sphereMat.userData = { isPlaceholder: !!placeholderTex };
+    /* 卡通描边：略放大的背面深色壳，与参考图线稿轮廓感呼应 */
+    var outlineGeo = new THREE.SphereGeometry(1, 64, 64);
+    var outlineMat = new THREE.MeshBasicMaterial({
+      color: 0x141c2e,
+      side: THREE.BackSide,
+    });
+    var earthOutline = new THREE.Mesh(outlineGeo, outlineMat);
+    earthOutline.scale.setScalar(1.022);
+    earthOutline.name = "earth-cartoon-outline";
+    earthGroup.add(earthOutline);
+
     var earthMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    earthMesh.name = "earth-cartoon";
+    earthMesh.renderOrder = 1;
     earthGroup.add(earthMesh);
 
     var texLoader = new THREE.TextureLoader();
@@ -496,18 +532,17 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     scene.add(buildStars());
 
-    /* 插画感：左侧受光、右侧昼夜分界；低环境光突出体积 */
-    var amb = new THREE.AmbientLight(0x7aa8c4, 0.22);
+    /* 卡通平面感：整体偏均匀照明，避免过强体积光；略偏暖主光保留一点球体感 */
+    var amb = new THREE.AmbientLight(0xa8c8e0, 0.62);
     scene.add(amb);
-    var key = new THREE.DirectionalLight(0xfff5e8, 1.55);
-    key.position.set(7.5, 1.2, 3.5);
+    var key = new THREE.DirectionalLight(0xfff8f0, 0.72);
+    key.position.set(5, 2.2, 4);
     scene.add(key);
-    var fill = new THREE.DirectionalLight(0x4a7a9a, 0.28);
-    fill.position.set(-3.2, -0.8, -2);
-    scene.add(fill);
-    var cool = new THREE.DirectionalLight(0x203a50, 0.35);
-    cool.position.set(-5.5, -1.5, -4);
-    scene.add(cool);
+    var hemi = new THREE.HemisphereLight(0xc8ddf0, 0x203050, 0.35);
+    scene.add(hemi);
+    var rim = new THREE.DirectionalLight(0x6a8ab0, 0.18);
+    rim.position.set(-4, -1, -3);
+    scene.add(rim);
 
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
