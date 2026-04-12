@@ -8,9 +8,141 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   "use strict";
 
   var STORAGE_KEY = "katana-travel-trips";
-  /* 日间贴图（r160 仓库无 daymap，使用官方 dev 分支的地球昼面纹理，陆地与海洋更清晰） */
-  var EARTH_TEX =
-    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_day_4096.jpg";
+  /* 多 CDN 备选，避免单点失败导致灰球；加载后再做油画风格处理 */
+  var EARTH_TEX_URLS = [
+    "https://cdn.jsdelivr.net/gh/mrdoob/three.js@dev/examples/textures/planets/earth_day_4096.jpg",
+    "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+    "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_day_4096.jpg",
+  ];
+
+  function createPlaceholderEarthTexture() {
+    var c = document.createElement("canvas");
+    c.width = 512;
+    c.height = 256;
+    var ctx = c.getContext("2d");
+    if (!ctx) return null;
+    var g = ctx.createLinearGradient(0, 0, c.width, c.height);
+    g.addColorStop(0, "#1a3a8a");
+    g.addColorStop(0.35, "#3d6ad4");
+    g.addColorStop(0.55, "#6b8fe8");
+    g.addColorStop(0.72, "#2d5099");
+    g.addColorStop(1, "#0f1f4d");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.globalAlpha = 0.18;
+    for (var i = 0; i < 60; i++) {
+      ctx.fillStyle = i % 2 ? "#c8d6fa" : "#9db6f2";
+      ctx.fillRect((i * 37) % c.width, (i * 23) % c.height, 80, 40);
+    }
+    ctx.globalAlpha = 1;
+    var tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  /**
+   * 色阶量化 + 冷色微调，接近手绘/油画块面感（在 Canvas 内完成，兼容无 shader）。
+   */
+  function stylizeEarthToCanvas(img) {
+    var maxW = 1100;
+    var w = img.width || img.videoWidth;
+    var h = img.height || img.videoHeight;
+    if (!w || !h) return null;
+    if (w > maxW) {
+      h = Math.round((h * maxW) / w);
+      w = maxW;
+    }
+    var c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    var ctx = c.getContext("2d");
+    if (!ctx) return null;
+    try {
+      ctx.drawImage(img, 0, 0, w, h);
+    } catch (e) {
+      return null;
+    }
+    try {
+      var imgData = ctx.getImageData(0, 0, w, h);
+      var d = imgData.data;
+      var levels = 7;
+      var step = 255 / Math.max(1, levels - 1);
+      var i;
+      for (i = 0; i < d.length; i += 4) {
+        d[i] = Math.min(255, Math.round(d[i] / step) * step);
+        d[i + 1] = Math.min(255, Math.round(d[i + 1] / step) * step);
+        d[i + 2] = Math.min(255, Math.round(d[i + 2] / step) * step);
+        var lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        if (lum < 95) {
+          d[i] = d[i] * 0.82 + 28;
+          d[i + 1] = d[i + 1] * 0.88 + 22;
+          d[i + 2] = Math.min(255, d[i + 2] * 1.1 + 26);
+        } else if (lum > 175) {
+          d[i] = Math.min(255, d[i] * 1.04 + 8);
+          d[i + 1] = Math.min(255, d[i + 1] * 1.02 + 4);
+          d[i + 2] = Math.min(255, d[i + 2] * 1.02);
+        } else {
+          d[i + 1] = d[i + 1] * 0.96 + 6;
+          d[i + 2] = Math.min(255, d[i + 2] * 1.05 + 10);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    } catch (err) {
+      /* 跨域污染等：保留已绘制的原图 */
+    }
+    var out = document.createElement("canvas");
+    out.width = w;
+    out.height = h;
+    var octx = out.getContext("2d");
+    octx.imageSmoothingEnabled = true;
+    octx.imageSmoothingQuality = "high";
+    octx.drawImage(c, 0, 0);
+    return out;
+  }
+
+  function tryLoadEarthTexture(urls, index, loader, sphereMat, renderer, onDone) {
+    if (!urls || index >= urls.length) {
+      if (typeof console !== "undefined" && console.warn) {
+        console.warn("地球贴图全部加载失败，保留占位纹理。");
+      }
+      if (typeof onDone === "function") onDone();
+      return;
+    }
+    var url = urls[index];
+    loader.load(
+      url,
+      function (tex) {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        if (renderer && renderer.capabilities) {
+          tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+        }
+        var img = tex.image;
+        var canvas = stylizeEarthToCanvas(img);
+        if (sphereMat.map && sphereMat.userData && sphereMat.userData.isPlaceholder) {
+          sphereMat.map.dispose();
+        }
+        if (canvas) {
+          var ctex = new THREE.CanvasTexture(canvas);
+          ctex.colorSpace = THREE.SRGBColorSpace;
+          ctex.needsUpdate = true;
+          tex.dispose();
+          sphereMat.map = ctex;
+        } else {
+          sphereMat.map = tex;
+        }
+        sphereMat.userData = sphereMat.userData || {};
+        sphereMat.userData.isPlaceholder = false;
+        sphereMat.userData.hasRealMap = true;
+        sphereMat.needsUpdate = true;
+        if (typeof onDone === "function") onDone();
+      },
+      undefined,
+      function () {
+        tryLoadEarthTexture(urls, index + 1, loader, sphereMat, renderer, onDone);
+      }
+    );
+  }
 
   var ROUTES = ["home", "travel", "movies", "books", "french"];
 
@@ -275,32 +407,24 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     earthGroup.add(new THREE.Mesh(atmGeo, atmMat));
 
     var sphereGeo = new THREE.SphereGeometry(1, 64, 64);
+    var placeholderTex = createPlaceholderEarthTexture();
     var sphereMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.04,
-      roughness: 0.78,
-      emissive: 0x1e3a7a,
-      emissiveIntensity: 0.22,
+      map: placeholderTex || undefined,
+      color: placeholderTex ? 0xffffff : 0x5c7ec4,
+      metalness: 0.02,
+      roughness: 0.82,
+      emissive: 0x2a4088,
+      emissiveIntensity: placeholderTex ? 0.16 : 0.35,
     });
+    sphereMat.userData = { isPlaceholder: !!placeholderTex };
     var earthMesh = new THREE.Mesh(sphereGeo, sphereMat);
     earthGroup.add(earthMesh);
 
-    var loader = new THREE.TextureLoader();
-    loader.load(
-      EARTH_TEX,
-      function (tex) {
-        tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        sphereMat.map = tex;
-        sphereMat.needsUpdate = true;
-      },
-      undefined,
-      function () {
-        if (typeof console !== "undefined" && console.warn) {
-          console.warn("地球贴图加载失败，已使用纯色地球。");
-        }
-      }
-    );
+    var texLoader = new THREE.TextureLoader();
+    if (typeof texLoader.setCrossOrigin === "function") {
+      texLoader.setCrossOrigin("anonymous");
+    }
+    tryLoadEarthTexture(EARTH_TEX_URLS, 0, texLoader, sphereMat, renderer, null);
 
     markersGroup = new THREE.Group();
     earthGroup.add(markersGroup);
@@ -592,6 +716,44 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     var WEEK_LABELS = ["日", "一", "二", "三", "四", "五", "六"];
 
+    function calendarYearBounds() {
+      var cy = new Date().getFullYear();
+      return { min: cy - 120, max: cy + 8 };
+    }
+
+    function buildYearOptions(selectedY) {
+      var b = calendarYearBounds();
+      var s = "";
+      var yy;
+      for (yy = b.min; yy <= b.max; yy++) {
+        s +=
+          '<option value="' +
+          yy +
+          '"' +
+          (yy === selectedY ? " selected" : "") +
+          ">" +
+          yy +
+          "</option>";
+      }
+      return s;
+    }
+
+    function buildMonthOptions(selectedM0) {
+      var s = "";
+      var mm;
+      for (mm = 0; mm < 12; mm++) {
+        s +=
+          '<option value="' +
+          (mm + 1) +
+          '"' +
+          (mm === selectedM0 ? " selected" : "") +
+          ">" +
+          (mm + 1) +
+          "月</option>";
+      }
+      return s;
+    }
+
     function syncTrigger() {
       if (!hidden.value) {
         textEl.textContent = "选择日期";
@@ -635,15 +797,21 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       var sel = hidden.value ? parseISOLocal(hidden.value) : null;
 
       var head =
-        '<div class="travel-dp-head">' +
+        '<div class="travel-dp-select-row">' +
+        '<label class="travel-dp-select-label">' +
+        '<span class="travel-dp-select-hint">年</span>' +
+        '<select class="travel-dp-year" id="travel-dp-year" aria-label="选择年份">' +
+        buildYearOptions(y) +
+        "</select></label>" +
+        '<label class="travel-dp-select-label">' +
+        '<span class="travel-dp-select-hint">月</span>' +
+        '<select class="travel-dp-month" id="travel-dp-month" aria-label="选择月份">' +
+        buildMonthOptions(m) +
+        "</select></label>" +
+        '<div class="travel-dp-nav-btns">' +
         '<button type="button" class="travel-dp-nav" data-act="prev" aria-label="上个月">‹</button>' +
-        '<span class="travel-dp-title">' +
-        y +
-        "年" +
-        (m + 1) +
-        "月</span>" +
         '<button type="button" class="travel-dp-nav" data-act="next" aria-label="下个月">›</button>' +
-        "</div>";
+        "</div></div>";
 
       var wk =
         '<div class="travel-dp-weekdays">' +
@@ -690,6 +858,26 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         '<div class="travel-dp-foot">' +
         '<button type="button" class="travel-dp-today" data-act="today">今天</button>' +
         "</div>";
+
+      var ySel = pop.querySelector("#travel-dp-year");
+      var mSel = pop.querySelector("#travel-dp-month");
+      if (ySel) {
+        ySel.addEventListener("change", function (ev) {
+          ev.stopPropagation();
+          viewYear = parseInt(ySel.value, 10);
+          if (isNaN(viewYear)) return;
+          renderMonth();
+        });
+      }
+      if (mSel) {
+        mSel.addEventListener("change", function (ev) {
+          ev.stopPropagation();
+          var mv = parseInt(mSel.value, 10) - 1;
+          if (isNaN(mv) || mv < 0 || mv > 11) return;
+          viewMonth = mv;
+          renderMonth();
+        });
+      }
 
       pop.querySelectorAll("[data-act=prev]")[0].addEventListener("click", function (ev) {
         ev.stopPropagation();
