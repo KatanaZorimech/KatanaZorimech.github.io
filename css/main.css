@@ -1099,6 +1099,78 @@ body::before {
     0 1px 10px rgba(244, 247, 253, 0.95);
 }
 
+/* ——— Book catalog ——— */
+.book-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  margin-top: var(--space-lg);
+}
+
+.book-country {
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 24px rgba(0, 47, 167, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.book-country-title {
+  margin: 0 0 var(--space-lg);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--klein-800);
+  letter-spacing: 0.06em;
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid rgba(0, 47, 167, 0.12);
+}
+
+.book-author-group {
+  margin-bottom: var(--space-md);
+}
+
+.book-author-group:last-child {
+  margin-bottom: 0;
+}
+
+.book-author {
+  margin: 0 0 var(--space-xs);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--klein-900);
+  letter-spacing: 0.03em;
+}
+
+.book-works {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.book-works li {
+  display: inline-block;
+  padding: 0.15rem 0.65rem;
+  font-size: 0.88rem;
+  color: rgba(26, 29, 38, 0.85);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 47, 167, 0.08);
+  border-radius: 999px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .book-country {
+    padding: var(--space-md);
+  }
+}
+
 /* ——— Responsive ——— */
 @media (max-width: 768px) {
   .layout {
