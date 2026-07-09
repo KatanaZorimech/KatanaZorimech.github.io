@@ -1107,7 +1107,7 @@ body::before {
   margin-top: var(--space-lg);
 }
 
-.book-country {
+.book-region {
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   background: rgba(255, 255, 255, 0.35);
@@ -1119,14 +1119,32 @@ body::before {
   -webkit-backdrop-filter: blur(6px);
 }
 
-.book-country-title {
+.book-region-title {
   margin: 0 0 var(--space-lg);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: var(--klein-800);
   letter-spacing: 0.06em;
   padding-bottom: var(--space-sm);
   border-bottom: 2px solid rgba(0, 47, 167, 0.12);
+}
+
+.book-country-block {
+  margin-bottom: var(--space-lg);
+  padding-left: var(--space-sm);
+  border-left: 3px solid rgba(0, 47, 167, 0.1);
+}
+
+.book-country-block:last-child {
+  margin-bottom: 0;
+}
+
+.book-country-title {
+  margin: 0 0 var(--space-md);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--klein-700);
+  letter-spacing: 0.04em;
 }
 
 .book-author-group {
@@ -1166,8 +1184,12 @@ body::before {
 }
 
 @media (max-width: 768px) {
-  .book-country {
+  .book-region {
     padding: var(--space-md);
+  }
+  .book-country-block {
+    padding-left: var(--space-xs);
+    border-left-width: 2px;
   }
 }
 
