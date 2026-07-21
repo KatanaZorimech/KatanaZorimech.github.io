@@ -586,6 +586,10 @@ body::before {
   margin: 0;
 }
 
+.travel-detail-photo-stage {
+  position: relative;
+}
+
 .travel-detail-photo-frame {
   border-radius: var(--radius);
   overflow: hidden;
@@ -593,13 +597,51 @@ body::before {
   box-shadow:
     0 10px 36px rgba(0, 47, 167, 0.14),
     0 0 32px rgba(200, 214, 250, 0.45);
+  background: rgba(244, 247, 253, 0.55);
 }
 
-.travel-detail-photo-frame img {
+.travel-detail-photo-frame img,
+.travel-detail-photo-img {
   display: block;
   width: 100%;
   height: auto;
   vertical-align: top;
+}
+
+.travel-photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--klein-900);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 47, 167, 0.14);
+  border-radius: 999px;
+  box-shadow: 0 4px 16px rgba(0, 47, 167, 0.12);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.travel-photo-nav:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(0, 47, 167, 0.28);
+}
+
+.travel-photo-prev {
+  left: 0.45rem;
+}
+
+.travel-photo-next {
+  right: 0.45rem;
 }
 
 .travel-detail-photo-cap {
@@ -607,6 +649,11 @@ body::before {
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   color: var(--klein-800);
+}
+
+.travel-photo-index {
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
 }
 
 .travel-detail-block-title {

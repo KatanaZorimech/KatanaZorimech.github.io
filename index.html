@@ -156,15 +156,19 @@
                     </div>
                   </div>
                   <label class="travel-field travel-field-full">
-                    <span class="travel-label">照片（可选）</span>
+                    <span class="travel-label">照片（可选，可多选）</span>
                     <input
                       type="file"
                       id="travel-photo"
                       name="photo"
                       accept="image/*"
+                      multiple
                     />
+                    <span class="travel-field-hint" id="travel-photo-hint-default">
+                      一次最多 8 张；右侧详情中可左右切换浏览。
+                    </span>
                     <span class="travel-field-hint" id="travel-photo-hint" hidden>
-                      编辑时若不选择新照片，将保留原有照片。
+                      编辑时若不选择新照片，将保留原有照片；若选择新照片，将替换全部原有照片。
                     </span>
                   </label>
                   <label class="travel-field travel-field-full">
@@ -180,7 +184,7 @@
                 </div>
                 <p class="travel-form-note">
                   提交时会根据地点名称在线解析经纬度（Open-Meteo
-                  地理编码，需联网）。照片会压缩后存于本地，请勿上传隐私敏感内容。
+                  地理编码，需联网）。照片会压缩后存于本机，请勿上传隐私敏感内容。
                 </p>
                 <div class="travel-form-actions">
                   <button type="submit" class="travel-btn travel-btn-primary" id="travel-submit">

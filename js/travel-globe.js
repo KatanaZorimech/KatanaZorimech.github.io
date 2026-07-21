@@ -213,6 +213,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   var formTitleEl = document.getElementById("travel-form-title");
   var cancelEditBtn = document.getElementById("travel-cancel-edit");
   var photoHintEl = document.getElementById("travel-photo-hint");
+  var photoHintDefaultEl = document.getElementById("travel-photo-hint-default");
+  var MAX_TRIP_PHOTOS = 8;
 
   function getRouteFromHash() {
     var h = (window.location.hash || "").replace(/^#\/?/, "").toLowerCase();
@@ -292,6 +294,45 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       callback(null);
     };
     reader.readAsDataURL(file);
+  }
+
+  /** Normalize legacy photoDataUrl + photos[] into a photos array. */
+  function getTripPhotos(trip) {
+    if (!trip) return [];
+    if (Array.isArray(trip.photos) && trip.photos.length) {
+      return trip.photos.filter(function (p) {
+        return typeof p === "string" && p;
+      });
+    }
+    if (trip.photoDataUrl) return [trip.photoDataUrl];
+    return [];
+  }
+
+  function compressImageFiles(files, maxSide, quality, callback) {
+    var list = Array.prototype.slice.call(files || [], 0).filter(function (f) {
+      return f && f.type && f.type.indexOf("image/") === 0;
+    });
+    if (!list.length) {
+      callback([]);
+      return;
+    }
+    if (list.length > MAX_TRIP_PHOTOS) {
+      list = list.slice(0, MAX_TRIP_PHOTOS);
+    }
+    var results = [];
+    var i = 0;
+    function next() {
+      if (i >= list.length) {
+        callback(results);
+        return;
+      }
+      compressImageFile(list[i], maxSide, quality, function (dataUrl) {
+        if (dataUrl) results.push(dataUrl);
+        i++;
+        next();
+      });
+    }
+    next();
   }
 
   function formatGeocodeLabel(r) {
@@ -696,16 +737,34 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     detailEmptyEl.hidden = true;
     detailContentEl.hidden = false;
 
-    var photoSection = trip.photoDataUrl
-      ? '<figure class="travel-detail-photo">' +
+    var photos = getTripPhotos(trip);
+    var photoSection;
+    if (photos.length) {
+      var multi = photos.length > 1;
+      photoSection =
+        '<figure class="travel-detail-photo' +
+        (multi ? " has-carousel" : "") +
+        '">' +
+        '<div class="travel-detail-photo-stage">' +
         '<div class="travel-detail-photo-frame">' +
-        '<img src="' +
-        trip.photoDataUrl +
+        '<img class="travel-detail-photo-img" src="' +
+        photos[0] +
         '" alt="" loading="lazy" />' +
         "</div>" +
-        '<figcaption class="travel-detail-photo-cap">旅行照片</figcaption>' +
-        "</figure>"
-      : '<div class="travel-detail-block travel-detail-block-muted"><p class="travel-detail-muted">未添加照片</p></div>';
+        (multi
+          ? '<button type="button" class="travel-photo-nav travel-photo-prev" aria-label="上一张">‹</button>' +
+            '<button type="button" class="travel-photo-nav travel-photo-next" aria-label="下一张">›</button>'
+          : "") +
+        "</div>" +
+        '<figcaption class="travel-detail-photo-cap">' +
+        (multi
+          ? '<span class="travel-photo-index">1 / ' + photos.length + "</span>"
+          : "旅行照片") +
+        "</figcaption></figure>";
+    } else {
+      photoSection =
+        '<div class="travel-detail-block travel-detail-block-muted"><p class="travel-detail-muted">未添加照片</p></div>';
+    }
 
     var notesSection = trip.notes
       ? '<section class="travel-detail-block travel-detail-notes">' +
@@ -752,6 +811,33 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       delBtn.addEventListener("click", function (e) {
         deleteTrip(trip.id, e);
       });
+    }
+
+    if (photos.length > 1) {
+      var photoIdx = 0;
+      var imgEl = detailContentEl.querySelector(".travel-detail-photo-img");
+      var indexEl = detailContentEl.querySelector(".travel-photo-index");
+      var prevBtn = detailContentEl.querySelector(".travel-photo-prev");
+      var nextBtn = detailContentEl.querySelector(".travel-photo-next");
+
+      function showPhoto(nextIdx) {
+        photoIdx = (nextIdx + photos.length) % photos.length;
+        if (imgEl) imgEl.src = photos[photoIdx];
+        if (indexEl) indexEl.textContent = photoIdx + 1 + " / " + photos.length;
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          showPhoto(photoIdx - 1);
+        });
+      }
+      if (nextBtn) {
+        nextBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          showPhoto(photoIdx + 1);
+        });
+      }
     }
   }
 
@@ -1051,6 +1137,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     if (submitBtn) submitBtn.textContent = isEditing ? "保存修改" : "添加到地球";
     if (cancelEditBtn) cancelEditBtn.hidden = !isEditing;
     if (photoHintEl) photoHintEl.hidden = !isEditing;
+    if (photoHintDefaultEl) photoHintDefaultEl.hidden = !!isEditing;
     if (form) {
       if (isEditing) form.classList.add("is-editing");
       else form.classList.remove("is-editing");
@@ -1227,7 +1314,14 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         return;
       }
 
-      var file = photoEl && photoEl.files && photoEl.files[0] ? photoEl.files[0] : null;
+      var files =
+        photoEl && photoEl.files && photoEl.files.length
+          ? Array.prototype.slice.call(photoEl.files, 0)
+          : [];
+      if (files.length > MAX_TRIP_PHOTOS) {
+        alert("一次最多上传 " + MAX_TRIP_PHOTOS + " 张照片，已自动截取前 " + MAX_TRIP_PHOTOS + " 张。");
+        files = files.slice(0, MAX_TRIP_PHOTOS);
+      }
       var existingTrip = null;
       if (isEditing) {
         existingTrip =
@@ -1247,9 +1341,10 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         submitBtn.textContent = isEditing ? "保存修改" : "添加到地球";
       }
 
-      function finishTrip(placeLabel, lat, lon, photoDataUrl) {
+      function finishTrip(placeLabel, lat, lon, photos) {
         var trips = loadTrips();
         var trip;
+        var photoList = Array.isArray(photos) ? photos.filter(Boolean) : [];
         if (isEditing && existingTrip) {
           var idx = -1;
           var i;
@@ -1264,6 +1359,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
             clearEditMode(true);
             return;
           }
+          if (!photoList.length) {
+            photoList = getTripPhotos(existingTrip);
+          }
           trip = {
             id: existingTrip.id,
             place: placeLabel,
@@ -1271,10 +1369,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
             lat: lat,
             lon: lon,
             notes: notes || "",
-            photoDataUrl:
-              photoDataUrl != null && photoDataUrl !== ""
-                ? photoDataUrl
-                : existingTrip.photoDataUrl || "",
+            photos: photoList,
+            photoDataUrl: photoList[0] || "",
           };
           trips[idx] = trip;
         } else {
@@ -1288,7 +1384,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
             lat: lat,
             lon: lon,
             notes: notes || "",
-            photoDataUrl: photoDataUrl || "",
+            photos: photoList,
+            photoDataUrl: photoList[0] || "",
           };
           trips.push(trip);
         }
@@ -1299,10 +1396,10 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       }
 
       function applyResolved(placeLabel, lat, lon) {
-        if (file) {
-          compressImageFile(file, 1280, 0.82, function (dataUrl) {
+        if (files.length) {
+          compressImageFiles(files, 1280, 0.82, function (dataUrls) {
             restoreSubmitLabel();
-            finishTrip(placeLabel, lat, lon, dataUrl);
+            finishTrip(placeLabel, lat, lon, dataUrls);
           });
         } else {
           restoreSubmitLabel();
@@ -1331,7 +1428,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       if (placeUnchanged) {
         if (submitBtn) {
           submitBtn.disabled = true;
-          submitBtn.textContent = file ? "正在处理照片…" : "正在保存…";
+          submitBtn.textContent = files.length ? "正在处理照片…" : "正在保存…";
         }
         applyResolved(existingTrip.place, existingTrip.lat, existingTrip.lon);
         return;
