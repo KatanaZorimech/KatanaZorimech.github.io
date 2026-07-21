@@ -1,5 +1,21 @@
 {
   "version": 1,
-  "updatedAt": null,
-  "trips": []
+  "updatedAt": "2026-07-21T16:36:57.973Z",
+  "trips": [
+    {
+      "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
+      "place": "日内瓦国际机场 · 瑞士",
+      "date": "2022-08-26",
+      "lat": 46.23756,
+      "lon": 6.10921,
+      "notes": "在封城前一刻逃到瓦村。",
+      "photos": [
+        "assets/travel/895ec1f4-9e01-4116-af29-9745ba0fc177-0.jpg",
+        "assets/travel/895ec1f4-9e01-4116-af29-9745ba0fc177-1.jpg",
+        "assets/travel/895ec1f4-9e01-4116-af29-9745ba0fc177-2.jpg",
+        "assets/travel/895ec1f4-9e01-4116-af29-9745ba0fc177-3.jpg",
+        "assets/travel/895ec1f4-9e01-4116-af29-9745ba0fc177-4.jpg"
+      ]
+    }
+  ]
 }
