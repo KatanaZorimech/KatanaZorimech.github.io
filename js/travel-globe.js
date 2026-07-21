@@ -1,5 +1,5 @@
 /**
- * Travel map: Three.js globe, localStorage trips, in-column detail panel.
+ * Travel map: Three.js globe, GitHub-backed trips (+ local cache), detail panel.
  */
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -8,6 +8,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   "use strict";
 
   var STORAGE_KEY = "katana-travel-trips";
+  var Cloud = typeof window !== "undefined" ? window.TravelCloud : null;
   /** 同源贴图优先，避免仅依赖外网 CDN 时 CORS/网络导致始终占位 */
   function getEarthTextureUrls() {
     var base =
@@ -214,7 +215,15 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   var cancelEditBtn = document.getElementById("travel-cancel-edit");
   var photoHintEl = document.getElementById("travel-photo-hint");
   var photoHintDefaultEl = document.getElementById("travel-photo-hint-default");
+  var cloudStatusEl = document.getElementById("travel-cloud-status");
+  var cloudTokenEl = document.getElementById("travel-gh-token");
+  var cloudConnectBtn = document.getElementById("travel-cloud-connect");
+  var cloudDisconnectBtn = document.getElementById("travel-cloud-disconnect");
+  var cloudRefreshBtn = document.getElementById("travel-cloud-refresh");
+  var cloudPublishLocalBtn = document.getElementById("travel-cloud-publish-local");
   var MAX_TRIP_PHOTOS = 8;
+  var cloudReady = false;
+  var cloudSyncing = false;
 
   function getRouteFromHash() {
     var h = (window.location.hash || "").replace(/^#\/?/, "").toLowerCase();
@@ -234,12 +243,115 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     }
   }
 
-  function saveTrips(trips) {
+  function saveTripsLocal(trips) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
     } catch (e) {
-      alert("保存失败：本地存储可能已满，请减少照片数量或缩短随笔。");
+      alert("本地缓存失败：存储可能已满，请减少照片数量或缩短随笔。");
     }
+  }
+
+  /** @deprecated use saveTripsLocal / persistTripsToCloud */
+  function saveTrips(trips) {
+    saveTripsLocal(trips);
+  }
+
+  function setCloudStatus(text, kind) {
+    if (!cloudStatusEl) return;
+    cloudStatusEl.textContent = text || "";
+    cloudStatusEl.className =
+      "travel-cloud-status" + (kind ? " is-" + kind : "");
+  }
+
+  function hasWriteAccess() {
+    return !!(Cloud && Cloud.getToken && Cloud.getToken());
+  }
+
+  function updateCloudAuthUi() {
+    var linked = hasWriteAccess();
+    if (cloudDisconnectBtn) cloudDisconnectBtn.hidden = !linked;
+    if (cloudConnectBtn) cloudConnectBtn.hidden = linked;
+    if (cloudTokenEl) {
+      cloudTokenEl.disabled = linked;
+      if (linked) cloudTokenEl.value = "••••••••••••";
+      else if (cloudTokenEl.value.indexOf("•") === 0) cloudTokenEl.value = "";
+    }
+    if (cloudPublishLocalBtn) {
+      cloudPublishLocalBtn.hidden = !linked || !loadTrips().length;
+    }
+    if (form) {
+      if (linked) form.classList.remove("is-readonly");
+      else form.classList.add("is-readonly");
+    }
+  }
+
+  function persistTripsToCloud(trips, message) {
+    if (!Cloud || !Cloud.publishTrips) {
+      return Promise.reject(new Error("云端模块未加载"));
+    }
+    if (!hasWriteAccess()) {
+      return Promise.reject(new Error("请先连接 GitHub Token 再写入云端"));
+    }
+    var before = loadTrips();
+    cloudSyncing = true;
+    setCloudStatus("正在写入 GitHub…", "pending");
+    return Cloud.publishTrips(trips, { message: message || "chore(travel): update trips" })
+      .then(function (normalized) {
+        return Cloud.pruneRemovedPhotos(before, normalized, Cloud.getToken()).then(
+          function () {
+            return normalized;
+          },
+          function () {
+            return normalized;
+          }
+        );
+      })
+      .then(function (normalized) {
+        saveTripsLocal(normalized);
+        cloudSyncing = false;
+        setCloudStatus("已同步到 GitHub 云端", "ok");
+        updateCloudAuthUi();
+        return normalized;
+      })
+      .catch(function (err) {
+        cloudSyncing = false;
+        var msg = (err && err.message) || "同步失败";
+        setCloudStatus(msg, "error");
+        throw err;
+      });
+  }
+
+  function refreshFromCloud() {
+    if (!Cloud || !Cloud.fetchPublicTrips) {
+      setCloudStatus("云端模块未加载，使用本机缓存", "warn");
+      return Promise.resolve(loadTrips());
+    }
+    setCloudStatus("正在从 GitHub 拉取足迹…", "pending");
+    return Cloud.fetchPublicTrips().then(function (result) {
+      if (result.ok) {
+        saveTripsLocal(result.trips);
+        cloudReady = true;
+        var n = result.trips.length;
+        var when = result.updatedAt
+          ? "（更新于 " + String(result.updatedAt).replace("T", " ").replace(/\.\d+Z$/, " UTC") + "）"
+          : "";
+        setCloudStatus(
+          "已从云端加载 " + n + " 条足迹" + when + (hasWriteAccess() ? " · 写入已启用" : " · 浏览模式"),
+          "ok"
+        );
+        updateCloudAuthUi();
+        return result.trips;
+      }
+      var cached = loadTrips();
+      setCloudStatus(
+        cached.length
+          ? "云端暂不可用，已显示本机缓存（" + cached.length + " 条）"
+          : "云端暂无数据或尚未部署 data/travel-trips.json",
+        "warn"
+      );
+      updateCloudAuthUi();
+      return cached;
+    });
   }
 
   function latLonToVector3(lat, lon, radius) {
@@ -298,6 +410,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
   /** Normalize legacy photoDataUrl + photos[] into a photos array. */
   function getTripPhotos(trip) {
+    if (Cloud && Cloud.normalizeTripPhotos) return Cloud.normalizeTripPhotos(trip);
     if (!trip) return [];
     if (Array.isArray(trip.photos) && trip.photos.length) {
       return trip.photos.filter(function (p) {
@@ -306,6 +419,18 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     }
     if (trip.photoDataUrl) return [trip.photoDataUrl];
     return [];
+  }
+
+  function photoSrc(photo) {
+    if (!photo) return "";
+    if (photo.indexOf("data:") === 0 || /^https?:\/\//i.test(photo) || photo.charAt(0) === "/") {
+      return photo;
+    }
+    try {
+      return new URL(photo, document.baseURI || location.href).href;
+    } catch (e) {
+      return photo;
+    }
   }
 
   function compressImageFiles(files, maxSide, quality, callback) {
@@ -748,7 +873,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         '<div class="travel-detail-photo-stage">' +
         '<div class="travel-detail-photo-frame">' +
         '<img class="travel-detail-photo-img" src="' +
-        photos[0] +
+        photoSrc(photos[0]) +
         '" alt="" loading="lazy" />' +
         "</div>" +
         (multi
@@ -822,7 +947,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
       function showPhoto(nextIdx) {
         photoIdx = (nextIdx + photos.length) % photos.length;
-        if (imgEl) imgEl.src = photos[photoIdx];
+        if (imgEl) imgEl.src = photoSrc(photos[photoIdx]);
         if (indexEl) indexEl.textContent = photoIdx + 1 + " / " + photos.length;
       }
 
@@ -1157,6 +1282,10 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   }
 
   function startEditTrip(id) {
+    if (!hasWriteAccess()) {
+      alert("编辑云端足迹需要先连接 GitHub Token。");
+      return;
+    }
     var trips = loadTrips();
     var trip = trips.filter(function (t) { return t.id === id; })[0] || null;
     if (!trip || !form) return;
@@ -1195,14 +1324,21 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       ev.preventDefault();
       ev.stopPropagation();
     }
+    if (cloudSyncing) {
+      alert("正在同步到 GitHub，请稍候。");
+      return;
+    }
+    if (!hasWriteAccess()) {
+      alert("删除云端足迹需要先连接 GitHub Token。");
+      return;
+    }
     var trips = loadTrips();
     var trip = trips.filter(function (t) { return t.id === id; })[0] || null;
     var label = trip && trip.place ? trip.place : "这条足迹";
-    if (!window.confirm("确定删除「" + label + "」吗？此操作不可撤销。")) {
+    if (!window.confirm("确定从 GitHub 云端删除「" + label + "」吗？此操作不可撤销。")) {
       return;
     }
     trips = trips.filter(function (t) { return t.id !== id; });
-    saveTrips(trips);
     if (selectedId === id) {
       selectedId = null;
       renderTravelDetail(null);
@@ -1210,8 +1346,26 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     if (editingId === id) {
       clearEditMode(true);
     }
-    rebuildMarkers(trips);
-    renderTripList();
+    setCloudStatus("正在删除并同步…", "pending");
+    persistTripsToCloud(trips, "chore(travel): delete trip " + label)
+      .then(function (normalized) {
+        rebuildMarkers(normalized);
+        renderTripList();
+        if (selectedId) {
+          var still =
+            normalized.filter(function (t) {
+              return t.id === selectedId;
+            })[0] || null;
+          renderTravelDetail(still);
+        }
+      })
+      .catch(function (err) {
+        alert("删除失败：" + ((err && err.message) || "未知错误"));
+        refreshFromCloud().then(function (remote) {
+          rebuildMarkers(remote);
+          renderTripList();
+        });
+      });
   }
 
   function renderTripList() {
@@ -1249,6 +1403,10 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
         edit.addEventListener("click", function (e) {
           e.preventDefault();
           e.stopPropagation();
+          if (!hasWriteAccess()) {
+            alert("编辑云端足迹需要先连接 GitHub Token。");
+            return;
+          }
           startEditTrip(t.id);
         });
         del.addEventListener("click", function (e) {
@@ -1259,13 +1417,19 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   }
 
   function onTravelEnter() {
-    renderTravelDetail(
-      selectedId
-        ? loadTrips().filter(function (t) { return t.id === selectedId; })[0] || null
-        : null
-    );
+    updateCloudAuthUi();
     initScene();
-    renderTripList();
+    refreshFromCloud().then(function (trips) {
+      rebuildMarkers(trips);
+      renderTripList();
+      renderTravelDetail(
+        selectedId
+          ? trips.filter(function (t) {
+              return t.id === selectedId;
+            })[0] || null
+          : null
+      );
+    });
   }
 
   function onTravelLeave() {
@@ -1279,6 +1443,99 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     var route = getRouteFromHash();
     if (route === "travel") onTravelEnter();
     else onTravelLeave();
+  }
+
+  if (cloudConnectBtn) {
+    cloudConnectBtn.addEventListener("click", function () {
+      if (!Cloud) {
+        alert("云端模块未加载");
+        return;
+      }
+      var token = (cloudTokenEl && cloudTokenEl.value.trim()) || "";
+      if (!token || token.indexOf("•") === 0) {
+        alert("请粘贴有效的 GitHub Personal Access Token。");
+        return;
+      }
+      cloudConnectBtn.disabled = true;
+      setCloudStatus("正在验证 Token…", "pending");
+      Cloud.verifyToken(token)
+        .then(function () {
+          Cloud.setToken(token);
+          updateCloudAuthUi();
+          setCloudStatus("写入已启用，正在同步…", "ok");
+          return refreshFromCloud();
+        })
+        .then(function (trips) {
+          rebuildMarkers(trips);
+          renderTripList();
+        })
+        .catch(function (err) {
+          alert((err && err.message) || "连接失败");
+          setCloudStatus((err && err.message) || "连接失败", "error");
+        })
+        .then(function () {
+          cloudConnectBtn.disabled = false;
+        });
+    });
+  }
+
+  if (cloudDisconnectBtn) {
+    cloudDisconnectBtn.addEventListener("click", function () {
+      if (Cloud) Cloud.clearToken();
+      updateCloudAuthUi();
+      if (cloudTokenEl) cloudTokenEl.value = "";
+      setCloudStatus("已断开写入（仍可浏览云端足迹）", "warn");
+    });
+  }
+
+  if (cloudRefreshBtn) {
+    cloudRefreshBtn.addEventListener("click", function () {
+      refreshFromCloud().then(function (trips) {
+        rebuildMarkers(trips);
+        renderTripList();
+        if (selectedId) {
+          renderTravelDetail(
+            trips.filter(function (t) {
+              return t.id === selectedId;
+            })[0] || null
+          );
+        }
+      });
+    });
+  }
+
+  if (cloudPublishLocalBtn) {
+    cloudPublishLocalBtn.addEventListener("click", function () {
+      if (!hasWriteAccess()) {
+        alert("请先连接 GitHub Token。");
+        return;
+      }
+      var trips = loadTrips();
+      if (!trips.length) {
+        alert("本机没有可发布的足迹。");
+        return;
+      }
+      if (
+        !window.confirm(
+          "将把当前 " + trips.length + " 条足迹（含照片）发布到 GitHub 仓库，覆盖云端现有数据。继续？"
+        )
+      ) {
+        return;
+      }
+      cloudPublishLocalBtn.disabled = true;
+      persistTripsToCloud(trips, "chore(travel): publish local trips to cloud")
+        .then(function (normalized) {
+          rebuildMarkers(normalized);
+          renderTripList();
+          alert("已发布到 GitHub。等待 Pages 部署完成后，其他浏览器即可看到。");
+        })
+        .catch(function (err) {
+          alert("发布失败：" + ((err && err.message) || "未知错误"));
+        })
+        .then(function () {
+          cloudPublishLocalBtn.disabled = false;
+        });
+    });
   }
 
   if (cancelEditBtn) {
@@ -1297,6 +1554,14 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      if (cloudSyncing) {
+        alert("正在同步到 GitHub，请稍候。");
+        return;
+      }
+      if (!hasWriteAccess()) {
+        alert("写入云端需要先在上方连接 GitHub Token。");
+        return;
+      }
       var placeEl = document.getElementById("travel-place");
       var dateEl = document.getElementById("travel-date");
       var notesEl = document.getElementById("travel-notes");
@@ -1357,6 +1622,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
           if (idx < 0) {
             alert("要编辑的足迹已不存在，请刷新后重试。");
             clearEditMode(true);
+            restoreSubmitLabel();
             return;
           }
           if (!photoList.length) {
@@ -1370,7 +1636,6 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
             lon: lon,
             notes: notes || "",
             photos: photoList,
-            photoDataUrl: photoList[0] || "",
           };
           trips[idx] = trip;
         } else {
@@ -1385,24 +1650,40 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
             lon: lon,
             notes: notes || "",
             photos: photoList,
-            photoDataUrl: photoList[0] || "",
           };
           trips.push(trip);
         }
-        saveTrips(trips);
-        rebuildMarkers(trips);
-        clearEditMode(true);
-        selectTrip(trip.id);
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "正在上传到 GitHub…";
+        }
+        persistTripsToCloud(
+          trips,
+          isEditing ? "chore(travel): update trip " + placeLabel : "chore(travel): add trip " + placeLabel
+        )
+          .then(function (normalized) {
+            restoreSubmitLabel();
+            rebuildMarkers(normalized);
+            clearEditMode(true);
+            selectTrip(trip.id);
+          })
+          .catch(function (err) {
+            restoreSubmitLabel();
+            alert("保存到云端失败：" + ((err && err.message) || "未知错误"));
+          });
       }
 
       function applyResolved(placeLabel, lat, lon) {
         if (files.length) {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "正在处理照片…";
+          }
           compressImageFiles(files, 1280, 0.82, function (dataUrls) {
-            restoreSubmitLabel();
             finishTrip(placeLabel, lat, lon, dataUrls);
           });
         } else {
-          restoreSubmitLabel();
           finishTrip(placeLabel, lat, lon, null);
         }
       }
@@ -1451,10 +1732,12 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
       initTravelDatePicker();
+      updateCloudAuthUi();
       applyRoute();
     });
   } else {
     initTravelDatePicker();
+    updateCloudAuthUi();
     applyRoute();
   }
 })();

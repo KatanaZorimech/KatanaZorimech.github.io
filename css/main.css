@@ -911,6 +911,54 @@ body::before {
   cursor: grabbing;
 }
 
+.travel-cloud-panel {
+  margin: 0 0 var(--space-lg);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 8px 36px rgba(0, 47, 167, 0.1),
+    0 0 60px rgba(200, 214, 250, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.travel-cloud-status {
+  margin: 0 0 var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--klein-900);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 47, 167, 0.1);
+  border-radius: var(--radius);
+}
+
+.travel-cloud-status.is-ok {
+  border-color: rgba(30, 120, 70, 0.25);
+  color: #1a5c38;
+}
+
+.travel-cloud-status.is-warn {
+  border-color: rgba(160, 110, 20, 0.28);
+  color: #6a4e10;
+}
+
+.travel-cloud-status.is-error {
+  border-color: rgba(138, 58, 58, 0.28);
+  color: #8a3a3a;
+}
+
+.travel-cloud-status.is-pending {
+  color: var(--klein-800);
+}
+
+.travel-form.is-readonly {
+  opacity: 0.92;
+}
+
 .travel-form {
   padding: var(--space-lg);
   border-radius: var(--radius-lg);

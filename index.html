@@ -95,7 +95,8 @@
           >
             <h1 id="travel-title" class="main-title">旅行地图</h1>
             <p class="main-lead">
-              拖拽旋转地球，光点标记足迹；输入地点名称后会自动解析经纬度。数据保存在本机浏览器，可随时编辑或删除。点击光点可在地球旁查看照片与随笔。
+              拖拽旋转地球，光点标记足迹；输入地点名称后会自动解析经纬度。足迹与照片保存在
+              GitHub 仓库云端，任意浏览器打开本站即可浏览。点击光点可在地球旁查看照片与随笔。
             </p>
             <div id="travel-map-slot" class="content-slot travel-map-slot">
               <div class="travel-globe-row">
@@ -116,6 +117,60 @@
                   </div>
                 </aside>
               </div>
+
+              <div class="travel-cloud-panel" id="travel-cloud-panel">
+                <h2 class="travel-form-title">GitHub 云端同步</h2>
+                <p class="travel-form-note">
+                  浏览无需登录。站长若要录入 / 修改 / 删除，请使用仅授予本仓库
+                  <strong>Contents 读写</strong> 权限的 Personal Access Token。Token
+                  只保存在你当前浏览器，不会写入仓库。
+                </p>
+                <p class="travel-cloud-status" id="travel-cloud-status" aria-live="polite">
+                  正在连接云端…
+                </p>
+                <div class="travel-cloud-auth">
+                  <label class="travel-field travel-field-full">
+                    <span class="travel-label">GitHub Token（站长写入）</span>
+                    <input
+                      type="password"
+                      id="travel-gh-token"
+                      name="gh-token"
+                      autocomplete="off"
+                      spellcheck="false"
+                      placeholder="ghp_… 或 github_pat_…"
+                    />
+                  </label>
+                  <div class="travel-form-actions">
+                    <button type="button" class="travel-btn travel-btn-primary" id="travel-cloud-connect">
+                      连接并启用写入
+                    </button>
+                    <button
+                      type="button"
+                      class="travel-btn travel-btn-ghost"
+                      id="travel-cloud-disconnect"
+                      hidden
+                    >
+                      断开写入
+                    </button>
+                    <button type="button" class="travel-btn travel-btn-ghost" id="travel-cloud-refresh">
+                      重新同步
+                    </button>
+                    <button
+                      type="button"
+                      class="travel-btn travel-btn-ghost"
+                      id="travel-cloud-publish-local"
+                      hidden
+                    >
+                      发布本机足迹到云端
+                    </button>
+                  </div>
+                  <p class="travel-field-hint">
+                    创建入口：GitHub → Settings → Developer settings → Personal access tokens。建议使用
+                    Fine-grained token，仅勾选本仓库 Contents: Read and write。
+                  </p>
+                </div>
+              </div>
+
               <form id="travel-form" class="travel-form" novalidate>
                 <h2 class="travel-form-title" id="travel-form-title">录入足迹</h2>
                 <div class="travel-form-grid">
@@ -184,7 +239,8 @@
                 </div>
                 <p class="travel-form-note">
                   提交时会根据地点名称在线解析经纬度（Open-Meteo
-                  地理编码，需联网）。照片会压缩后存于本机，请勿上传隐私敏感内容。
+                  地理编码，需联网）。照片会压缩后上传到 GitHub
+                  仓库，请勿上传隐私敏感内容。写入需先在上方连接 Token。
                 </p>
                 <div class="travel-form-actions">
                   <button type="submit" class="travel-btn travel-btn-primary" id="travel-submit">
@@ -745,6 +801,7 @@
     </div>
 
     <script src="js/app.js" defer></script>
+    <script src="js/travel-cloud.js"></script>
     <script type="module" src="js/travel-globe.js"></script>
   </body>
 </html>
