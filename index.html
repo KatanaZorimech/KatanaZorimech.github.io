@@ -95,7 +95,7 @@
           >
             <h1 id="travel-title" class="main-title">旅行地图</h1>
             <p class="main-lead">
-              拖拽旋转地球，光点标记足迹；输入地点名称后会自动解析经纬度。数据保存在本机浏览器，点击光点可在地球旁查看照片与随笔。
+              拖拽旋转地球，光点标记足迹；输入地点名称后会自动解析经纬度。数据保存在本机浏览器，可随时编辑或删除。点击光点可在地球旁查看照片与随笔。
             </p>
             <div id="travel-map-slot" class="content-slot travel-map-slot">
               <div class="travel-globe-row">
@@ -117,7 +117,7 @@
                 </aside>
               </div>
               <form id="travel-form" class="travel-form" novalidate>
-                <h2 class="travel-form-title">录入足迹</h2>
+                <h2 class="travel-form-title" id="travel-form-title">录入足迹</h2>
                 <div class="travel-form-grid">
                   <label class="travel-field">
                     <span class="travel-label">地点名称</span>
@@ -163,6 +163,9 @@
                       name="photo"
                       accept="image/*"
                     />
+                    <span class="travel-field-hint" id="travel-photo-hint" hidden>
+                      编辑时若不选择新照片，将保留原有照片。
+                    </span>
                   </label>
                   <label class="travel-field travel-field-full">
                     <span class="travel-label">随笔（可选）</span>
@@ -183,7 +186,17 @@
                   <button type="submit" class="travel-btn travel-btn-primary" id="travel-submit">
                     添加到地球
                   </button>
-                  <button type="reset" class="travel-btn travel-btn-ghost">清空表单</button>
+                  <button
+                    type="button"
+                    class="travel-btn travel-btn-ghost"
+                    id="travel-cancel-edit"
+                    hidden
+                  >
+                    取消编辑
+                  </button>
+                  <button type="reset" class="travel-btn travel-btn-ghost" id="travel-form-reset">
+                    清空表单
+                  </button>
                 </div>
               </form>
               <div class="travel-list-wrap">

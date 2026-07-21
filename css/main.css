@@ -948,11 +948,40 @@ body::before {
   line-height: 1.65;
 }
 
+.travel-field-hint {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
 .travel-form-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);
   margin-top: var(--space-lg);
+}
+
+.travel-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(0, 47, 167, 0.1);
+}
+
+.travel-detail-actions .travel-btn {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.82rem;
+}
+
+.travel-trip-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-self: center;
+  gap: var(--space-xs);
 }
 
 .travel-btn {
@@ -1060,9 +1089,9 @@ body::before {
   font-weight: 400;
 }
 
+.travel-trip-edit,
 .travel-trip-delete {
   flex-shrink: 0;
-  align-self: center;
   padding: var(--space-xs) var(--space-sm);
   font: inherit;
   font-size: 0.78rem;
@@ -1073,9 +1102,20 @@ body::before {
   cursor: pointer;
 }
 
+.travel-trip-edit:hover,
 .travel-trip-delete:hover {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 47, 167, 0.25);
+}
+
+.travel-trip-delete {
+  color: #8a3a3a;
+  border-color: rgba(138, 58, 58, 0.18);
+}
+
+.travel-trip-delete:hover {
+  border-color: rgba(138, 58, 58, 0.35);
+  background: rgba(255, 245, 245, 0.95);
 }
 
 .travel-list-empty {

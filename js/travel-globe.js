@@ -205,8 +205,14 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   var resizeObserver = null;
   var ready = false;
   var selectedId = null;
+  var editingId = null;
+  var editingOriginalPlace = "";
   var pointerStart = null;
   var lastPickAt = 0;
+
+  var formTitleEl = document.getElementById("travel-form-title");
+  var cancelEditBtn = document.getElementById("travel-cancel-edit");
+  var photoHintEl = document.getElementById("travel-photo-hint");
 
   function getRouteFromHash() {
     var h = (window.location.hash || "").replace(/^#\/?/, "").toLowerCase();
@@ -730,7 +736,23 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       "</span></div></div>" +
       photoSection +
       notesSection +
-      "</div></article>";
+      '<div class="travel-detail-actions">' +
+      '<button type="button" class="travel-btn travel-btn-primary travel-detail-edit">编辑</button>' +
+      '<button type="button" class="travel-btn travel-btn-ghost travel-detail-delete">删除</button>' +
+      "</div></div></article>";
+
+    var editBtn = detailContentEl.querySelector(".travel-detail-edit");
+    var delBtn = detailContentEl.querySelector(".travel-detail-delete");
+    if (editBtn) {
+      editBtn.addEventListener("click", function () {
+        startEditTrip(trip.id);
+      });
+    }
+    if (delBtn) {
+      delBtn.addEventListener("click", function (e) {
+        deleteTrip(trip.id, e);
+      });
+    }
   }
 
   function formatLatLonLine(lat, lon) {
@@ -751,6 +773,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
   var travelDateUI = {
     reset: function () {},
+    setValue: function () {},
   };
 
   function initTravelDatePicker() {
@@ -998,6 +1021,19 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       viewMonth = n.getMonth();
     };
 
+    travelDateUI.setValue = function (iso) {
+      hidden.value = iso || "";
+      if (iso) {
+        var sd = parseISOLocal(iso);
+        if (sd && !isNaN(sd.getTime())) {
+          viewYear = sd.getFullYear();
+          viewMonth = sd.getMonth();
+        }
+      }
+      syncTrigger();
+      closePop();
+    };
+
     if (form) {
       form.addEventListener("reset", function () {
         window.setTimeout(function () {
@@ -1009,6 +1045,56 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     syncTrigger();
   }
 
+  function setFormMode(isEditing) {
+    var submitBtn = document.getElementById("travel-submit");
+    if (formTitleEl) formTitleEl.textContent = isEditing ? "编辑足迹" : "录入足迹";
+    if (submitBtn) submitBtn.textContent = isEditing ? "保存修改" : "添加到地球";
+    if (cancelEditBtn) cancelEditBtn.hidden = !isEditing;
+    if (photoHintEl) photoHintEl.hidden = !isEditing;
+    if (form) {
+      if (isEditing) form.classList.add("is-editing");
+      else form.classList.remove("is-editing");
+    }
+  }
+
+  function clearEditMode(resetFields) {
+    editingId = null;
+    editingOriginalPlace = "";
+    setFormMode(false);
+    if (resetFields && form) {
+      form.reset();
+      var photoEl = document.getElementById("travel-photo");
+      if (photoEl) photoEl.value = "";
+      travelDateUI.reset();
+    }
+  }
+
+  function startEditTrip(id) {
+    var trips = loadTrips();
+    var trip = trips.filter(function (t) { return t.id === id; })[0] || null;
+    if (!trip || !form) return;
+
+    selectedId = id;
+    editingId = id;
+    editingOriginalPlace = trip.place || "";
+
+    var placeEl = document.getElementById("travel-place");
+    var notesEl = document.getElementById("travel-notes");
+    var photoEl = document.getElementById("travel-photo");
+
+    if (placeEl) placeEl.value = trip.place || "";
+    if (notesEl) notesEl.value = trip.notes || "";
+    if (photoEl) photoEl.value = "";
+    travelDateUI.setValue(trip.date || "");
+
+    setFormMode(true);
+    renderTravelDetail(trip);
+    renderTripList();
+
+    form.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    if (placeEl) placeEl.focus();
+  }
+
   function selectTrip(id) {
     selectedId = id;
     var trips = loadTrips();
@@ -1018,12 +1104,24 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   }
 
   function deleteTrip(id, ev) {
-    if (ev) ev.preventDefault();
-    var trips = loadTrips().filter(function (t) { return t.id !== id; });
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+    }
+    var trips = loadTrips();
+    var trip = trips.filter(function (t) { return t.id === id; })[0] || null;
+    var label = trip && trip.place ? trip.place : "这条足迹";
+    if (!window.confirm("确定删除「" + label + "」吗？此操作不可撤销。")) {
+      return;
+    }
+    trips = trips.filter(function (t) { return t.id !== id; });
     saveTrips(trips);
     if (selectedId === id) {
       selectedId = null;
       renderTravelDetail(null);
+    }
+    if (editingId === id) {
+      clearEditMode(true);
     }
     rebuildMarkers(trips);
     renderTripList();
@@ -1048,13 +1146,23 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
           '<span class="travel-trip-date">' +
           escapeHtml(formatDateCN(t.date)) +
           "</span></button>" +
+          '<div class="travel-trip-actions">' +
+          '<button type="button" class="travel-trip-edit" aria-label="编辑「' +
+          escapeHtml(t.place) +
+          '」">编辑</button>' +
           '<button type="button" class="travel-trip-delete" aria-label="删除「' +
           escapeHtml(t.place) +
-          '」">删除</button>';
+          '」">删除</button></div>';
         var sel = li.querySelector(".travel-trip-select");
+        var edit = li.querySelector(".travel-trip-edit");
         var del = li.querySelector(".travel-trip-delete");
         sel.addEventListener("click", function () {
           selectTrip(t.id);
+        });
+        edit.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          startEditTrip(t.id);
         });
         del.addEventListener("click", function (e) {
           deleteTrip(t.id, e);
@@ -1076,6 +1184,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
   function onTravelLeave() {
     disposeScene();
     selectedId = null;
+    clearEditMode(true);
     renderTravelDetail(null);
   }
 
@@ -1085,7 +1194,20 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     else onTravelLeave();
   }
 
+  if (cancelEditBtn) {
+    cancelEditBtn.addEventListener("click", function () {
+      clearEditMode(true);
+    });
+  }
+
   if (form) {
+    form.addEventListener("reset", function () {
+      window.setTimeout(function () {
+        if (editingId) clearEditMode(false);
+        else setFormMode(false);
+      }, 0);
+    });
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var placeEl = document.getElementById("travel-place");
@@ -1097,6 +1219,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       var query = (placeEl && placeEl.value.trim()) || "";
       var date = (dateEl && dateEl.value) || "";
       var notes = notesEl ? notesEl.value.trim() : "";
+      var isEditing = !!editingId;
+      var currentEditId = editingId;
 
       if (!query || !date) {
         alert("请填写地点名称与旅行日期。");
@@ -1104,48 +1228,113 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       }
 
       var file = photoEl && photoEl.files && photoEl.files[0] ? photoEl.files[0] : null;
+      var existingTrip = null;
+      if (isEditing) {
+        existingTrip =
+          loadTrips().filter(function (t) {
+            return t.id === currentEditId;
+          })[0] || null;
+        if (!existingTrip) {
+          alert("要编辑的足迹已不存在，请刷新后重试。");
+          clearEditMode(true);
+          return;
+        }
+      }
+
+      function restoreSubmitLabel() {
+        if (!submitBtn) return;
+        submitBtn.disabled = false;
+        submitBtn.textContent = isEditing ? "保存修改" : "添加到地球";
+      }
 
       function finishTrip(placeLabel, lat, lon, photoDataUrl) {
-        var trip = {
-          id:
-            typeof crypto !== "undefined" && crypto.randomUUID
-              ? crypto.randomUUID()
-              : "t-" + Date.now() + "-" + Math.random().toString(36).slice(2, 9),
-          place: placeLabel,
-          date: date,
-          lat: lat,
-          lon: lon,
-          notes: notes || "",
-          photoDataUrl: photoDataUrl || "",
-        };
         var trips = loadTrips();
-        trips.push(trip);
+        var trip;
+        if (isEditing && existingTrip) {
+          var idx = -1;
+          var i;
+          for (i = 0; i < trips.length; i++) {
+            if (trips[i].id === currentEditId) {
+              idx = i;
+              break;
+            }
+          }
+          if (idx < 0) {
+            alert("要编辑的足迹已不存在，请刷新后重试。");
+            clearEditMode(true);
+            return;
+          }
+          trip = {
+            id: existingTrip.id,
+            place: placeLabel,
+            date: date,
+            lat: lat,
+            lon: lon,
+            notes: notes || "",
+            photoDataUrl:
+              photoDataUrl != null && photoDataUrl !== ""
+                ? photoDataUrl
+                : existingTrip.photoDataUrl || "",
+          };
+          trips[idx] = trip;
+        } else {
+          trip = {
+            id:
+              typeof crypto !== "undefined" && crypto.randomUUID
+                ? crypto.randomUUID()
+                : "t-" + Date.now() + "-" + Math.random().toString(36).slice(2, 9),
+            place: placeLabel,
+            date: date,
+            lat: lat,
+            lon: lon,
+            notes: notes || "",
+            photoDataUrl: photoDataUrl || "",
+          };
+          trips.push(trip);
+        }
         saveTrips(trips);
         rebuildMarkers(trips);
+        clearEditMode(true);
         selectTrip(trip.id);
-        form.reset();
-        if (photoEl) photoEl.value = "";
-        travelDateUI.reset();
+      }
+
+      function applyResolved(placeLabel, lat, lon) {
+        if (file) {
+          compressImageFile(file, 1280, 0.82, function (dataUrl) {
+            restoreSubmitLabel();
+            finishTrip(placeLabel, lat, lon, dataUrl);
+          });
+        } else {
+          restoreSubmitLabel();
+          finishTrip(placeLabel, lat, lon, null);
+        }
       }
 
       function afterGeocode(geo) {
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = "添加到地球";
-        }
         if (!geo) {
+          restoreSubmitLabel();
           alert(
             "未找到与「" + query + "」匹配的位置，请尝试更具体的名称（例如城市名、区名或带上国家）。"
           );
           return;
         }
-        if (file) {
-          compressImageFile(file, 1280, 0.82, function (dataUrl) {
-            finishTrip(geo.label, geo.lat, geo.lon, dataUrl);
-          });
-        } else {
-          finishTrip(geo.label, geo.lat, geo.lon, null);
+        applyResolved(geo.label, geo.lat, geo.lon);
+      }
+
+      var placeUnchanged =
+        isEditing &&
+        existingTrip &&
+        query === editingOriginalPlace &&
+        typeof existingTrip.lat === "number" &&
+        typeof existingTrip.lon === "number";
+
+      if (placeUnchanged) {
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = file ? "正在处理照片…" : "正在保存…";
         }
+        applyResolved(existingTrip.place, existingTrip.lat, existingTrip.lon);
+        return;
       }
 
       if (submitBtn) {
@@ -1155,10 +1344,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       geocodePlace(query)
         .then(afterGeocode)
         .catch(function () {
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "添加到地球";
-          }
+          restoreSubmitLabel();
           alert("无法连接地理编码服务，请检查网络后重试。");
         });
     });
