@@ -513,8 +513,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     g.position.copy(pos);
     g.userData.tripId = trip.id;
 
+    /* 基础尺寸偏小；实际显示大小由 updateMarkerScales 随相机距离缩放 */
     var core = new THREE.Mesh(
-      new THREE.SphereGeometry(0.035, 20, 20),
+      new THREE.SphereGeometry(0.018, 16, 16),
       new THREE.MeshStandardMaterial({
         color: 0xe8eefc,
         emissive: 0x3d6ad4,
@@ -526,7 +527,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     g.add(core);
 
     var halo = new THREE.Mesh(
-      new THREE.SphereGeometry(0.055, 16, 16),
+      new THREE.SphereGeometry(0.028, 12, 12),
       new THREE.MeshBasicMaterial({
         color: 0x9db6f2,
         transparent: true,
@@ -536,7 +537,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     );
     g.add(halo);
 
-    /* 不可见放大碰撞体：标记在屏幕上极小，纯射线很难点中 */
+    /* 略大于可视球体，便于点击；随 group 缩放，拉近时才变大 */
     var hitMat = new THREE.MeshBasicMaterial({
       transparent: true,
       opacity: 0,
@@ -544,11 +545,36 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
       depthTest: true,
       side: THREE.DoubleSide,
     });
-    var hitSphere = new THREE.Mesh(new THREE.SphereGeometry(0.16, 20, 20), hitMat);
+    var hitSphere = new THREE.Mesh(new THREE.SphereGeometry(0.055, 16, 16), hitMat);
     hitSphere.name = "marker-hit";
     g.add(hitSphere);
 
     return g;
+  }
+
+  /** 远距小点、近距略大，减轻邻近足迹互相遮挡 */
+  function markerScaleForDistance(dist) {
+    var minD = controls ? controls.minDistance : 1.65;
+    var maxD = controls ? controls.maxDistance : 4.2;
+    var span = maxD - minD;
+    var t = span > 0 ? (dist - minD) / span : 0;
+    if (t < 0) t = 0;
+    else if (t > 1) t = 1;
+    var nearScale = 1.45;
+    var farScale = 0.38;
+    return nearScale + (farScale - nearScale) * t;
+  }
+
+  function updateMarkerScales() {
+    if (!markersGroup || !camera) return;
+    var dist = controls
+      ? camera.position.distanceTo(controls.target)
+      : camera.position.length();
+    var s = markerScaleForDistance(dist);
+    var i;
+    for (i = 0; i < markersGroup.children.length; i++) {
+      markersGroup.children[i].scale.setScalar(s);
+    }
   }
 
   function rebuildMarkers(trips) {
@@ -557,6 +583,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     trips.forEach(function (t) {
       markersGroup.add(makeMarkerMesh(t));
     });
+    updateMarkerScales();
   }
 
   function buildStars() {
@@ -754,6 +781,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     function tick() {
       animationId = requestAnimationFrame(tick);
       if (controls) controls.update();
+      updateMarkerScales();
       if (renderer && scene && camera) renderer.render(scene, camera);
     }
     tick();
