@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-24T13:00:18.361Z",
+  "updatedAt": "2026-07-24T13:03:29.429Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -18,17 +18,17 @@
       ]
     },
     {
-      "id": "2e39fe67-67bb-4f77-a72d-702fb695691b",
-      "place": "洛桑 · 沃州 · 瑞士",
-      "date": "2022-10-16",
-      "lat": 46.516,
-      "lon": 6.63282,
-      "notes": "记得好好吃饭，照顾好自己。",
+      "id": "32349b71-463e-4ac6-b3ed-5ae0a834cad8",
+      "place": "斯德哥尔摩 · Stockholm County · 瑞典",
+      "date": "2023-01-01",
+      "lat": 59.32938,
+      "lon": 18.06871,
+      "notes": "第一次在旅途中跨年，在斯德哥尔摩拖着大箱子看到了最美的烟花。这一年最喜欢的一句话，人生不是轨道，是原野。",
       "photos": [
-        "assets/travel/2e39fe67-67bb-4f77-a72d-702fb695691b-0.jpg",
-        "assets/travel/2e39fe67-67bb-4f77-a72d-702fb695691b-1.jpg",
-        "assets/travel/2e39fe67-67bb-4f77-a72d-702fb695691b-2.jpg",
-        "assets/travel/2e39fe67-67bb-4f77-a72d-702fb695691b-3.jpg"
+        "assets/travel/32349b71-463e-4ac6-b3ed-5ae0a834cad8-0.jpg",
+        "assets/travel/32349b71-463e-4ac6-b3ed-5ae0a834cad8-1.jpg",
+        "assets/travel/32349b71-463e-4ac6-b3ed-5ae0a834cad8-2.jpg",
+        "assets/travel/32349b71-463e-4ac6-b3ed-5ae0a834cad8-3.jpg"
       ]
     }
   ]
