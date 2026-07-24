@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-24T13:03:29.429Z",
+  "updatedAt": "2026-07-24T13:11:03.970Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -29,6 +29,21 @@
         "assets/travel/32349b71-463e-4ac6-b3ed-5ae0a834cad8-1.jpg",
         "assets/travel/32349b71-463e-4ac6-b3ed-5ae0a834cad8-2.jpg",
         "assets/travel/32349b71-463e-4ac6-b3ed-5ae0a834cad8-3.jpg"
+      ]
+    },
+    {
+      "id": "7e052ab4-ab82-42df-b877-cb8c52978523",
+      "place": "罗瓦涅米 · 拉普蘭區 · 芬兰",
+      "date": "2023-01-04",
+      "lat": 66.49897,
+      "lon": 25.68867,
+      "notes": "虽然没有追到极光，但是在夜晚的冰湖上听了cornfield chase",
+      "photos": [
+        "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-0.jpg",
+        "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-1.jpg",
+        "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-2.jpg",
+        "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-3.jpg",
+        "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-4.jpg"
       ]
     }
   ]
