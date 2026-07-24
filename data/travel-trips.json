@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-24T13:35:00.646Z",
+  "updatedAt": "2026-07-24T13:39:50.864Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -76,6 +76,21 @@
         "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-3.jpg",
         "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-4.jpg",
         "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-5.jpg"
+      ]
+    },
+    {
+      "id": "8413d206-3dab-4d01-80ae-0f9c9faeffa3",
+      "place": "尼斯 · 普罗旺斯-阿尔卑斯-蔚蓝海岸大区 · 法国",
+      "date": "2023-04-15",
+      "lat": 43.70313,
+      "lon": 7.26608,
+      "notes": "行驶在碧蓝海岸线的旧火车",
+      "photos": [
+        "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-0.jpg",
+        "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-1.jpg",
+        "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-2.jpg",
+        "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-3.jpg",
+        "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-4.jpg"
       ]
     }
   ]
