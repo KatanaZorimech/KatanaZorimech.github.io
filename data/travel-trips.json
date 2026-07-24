@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-24T13:25:19.098Z",
+  "updatedAt": "2026-07-24T13:35:00.646Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -60,6 +60,22 @@
         "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-3.jpg",
         "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-4.jpg",
         "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-5.jpg"
+      ]
+    },
+    {
+      "id": "f8c5121e-82a5-4198-88a1-bdc62719ba95",
+      "place": "卢塞恩 · 卢塞恩州 · 瑞士",
+      "date": "2023-01-25",
+      "lat": 47.05048,
+      "lon": 8.30635,
+      "notes": "震撼",
+      "photos": [
+        "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-0.jpg",
+        "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-1.jpg",
+        "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-2.jpg",
+        "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-3.jpg",
+        "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-4.jpg",
+        "assets/travel/f8c5121e-82a5-4198-88a1-bdc62719ba95-5.jpg"
       ]
     }
   ]
