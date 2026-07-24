@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-24T13:11:03.970Z",
+  "updatedAt": "2026-07-24T13:18:55.306Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -44,6 +44,22 @@
         "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-2.jpg",
         "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-3.jpg",
         "assets/travel/7e052ab4-ab82-42df-b877-cb8c52978523-4.jpg"
+      ]
+    },
+    {
+      "id": "143b71d6-7267-46fb-97c8-e0d8aa23bb48",
+      "place": "特罗姆瑟 · 特罗姆斯郡 · 挪威",
+      "date": "2023-01-06",
+      "lat": 69.6489,
+      "lon": 18.95508,
+      "notes": "我们乘着过夜大巴来到特罗姆瑟，一下车便看到了漫天极光。或许人生就像旅行一样充满惊喜，你永远不知道那一秒会看到多么美丽的风景。",
+      "photos": [
+        "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-0.jpg",
+        "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-1.jpg",
+        "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-2.jpg",
+        "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-3.jpg",
+        "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-4.jpg",
+        "assets/travel/143b71d6-7267-46fb-97c8-e0d8aa23bb48-5.jpg"
       ]
     }
   ]
