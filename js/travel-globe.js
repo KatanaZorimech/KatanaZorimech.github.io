@@ -560,8 +560,8 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     var t = span > 0 ? (dist - minD) / span : 0;
     if (t < 0) t = 0;
     else if (t > 1) t = 1;
-    var nearScale = 1.45;
-    var farScale = 0.38;
+    var nearScale = 0.48;
+    var farScale = 0.13;
     return nearScale + (farScale - nearScale) * t;
   }
 
