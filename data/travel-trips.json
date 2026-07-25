@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T09:50:32.129Z",
+  "updatedAt": "2026-07-25T09:54:08.779Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -224,6 +224,19 @@
         "assets/travel/0d3cb866-ee3d-43c4-8723-9983b0207d05-0.jpg",
         "assets/travel/0d3cb866-ee3d-43c4-8723-9983b0207d05-1.jpg",
         "assets/travel/0d3cb866-ee3d-43c4-8723-9983b0207d05-2.jpg"
+      ]
+    },
+    {
+      "id": "6d4287c6-f787-4ec6-9565-4de576ae1e88",
+      "place": "布达佩斯 · Budapest · 匈牙利",
+      "date": "2023-12-26",
+      "lat": 47.49835,
+      "lon": 19.04045,
+      "notes": "有一天，我会再回到这里",
+      "photos": [
+        "assets/travel/6d4287c6-f787-4ec6-9565-4de576ae1e88-0.jpg",
+        "assets/travel/6d4287c6-f787-4ec6-9565-4de576ae1e88-1.jpg",
+        "assets/travel/6d4287c6-f787-4ec6-9565-4de576ae1e88-2.jpg"
       ]
     }
   ]
