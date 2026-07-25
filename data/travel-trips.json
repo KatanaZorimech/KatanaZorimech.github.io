@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T10:15:00.000Z",
+  "updatedAt": "2026-07-25T10:21:40.388Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -237,6 +237,20 @@
         "assets/travel/6d4287c6-f787-4ec6-9565-4de576ae1e88-0.jpg",
         "assets/travel/6d4287c6-f787-4ec6-9565-4de576ae1e88-1.jpg",
         "assets/travel/6d4287c6-f787-4ec6-9565-4de576ae1e88-2.jpg"
+      ]
+    },
+    {
+      "id": "5ad79c76-704d-4a07-a353-c75e2098d1c2",
+      "place": "埃及 · 埃及",
+      "date": "2025-06-22",
+      "lat": 27,
+      "lon": 30,
+      "notes": "这是一个去过还想再去的地方",
+      "photos": [
+        "assets/travel/5ad79c76-704d-4a07-a353-c75e2098d1c2-0.jpg",
+        "assets/travel/5ad79c76-704d-4a07-a353-c75e2098d1c2-1.jpg",
+        "assets/travel/5ad79c76-704d-4a07-a353-c75e2098d1c2-2.jpg",
+        "assets/travel/5ad79c76-704d-4a07-a353-c75e2098d1c2-3.jpg"
       ]
     }
   ]
