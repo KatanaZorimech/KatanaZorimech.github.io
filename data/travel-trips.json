@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T09:43:25.229Z",
+  "updatedAt": "2026-07-25T09:48:05.621Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -198,6 +198,19 @@
         "assets/travel/3a12e6b4-a23b-4f5b-bf4f-32efb76ca360-0.jpg",
         "assets/travel/3a12e6b4-a23b-4f5b-bf4f-32efb76ca360-1.jpg",
         "assets/travel/3a12e6b4-a23b-4f5b-bf4f-32efb76ca360-2.jpg"
+      ]
+    },
+    {
+      "id": "8399e500-07bf-459c-a6a4-b0f0c322160d",
+      "place": "布拉格 · Hlavní město Praha · 捷克",
+      "date": "2023-12-24",
+      "lat": 50.08804,
+      "lon": 14.42076,
+      "notes": "去到了爱在黎明破晓前取景地，好浪漫",
+      "photos": [
+        "assets/travel/8399e500-07bf-459c-a6a4-b0f0c322160d-0.jpg",
+        "assets/travel/8399e500-07bf-459c-a6a4-b0f0c322160d-1.jpg",
+        "assets/travel/8399e500-07bf-459c-a6a4-b0f0c322160d-2.jpg"
       ]
     }
   ]
