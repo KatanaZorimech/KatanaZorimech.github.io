@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T10:27:10.402Z",
+  "updatedAt": "2026-07-25T10:28:48.848Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -265,6 +265,19 @@
         "assets/travel/073aee78-5b6e-4196-bd44-fa07ae1ed5f6-1.jpg",
         "assets/travel/073aee78-5b6e-4196-bd44-fa07ae1ed5f6-2.jpg",
         "assets/travel/073aee78-5b6e-4196-bd44-fa07ae1ed5f6-3.jpg"
+      ]
+    },
+    {
+      "id": "2719f5e2-d478-464c-9e3c-911971d06842",
+      "place": "威尼斯 · 威尼托 · 意大利",
+      "date": "2023-10-24",
+      "lat": 45.43713,
+      "lon": 12.33265,
+      "notes": "阴雨威尼斯",
+      "photos": [
+        "assets/travel/2719f5e2-d478-464c-9e3c-911971d06842-0.jpg",
+        "assets/travel/2719f5e2-d478-464c-9e3c-911971d06842-1.jpg",
+        "assets/travel/2719f5e2-d478-464c-9e3c-911971d06842-2.jpg"
       ]
     }
   ]
