@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T09:36:36.696Z",
+  "updatedAt": "2026-07-25T09:43:25.229Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -185,6 +185,19 @@
         "assets/travel/4812783d-4cb0-44fc-9750-d2e61f5630d2-0.jpg",
         "assets/travel/4812783d-4cb0-44fc-9750-d2e61f5630d2-1.jpg",
         "assets/travel/4812783d-4cb0-44fc-9750-d2e61f5630d2-2.jpg"
+      ]
+    },
+    {
+      "id": "3a12e6b4-a23b-4f5b-bf4f-32efb76ca360",
+      "place": "苏黎世 · 苏黎世州 · 瑞士",
+      "date": "2023-11-10",
+      "lat": 47.36667,
+      "lon": 8.55,
+      "notes": "去见Juno",
+      "photos": [
+        "assets/travel/3a12e6b4-a23b-4f5b-bf4f-32efb76ca360-0.jpg",
+        "assets/travel/3a12e6b4-a23b-4f5b-bf4f-32efb76ca360-1.jpg",
+        "assets/travel/3a12e6b4-a23b-4f5b-bf4f-32efb76ca360-2.jpg"
       ]
     }
   ]
