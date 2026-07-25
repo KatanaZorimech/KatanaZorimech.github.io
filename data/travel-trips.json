@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T10:21:40.388Z",
+  "updatedAt": "2026-07-25T10:27:10.402Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -251,6 +251,20 @@
         "assets/travel/5ad79c76-704d-4a07-a353-c75e2098d1c2-1.jpg",
         "assets/travel/5ad79c76-704d-4a07-a353-c75e2098d1c2-2.jpg",
         "assets/travel/5ad79c76-704d-4a07-a353-c75e2098d1c2-3.jpg"
+      ]
+    },
+    {
+      "id": "073aee78-5b6e-4196-bd44-fa07ae1ed5f6",
+      "place": "韩国 · 韩国",
+      "date": "2026-04-30",
+      "lat": 36.5,
+      "lon": 127.75,
+      "notes": "再次和晨晨一起旅行",
+      "photos": [
+        "assets/travel/073aee78-5b6e-4196-bd44-fa07ae1ed5f6-0.jpg",
+        "assets/travel/073aee78-5b6e-4196-bd44-fa07ae1ed5f6-1.jpg",
+        "assets/travel/073aee78-5b6e-4196-bd44-fa07ae1ed5f6-2.jpg",
+        "assets/travel/073aee78-5b6e-4196-bd44-fa07ae1ed5f6-3.jpg"
       ]
     }
   ]
