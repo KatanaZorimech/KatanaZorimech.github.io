@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T09:48:05.621Z",
+  "updatedAt": "2026-07-25T09:50:32.129Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -211,6 +211,19 @@
         "assets/travel/8399e500-07bf-459c-a6a4-b0f0c322160d-0.jpg",
         "assets/travel/8399e500-07bf-459c-a6a4-b0f0c322160d-1.jpg",
         "assets/travel/8399e500-07bf-459c-a6a4-b0f0c322160d-2.jpg"
+      ]
+    },
+    {
+      "id": "0d3cb866-ee3d-43c4-8723-9983b0207d05",
+      "place": "维也纳 · 西維吉尼亞州 · 美国",
+      "date": "2023-12-25",
+      "lat": 39.32702,
+      "lon": -81.54846,
+      "notes": "",
+      "photos": [
+        "assets/travel/0d3cb866-ee3d-43c4-8723-9983b0207d05-0.jpg",
+        "assets/travel/0d3cb866-ee3d-43c4-8723-9983b0207d05-1.jpg",
+        "assets/travel/0d3cb866-ee3d-43c4-8723-9983b0207d05-2.jpg"
       ]
     }
   ]
