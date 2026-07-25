@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T09:03:20.270Z",
+  "updatedAt": "2026-07-25T09:09:23.256Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -116,6 +116,20 @@
       "photos": [
         "assets/travel/104170c3-50ab-4ec2-ba1c-af697d95d679-0.jpg",
         "assets/travel/104170c3-50ab-4ec2-ba1c-af697d95d679-1.jpg"
+      ]
+    },
+    {
+      "id": "9ac5f29c-571b-432f-97d9-ae8eb69f33e9",
+      "place": "巴塞罗那 · Catalunya · 西班牙",
+      "date": "2023-09-16",
+      "lat": 41.38879,
+      "lon": 2.15899,
+      "notes": "弗朗明戈——梦回《回归》中的红裙舞女",
+      "photos": [
+        "assets/travel/9ac5f29c-571b-432f-97d9-ae8eb69f33e9-0.jpg",
+        "assets/travel/9ac5f29c-571b-432f-97d9-ae8eb69f33e9-1.jpg",
+        "assets/travel/9ac5f29c-571b-432f-97d9-ae8eb69f33e9-2.jpg",
+        "assets/travel/9ac5f29c-571b-432f-97d9-ae8eb69f33e9-3.jpg"
       ]
     }
   ]
