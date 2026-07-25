@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T09:15:00.000Z",
+  "updatedAt": "2026-07-25T09:24:25.456Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -144,6 +144,19 @@
         "assets/travel/9ac5f29c-571b-432f-97d9-ae8eb69f33e9-1.jpg",
         "assets/travel/9ac5f29c-571b-432f-97d9-ae8eb69f33e9-2.jpg",
         "assets/travel/9ac5f29c-571b-432f-97d9-ae8eb69f33e9-3.jpg"
+      ]
+    },
+    {
+      "id": "7ad11d95-c594-467a-addc-c4386da5db4c",
+      "place": "采尔马特 · 瓦莱州 · 瑞士",
+      "date": "2023-02-08",
+      "lat": 46.01998,
+      "lon": 7.74863,
+      "notes": "手机坏掉了",
+      "photos": [
+        "assets/travel/7ad11d95-c594-467a-addc-c4386da5db4c-0.jpg",
+        "assets/travel/7ad11d95-c594-467a-addc-c4386da5db4c-1.jpg",
+        "assets/travel/7ad11d95-c594-467a-addc-c4386da5db4c-2.jpg"
       ]
     }
   ]
