@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T09:24:25.456Z",
+  "updatedAt": "2026-07-25T09:31:35.342Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -157,6 +157,21 @@
         "assets/travel/7ad11d95-c594-467a-addc-c4386da5db4c-0.jpg",
         "assets/travel/7ad11d95-c594-467a-addc-c4386da5db4c-1.jpg",
         "assets/travel/7ad11d95-c594-467a-addc-c4386da5db4c-2.jpg"
+      ]
+    },
+    {
+      "id": "cfa57a59-490b-490a-b2f4-71532c5545f8",
+      "place": "沃韦 · 沃州 · 瑞士",
+      "date": "2023-02-18",
+      "lat": 46.46299,
+      "lon": 6.84345,
+      "notes": "圣诞~",
+      "photos": [
+        "assets/travel/cfa57a59-490b-490a-b2f4-71532c5545f8-0.jpg",
+        "assets/travel/cfa57a59-490b-490a-b2f4-71532c5545f8-1.jpg",
+        "assets/travel/cfa57a59-490b-490a-b2f4-71532c5545f8-2.jpg",
+        "assets/travel/cfa57a59-490b-490a-b2f4-71532c5545f8-3.jpg",
+        "assets/travel/cfa57a59-490b-490a-b2f4-71532c5545f8-4.jpg"
       ]
     }
   ]
