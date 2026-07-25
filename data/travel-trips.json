@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T08:56:47.456Z",
+  "updatedAt": "2026-07-25T09:03:20.270Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -104,6 +104,18 @@
         "assets/travel/c9cbd79d-dd86-454d-b064-e27fadb4bcbd-0.jpg",
         "assets/travel/c9cbd79d-dd86-454d-b064-e27fadb4bcbd-1.jpg",
         "assets/travel/c9cbd79d-dd86-454d-b064-e27fadb4bcbd-2.jpg"
+      ]
+    },
+    {
+      "id": "104170c3-50ab-4ec2-ba1c-af697d95d679",
+      "place": "摩纳哥 · Commune de Monaco · 摩纳哥",
+      "date": "2023-04-15",
+      "lat": 43.73141,
+      "lon": 7.41903,
+      "notes": "",
+      "photos": [
+        "assets/travel/104170c3-50ab-4ec2-ba1c-af697d95d679-0.jpg",
+        "assets/travel/104170c3-50ab-4ec2-ba1c-af697d95d679-1.jpg"
       ]
     }
   ]
