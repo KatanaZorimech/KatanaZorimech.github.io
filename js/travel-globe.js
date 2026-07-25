@@ -187,7 +187,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     );
   }
 
-  var ROUTES = ["home", "travel", "movies", "books", "french"];
+  var ROUTES = ["home", "travel", "movies", "books"];
 
   var canvas = document.getElementById("travel-globe-canvas");
   var detailEmptyEl = document.getElementById("travel-detail-empty");

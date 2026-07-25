@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var ROUTES = ["home", "travel", "movies", "books", "french"];
+  var ROUTES = ["home", "travel", "movies", "books"];
   var DEFAULT_ROUTE = "home";
 
   var splash = document.getElementById("splash");

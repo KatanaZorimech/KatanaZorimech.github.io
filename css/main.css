@@ -391,10 +391,6 @@ body::before {
     0 1px 8px rgba(244, 247, 253, 0.9);
 }
 
-.french-slot {
-  margin-top: var(--space-lg);
-}
-
 /* ——— Travel globe ——— */
 .sidebar-blurb {
   margin: 0;
