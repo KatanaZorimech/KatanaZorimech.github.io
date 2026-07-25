@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-25T08:52:08.078Z",
+  "updatedAt": "2026-07-25T08:56:47.456Z",
   "trips": [
     {
       "id": "895ec1f4-9e01-4116-af29-9745ba0fc177",
@@ -91,6 +91,19 @@
         "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-2.jpg",
         "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-3.jpg",
         "assets/travel/8413d206-3dab-4d01-80ae-0f9c9faeffa3-4.jpg"
+      ]
+    },
+    {
+      "id": "c9cbd79d-dd86-454d-b064-e27fadb4bcbd",
+      "place": "里昂 · 奧弗涅-羅訥-阿爾卑斯大區 · 法国",
+      "date": "2023-02-18",
+      "lat": 45.74906,
+      "lon": 4.84789,
+      "notes": "基德曾经对我说：\n以后找个人，让他陪你去法国里昂跨年吧\n那里是小王子诞生的地方\n于是有一天我真的来到了这里",
+      "photos": [
+        "assets/travel/c9cbd79d-dd86-454d-b064-e27fadb4bcbd-0.jpg",
+        "assets/travel/c9cbd79d-dd86-454d-b064-e27fadb4bcbd-1.jpg",
+        "assets/travel/c9cbd79d-dd86-454d-b064-e27fadb4bcbd-2.jpg"
       ]
     }
   ]
