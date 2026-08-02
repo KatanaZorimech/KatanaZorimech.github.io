@@ -1,0 +1,221 @@
+{
+  "cards": [
+    {
+      "id": "mind_blast",
+      "name": "意念冲击",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 1,
+      "exhaust": false,
+      "text": "造成 6 点伤害。",
+      "upgradeText": "造成 8 点伤害。",
+      "effects": [{ "op": "damage", "n": 6 }],
+      "upgradeEffects": [{ "op": "damage", "n": 8 }]
+    },
+    {
+      "id": "mind_barrier",
+      "name": "心灵屏障",
+      "type": "skill",
+      "rarity": "common",
+      "cost": 1,
+      "exhaust": false,
+      "text": "获得 5 点格挡。",
+      "upgradeText": "获得 7 点格挡。",
+      "effects": [{ "op": "block", "n": 5 }],
+      "upgradeEffects": [{ "op": "block", "n": 7 }]
+    },
+    {
+      "id": "full_power",
+      "name": "全力输出",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 2,
+      "exhaust": false,
+      "text": "造成 8 点伤害，给予 2 层易伤。",
+      "upgradeText": "造成 10 点伤害，给予 3 层易伤。",
+      "effects": [
+        { "op": "damage", "n": 8 },
+        { "op": "status", "target": "enemy", "id": "vulnerable", "n": 2 }
+      ],
+      "upgradeEffects": [
+        { "op": "damage", "n": 10 },
+        { "op": "status", "target": "enemy", "id": "vulnerable", "n": 3 }
+      ]
+    },
+    {
+      "id": "balanced_strike",
+      "name": "攻防兼备",
+      "type": "attack",
+      "rarity": "common",
+      "cost": 1,
+      "exhaust": false,
+      "text": "造成 5 点伤害，获得 5 点格挡。",
+      "upgradeText": "造成 8 点伤害，获得 6 点格挡。",
+      "effects": [
+        { "op": "damage", "n": 5 },
+        { "op": "block", "n": 5 }
+      ],
+      "upgradeEffects": [
+        { "op": "damage", "n": 8 },
+        { "op": "block", "n": 6 }
+      ]
+    },
+    {
+      "id": "slingshot",
+      "name": "弹弓射击",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "exhaust": false,
+      "text": "造成 9 点伤害，给予 1 层虚弱。",
+      "upgradeText": "造成 11 点伤害，给予 1 层虚弱。",
+      "effects": [
+        { "op": "damage", "n": 9 },
+        { "op": "status", "target": "enemy", "id": "weak", "n": 1 }
+      ],
+      "upgradeEffects": [
+        { "op": "damage", "n": 11 },
+        { "op": "status", "target": "enemy", "id": "weak", "n": 1 }
+      ]
+    },
+    {
+      "id": "deep_breath",
+      "name": "深呼吸",
+      "type": "skill",
+      "rarity": "uncommon",
+      "cost": 2,
+      "exhaust": false,
+      "text": "获得 8 点格挡。抽 1 张牌。",
+      "upgradeText": "获得 10 点格挡。抽 1 张牌。",
+      "effects": [
+        { "op": "block", "n": 8 },
+        { "op": "draw", "n": 1 }
+      ],
+      "upgradeEffects": [
+        { "op": "block", "n": 10 },
+        { "op": "draw", "n": 1 }
+      ]
+    },
+    {
+      "id": "first_aid",
+      "name": "紧急包扎",
+      "type": "skill",
+      "rarity": "uncommon",
+      "cost": 1,
+      "exhaust": true,
+      "text": "回复 5 点生命值。消耗。",
+      "upgradeText": "回复 7 点生命值。消耗。",
+      "effects": [{ "op": "heal", "n": 5 }],
+      "upgradeEffects": [{ "op": "heal", "n": 7 }]
+    },
+    {
+      "id": "radio_call",
+      "name": "无线电呼叫",
+      "type": "attack",
+      "rarity": "uncommon",
+      "cost": 2,
+      "exhaust": false,
+      "text": "造成 3 点伤害，抽 2 张牌。",
+      "upgradeText": "造成 5 点伤害，抽 3 张牌。",
+      "effects": [
+        { "op": "damage", "n": 3 },
+        { "op": "draw", "n": 2 }
+      ],
+      "upgradeEffects": [
+        { "op": "damage", "n": 5 },
+        { "op": "draw", "n": 3 }
+      ]
+    },
+    {
+      "id": "psychic_ward",
+      "name": "念力屏障",
+      "type": "skill",
+      "rarity": "rare",
+      "cost": 3,
+      "exhaust": false,
+      "text": "获得 10 点格挡。并反弹 4 点伤害。",
+      "upgradeText": "获得 12 点格挡。并反弹 6 点伤害。",
+      "effects": [
+        { "op": "block", "n": 10 },
+        { "op": "thorns", "n": 4 }
+      ],
+      "upgradeEffects": [
+        { "op": "block", "n": 12 },
+        { "op": "thorns", "n": 6 }
+      ]
+    },
+    {
+      "id": "nailbat_sweep",
+      "name": "钉棒横扫",
+      "type": "skill",
+      "rarity": "rare",
+      "cost": "X",
+      "exhaust": false,
+      "text": "造成 4 点伤害 X 次。",
+      "upgradeText": "造成 6 点伤害 X 次。",
+      "effects": [{ "op": "damage_x_times", "n": 4 }],
+      "upgradeEffects": [{ "op": "damage_x_times", "n": 6 }]
+    },
+    {
+      "id": "rage_burst",
+      "name": "愤怒爆发",
+      "type": "attack",
+      "rarity": "rare",
+      "cost": 2,
+      "exhaust": false,
+      "text": "造成 6 点伤害，本场战斗力量 +1。",
+      "upgradeText": "造成 8 点伤害，本场战斗力量 +1。",
+      "effects": [
+        { "op": "damage", "n": 6 },
+        { "op": "gain_strength", "n": 1 }
+      ],
+      "upgradeEffects": [
+        { "op": "damage", "n": 8 },
+        { "op": "gain_strength", "n": 1 }
+      ]
+    },
+    {
+      "id": "overload",
+      "name": "超负荷",
+      "type": "skill",
+      "rarity": "rare",
+      "cost": 1,
+      "exhaust": false,
+      "text": "失去 1 点生命，获得 2 点能量。",
+      "upgradeText": "失去 1 点生命，获得 3 点能量。",
+      "effects": [
+        { "op": "lose_hp", "n": 1 },
+        { "op": "gain_energy", "n": 2 }
+      ],
+      "upgradeEffects": [
+        { "op": "lose_hp", "n": 1 },
+        { "op": "gain_energy", "n": 3 }
+      ]
+    },
+    {
+      "id": "rewind_time",
+      "name": "逆转时间",
+      "type": "skill",
+      "rarity": "rare",
+      "cost": 1,
+      "exhaust": true,
+      "text": "将弃牌堆中 1 张牌移回手牌。消耗。",
+      "upgradeText": "费用变为 0。将弃牌堆中 1 张牌移回手牌。消耗。",
+      "upgradeCost": 0,
+      "effects": [{ "op": "retrieve_discard", "n": 1 }],
+      "upgradeEffects": [{ "op": "retrieve_discard", "n": 1 }]
+    }
+  ],
+  "starterDeck": [
+    "mind_blast",
+    "mind_blast",
+    "mind_blast",
+    "mind_blast",
+    "mind_blast",
+    "mind_barrier",
+    "mind_barrier",
+    "mind_barrier",
+    "mind_barrier",
+    "balanced_strike"
+  ]
+}

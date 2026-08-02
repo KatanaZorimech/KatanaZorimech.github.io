@@ -1,0 +1,115 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 140px;
+  min-height: 180px;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  background: linear-gradient(165deg, #221028 0%, #120818 100%);
+  color: var(--cream);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  font-family: var(--font-body);
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.card.playable:hover {
+  transform: translateY(-10px);
+  border-color: var(--neon-red);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.card.muted {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.card.compact {
+  width: 100%;
+  min-height: auto;
+  flex-direction: column;
+}
+
+.card.reward {
+  width: 160px;
+  min-height: 200px;
+}
+
+.card-cost {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.4rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--void-blue);
+  border: 1px solid var(--electric);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.card-name {
+  margin-top: 1.4rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.card-type {
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.card-text {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--fog);
+}
+
+.rarity-common {
+  border-color: rgba(196, 184, 212, 0.35);
+}
+
+.rarity-uncommon {
+  border-color: rgba(91, 141, 239, 0.55);
+}
+
+.rarity-rare {
+  border-color: rgba(255, 196, 72, 0.55);
+  box-shadow: inset 0 0 20px rgba(255, 196, 72, 0.08);
+}
+
+.type-attack .card-name {
+  color: #ff8a9a;
+}
+
+.type-skill .card-name {
+  color: #9ec0ff;
+}
+
+.hand {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  min-height: 190px;
+}
+
+.reward-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
