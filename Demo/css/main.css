@@ -206,7 +206,7 @@ body::after {
 
 .map-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .map-header h2 {
@@ -221,41 +221,115 @@ body::after {
   margin: 0.4rem 0 0;
 }
 
-.map-floor {
-  margin-bottom: 1.75rem;
-}
-
-.map-floor h3 {
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  color: var(--electric);
-  letter-spacing: 0.15em;
+.waffle-count {
+  color: #ffc448;
   font-weight: 600;
-  margin: 0 0 0.75rem;
 }
 
-.map-nodes {
+.map-legend {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 1rem;
+  letter-spacing: 0.04em;
+}
+
+.map-canvas {
+  position: relative;
+  padding: 0.5rem 0 1rem;
+  min-height: 420px;
+}
+
+.map-edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+.map-edge {
+  stroke: rgba(122, 110, 136, 0.35);
+  stroke-width: 2;
+}
+
+.map-edge.lit {
+  stroke: rgba(255, 42, 74, 0.55);
+  stroke-width: 2.5;
+}
+
+.map-row {
+  position: relative;
+  z-index: 1;
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1.35rem;
 }
 
 .map-node {
   font-family: var(--font-display);
-  padding: 0.65rem 1rem;
+  padding: 0.55rem 0.75rem;
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--cream);
   cursor: pointer;
-  border-radius: 2px;
-  min-width: 4.5rem;
+  border-radius: 4px;
+  min-width: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.map-node-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.map-node-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
 }
 
 .map-node.current {
   border-color: var(--neon-red);
   box-shadow: 0 0 16px rgba(255, 42, 74, 0.35);
   animation: node-pulse 1.6s ease-in-out infinite;
+}
+
+.map-node.available {
+  border-color: var(--electric);
+  box-shadow: 0 0 14px rgba(91, 141, 239, 0.35);
+}
+
+.map-node.available:hover {
+  transform: translateY(-3px);
+  border-color: var(--neon-red);
+}
+
+.map-node.past {
+  opacity: 0.4;
+}
+
+.map-node.future {
+  opacity: 0.35;
+  filter: grayscale(0.4);
+}
+
+.map-node.type-boss.current,
+.map-node.type-boss.available {
+  background: linear-gradient(135deg, #3a1020, #1a0a18);
+}
+
+.map-node.type-rest .map-node-icon {
+  filter: drop-shadow(0 0 6px rgba(255, 140, 60, 0.6));
+}
+
+.map-node:disabled {
+  cursor: default;
 }
 
 @keyframes node-pulse {
@@ -268,30 +342,25 @@ body::after {
   }
 }
 
-.map-node.past {
-  opacity: 0.45;
-}
-
-.map-node.future {
-  opacity: 0.55;
-}
-
-.map-node.type-boss.current {
-  background: linear-gradient(135deg, #3a1020, #1a0a18);
-}
-
-.map-node:disabled {
-  cursor: default;
-}
-
-.map-arrow {
-  color: var(--muted);
-  padding: 0 0.15rem;
-}
-
 .map-hint {
   color: var(--fog);
   font-size: 0.95rem;
+  text-align: center;
+}
+
+.reward-waffles {
+  text-align: center;
+  color: #ffc448;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+}
+
+.shop-price {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #ffc448;
+  font-family: var(--font-display);
 }
 
 .scene-end {
@@ -312,6 +381,9 @@ body::after {
 .rest-blurb {
   color: var(--fog);
   max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
 
 .rest-actions {
@@ -319,6 +391,22 @@ body::after {
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1.5rem;
+  justify-content: center;
+}
+
+.scene-rest h2,
+.scene-shop h2,
+.scene-reward h2 {
+  text-align: center;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+}
+
+.scene-shop .btn-primary,
+.scene-reward .btn-ghost {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .modal {
@@ -359,12 +447,11 @@ body::after {
 }
 
 @media (max-width: 600px) {
-  .map-nodes {
-    flex-direction: column;
-    align-items: stretch;
+  .map-row {
+    gap: 0.5rem;
   }
-  .map-arrow {
-    transform: rotate(90deg);
-    text-align: center;
+  .map-node {
+    min-width: 4.2rem;
+    padding: 0.45rem 0.5rem;
   }
 }

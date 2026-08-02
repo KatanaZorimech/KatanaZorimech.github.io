@@ -6,11 +6,13 @@ const DRAW_PER_TURN = 5;
 const BASE_ENERGY = 3;
 
 function statusAmt(unit, id) {
-  return unit.statuses[id] || 0;
+  if (!unit || !unit.statuses) return 0;
+  return Number(unit.statuses[id]) || 0;
 }
 
 function addStatus(unit, id, n) {
-  unit.statuses[id] = (unit.statuses[id] || 0) + n;
+  if (!unit.statuses) unit.statuses = {};
+  unit.statuses[id] = (Number(unit.statuses[id]) || 0) + n;
 }
 
 function tickStatuses(unit, side) {
@@ -70,9 +72,16 @@ function applyHpLoss(target, amount) {
 }
 
 function dealAttackToEnemy(combat, base, enemy) {
+  if (!enemy.statuses) enemy.statuses = {};
+  if (combat.player.strength) {
+    combat.player.statuses.strength = combat.player.strength;
+  }
   const dmg = calcAttackDamage(base, combat.player, enemy);
+  const vuln = statusAmt(enemy, "vulnerable") > 0;
   applyDamage(enemy, dmg, combat, "player");
-  combat.log.push(`造成 ${dmg} 点伤害 → ${enemy.name}`);
+  combat.log.push(
+    `造成 ${dmg} 点伤害 → ${enemy.name}${vuln ? "（易伤）" : ""}`
+  );
   return dmg;
 }
 
@@ -185,7 +194,17 @@ export function playCard(combat, handIndex, enemyIndex = 0) {
 
   let needRetrieve = false;
 
-  for (const effect of card.effects) {
+  // Apply buffs/debuffs before damage so same-card 易伤/虚弱能影响本次伤害
+  const effectOrder = (op) => {
+    if (op === "status" || op === "gain_strength" || op === "thorns") return 0;
+    if (op === "damage" || op === "damage_x_times") return 1;
+    return 2;
+  };
+  const effects = [...card.effects].sort(
+    (a, b) => effectOrder(a.op) - effectOrder(b.op)
+  );
+
+  for (const effect of effects) {
     switch (effect.op) {
       case "damage": {
         if (!enemy || enemy.hp <= 0) break;

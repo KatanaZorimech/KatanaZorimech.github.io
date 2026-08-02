@@ -1,12 +1,25 @@
 import { resolveCard } from "../cards.js";
+import { SHOP_PRICES } from "../state.js";
 
-export function renderReward(root, options, handlers) {
+export function renderReward(root, options, handlers, waffleGained = 0) {
   root.innerHTML = "";
   root.className = "scene scene-reward";
 
   const title = document.createElement("h2");
-  title.textContent = "选择一张牌加入牌组";
+  title.textContent = "战斗奖励";
   root.appendChild(title);
+
+  if (waffleGained > 0) {
+    const waffle = document.createElement("p");
+    waffle.className = "reward-waffles";
+    waffle.textContent = `获得华夫饼 × ${waffleGained}`;
+    root.appendChild(waffle);
+  }
+
+  const sub = document.createElement("p");
+  sub.className = "rest-blurb";
+  sub.textContent = "选择一张牌加入牌组";
+  root.appendChild(sub);
 
   const row = document.createElement("div");
   row.className = "reward-row";
@@ -18,7 +31,7 @@ export function renderReward(root, options, handlers) {
     btn.innerHTML = `
       <span class="card-cost">${card.cost === "X" ? "X" : card.cost}</span>
       <span class="card-name">${card.name}</span>
-      <span class="card-type">${card.rarity === "common" ? "普通" : card.rarity === "uncommon" ? "强力" : "稀有"}</span>
+      <span class="card-type">${rarityLabel(card.rarity)}</span>
       <span class="card-text">${card.text}</span>
     `;
     btn.addEventListener("click", () => handlers.onPick(idx));
@@ -39,12 +52,13 @@ export function renderRest(root, run, handlers) {
   root.className = "scene scene-rest";
 
   const title = document.createElement("h2");
-  title.textContent = "安全营地";
+  title.textContent = "威尔家的地下室";
   root.appendChild(title);
 
   const blurb = document.createElement("p");
   blurb.className = "rest-blurb";
-  blurb.textContent = "在倒挂世界边缘短暂喘息。恢复体力，或强化一张牌。";
+  blurb.textContent =
+    "熟悉的灯串与对讲机嗡鸣。在火堆旁恢复体力，或强化一张牌。";
   root.appendChild(blurb);
 
   const actions = document.createElement("div");
@@ -53,7 +67,7 @@ export function renderRest(root, run, handlers) {
   const healBtn = document.createElement("button");
   healBtn.className = "btn";
   const healAmt = Math.floor(run.maxHp * 0.3);
-  healBtn.textContent = `休息（回复 ${healAmt} 生命）`;
+  healBtn.textContent = `靠着火堆休息（回复 ${healAmt} 生命）`;
   healBtn.addEventListener("click", () => handlers.onHeal());
   actions.appendChild(healBtn);
 
@@ -105,4 +119,66 @@ export function renderUpgradePicker(root, deck, handlers) {
   back.textContent = "返回";
   back.addEventListener("click", () => handlers.onBack());
   root.appendChild(back);
+}
+
+export function renderShop(root, run, offer, handlers) {
+  root.innerHTML = "";
+  root.className = "scene scene-shop";
+
+  const title = document.createElement("h2");
+  title.textContent = "商店";
+  root.appendChild(title);
+
+  const blurb = document.createElement("p");
+  blurb.className = "rest-blurb";
+  blurb.innerHTML = `用华夫饼换取力量。当前：<strong class="waffle-count">${run.waffles}</strong> 块华夫饼`;
+  root.appendChild(blurb);
+
+  const row = document.createElement("div");
+  row.className = "reward-row shop-row";
+
+  offer.forEach((entry, idx) => {
+    const card = resolveCard(entry.card);
+    const price = entry.price;
+    const sold = entry.sold;
+    const canBuy = !sold && run.waffles >= price;
+    const btn = document.createElement("button");
+    btn.className = `card reward rarity-${card.rarity}${sold ? " muted" : ""}`;
+    btn.disabled = sold || !canBuy;
+    btn.innerHTML = `
+      <span class="card-cost">${card.cost === "X" ? "X" : card.cost}</span>
+      <span class="card-name">${card.name}</span>
+      <span class="card-type">${rarityLabel(card.rarity)}</span>
+      <span class="card-text">${card.text}</span>
+      <span class="shop-price">${sold ? "已购" : `华夫饼 ${price}`}</span>
+    `;
+    if (!sold) {
+      btn.addEventListener("click", () => handlers.onBuy(idx));
+    }
+    row.appendChild(btn);
+  });
+
+  root.appendChild(row);
+
+  const leave = document.createElement("button");
+  leave.className = "btn btn-primary";
+  leave.textContent = "离开商店";
+  leave.addEventListener("click", () => handlers.onLeave());
+  root.appendChild(leave);
+}
+
+function rarityLabel(r) {
+  return r === "common" ? "普通" : r === "uncommon" ? "强力" : "稀有";
+}
+
+export function buildShopOffer(rng, pickRewardOptions) {
+  const cards = pickRewardOptions(rng, 5);
+  return cards.map((card) => {
+    const resolved = resolveCard(card);
+    return {
+      card,
+      price: SHOP_PRICES[resolved.rarity] || 50,
+      sold: false,
+    };
+  });
 }

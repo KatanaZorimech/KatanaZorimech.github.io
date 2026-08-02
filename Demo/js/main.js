@@ -8,14 +8,21 @@ import {
   loadRun,
   clearSave,
   restHeal,
+  waffleReward,
 } from "./state.js";
-import { getCurrentNode, advanceNode } from "./map.js";
+import {
+  getCurrentNode,
+  travelToNode,
+  completeCurrentNode,
+} from "./map.js";
 import { renderCombat, bindCombatHandlers } from "./ui/combat-ui.js";
 import { renderMap } from "./ui/map-ui.js";
 import {
   renderReward,
   renderRest,
   renderUpgradePicker,
+  renderShop,
+  buildShopOffer,
 } from "./ui/reward-ui.js";
 
 const app = document.getElementById("app");
@@ -24,7 +31,9 @@ let run = null;
 let combat = null;
 let combatHandlers = null;
 let rewardOptions = null;
-let scene = "menu"; // menu | map | combat | reward | rest | upgrade | win | gameover
+let lastWaffleGain = 0;
+let shopOffer = null;
+let scene = "menu";
 
 async function init() {
   await Promise.all([loadCards(), loadEnemies()]);
@@ -65,11 +74,17 @@ function showMenu() {
 function showMap() {
   scene = "map";
   combat = null;
+  shopOffer = null;
   if (run.completed) {
     showWin();
     return;
   }
   renderMap(app, run, {
+    onSelectPath(node) {
+      if (!travelToNode(run, node.id)) return;
+      saveRun(run);
+      enterNode(node);
+    },
     onEnterNode(node) {
       enterNode(node);
     },
@@ -110,6 +125,10 @@ function enterNode(node) {
     showRest();
     return;
   }
+  if (node.type === "shop") {
+    showShop();
+    return;
+  }
   startCombat(node);
 }
 
@@ -142,39 +161,40 @@ function refreshCombat() {
 function onCombatVictory() {
   syncPlayerHp(combat, run);
   const node = getCurrentNode(run);
-  const isBoss = node?.type === "boss";
+  const tier =
+    node?.type === "boss" ? "boss" : node?.type === "elite" ? "elite" : "normal";
   combat = null;
 
-  if (isBoss && run.floorIndex === 1) {
-    // Final boss — advance then win
-    advanceNode(run);
-    run.completed = true;
-    saveRun(run);
-    showWin();
-    return;
-  }
-
-  // Rewards after combat/elite/boss (floor1)
   const rng = makeRng(run);
+  lastWaffleGain = waffleReward(tier, rng);
+  run.waffles = (run.waffles || 0) + lastWaffleGain;
+
+  // Final boss: still show rewards then complete
   rewardOptions = pickRewardOptions(rng, 3);
   scene = "reward";
-  renderReward(app, rewardOptions, {
-    onPick(idx) {
-      run.deck.push(rewardOptions[idx]);
-      rewardOptions = null;
-      finishNode();
+  renderReward(
+    app,
+    rewardOptions,
+    {
+      onPick(idx) {
+        run.deck.push(rewardOptions[idx]);
+        rewardOptions = null;
+        finishNode();
+      },
+      onSkip() {
+        rewardOptions = null;
+        finishNode();
+      },
     },
-    onSkip() {
-      rewardOptions = null;
-      finishNode();
-    },
-  });
+    lastWaffleGain
+  );
+  saveRun(run);
 }
 
 function finishNode() {
-  advanceNode(run);
+  const result = completeCurrentNode(run);
   saveRun(run);
-  if (run.completed) {
+  if (result.won || run.completed) {
     showWin();
     return;
   }
@@ -217,6 +237,32 @@ function showUpgrade() {
     },
     onBack() {
       showRest();
+    },
+  });
+}
+
+function showShop() {
+  scene = "shop";
+  const rng = makeRng(run);
+  shopOffer = buildShopOffer(rng, pickRewardOptions);
+  refreshShop();
+}
+
+function refreshShop() {
+  renderShop(app, run, shopOffer, {
+    onBuy(idx) {
+      const entry = shopOffer[idx];
+      if (!entry || entry.sold) return;
+      if (run.waffles < entry.price) return;
+      run.waffles -= entry.price;
+      run.deck.push(entry.card);
+      entry.sold = true;
+      saveRun(run);
+      refreshShop();
+    },
+    onLeave() {
+      shopOffer = null;
+      finishNode();
     },
   });
 }
