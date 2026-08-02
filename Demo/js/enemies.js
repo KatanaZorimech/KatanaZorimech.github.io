@@ -26,6 +26,7 @@ export function createEnemyInstance(defId) {
     id: defId,
     name: def.name,
     tier: def.tier,
+    spriteKey: def.sprite || null,
     maxHp: def.maxHp,
     hp: def.maxHp,
     block: 0,

@@ -8,12 +8,15 @@ import {
   getIntentDisplay,
   calcAttackDamage,
 } from "../combat.js";
+import { getPlayerSprite, getEnemySprite } from "../sprites.js";
 
 const STATUS_LABEL = {
   vulnerable: "易伤",
   weak: "虚弱",
   strength: "力量",
 };
+
+const ANIM_CLASSES = ["anim-attack", "anim-cast", "anim-hit", "anim-die"];
 
 export function renderCombat(root, combat, handlers) {
   root.innerHTML = "";
@@ -91,6 +94,60 @@ export function renderCombat(root, combat, handlers) {
   }
 }
 
+/** Drain combat.anims and play CSS classes on sprite actors. */
+export function playCombatAnims(root, combat) {
+  const queue = (combat.anims || []).splice(0);
+  if (!queue.length) return;
+
+  queue.forEach((ev, i) => {
+    window.setTimeout(() => {
+      const stage = root.querySelector(`[data-fighter="${ev.who}"]`);
+      const actor = stage?.querySelector(".sprite-actor");
+      if (!actor) return;
+      ANIM_CLASSES.forEach((c) => actor.classList.remove(c));
+      actor.classList.remove("idle");
+      void actor.offsetWidth;
+      const cls = `anim-${ev.kind}`;
+      actor.classList.add(cls);
+      if (ev.kind === "die") {
+        stage?.classList.add("is-dead");
+        return;
+      }
+      const onEnd = () => {
+        actor.classList.remove(cls);
+        if (!stage?.classList.contains("is-dead")) {
+          actor.classList.add("idle");
+        }
+        actor.removeEventListener("animationend", onEnd);
+      };
+      actor.addEventListener("animationend", onEnd);
+    }, i * 70);
+  });
+}
+
+function buildSpriteStage(who, spriteCfg, name, tier, dead) {
+  const stage = el("div", `sprite-stage${dead ? " is-dead" : ""}`);
+  stage.dataset.fighter = who;
+
+  if (spriteCfg?.src) {
+    const img = document.createElement("img");
+    img.className = `sprite-actor battle-sprite${spriteCfg.idle !== false ? " idle" : ""}`;
+    img.src = spriteCfg.src;
+    img.alt = name;
+    img.draggable = false;
+    img.style.setProperty("--scale", String(spriteCfg.scale ?? 3));
+    stage.appendChild(img);
+  } else {
+    const ph = el(
+      "div",
+      `sprite-actor sprite-placeholder tier-${tier || "normal"} idle`
+    );
+    ph.setAttribute("aria-hidden", "true");
+    stage.appendChild(ph);
+  }
+  return stage;
+}
+
 function pileButton(label, count, onClick) {
   const btn = el("button", "pile-btn");
   btn.type = "button";
@@ -113,7 +170,6 @@ export function renderPileModal(combat, pileKey, onClose) {
 
   let cards = (combat.player[pileKey] || []).slice();
   if (pileKey === "deck") {
-    // Visual shuffle only — does not mutate combat state
     for (let i = cards.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [cards[i], cards[j]] = [cards[j], cards[i]];
@@ -159,17 +215,33 @@ export function renderPileModal(combat, pileKey, onClose) {
 }
 
 function renderEnemy(enemy, idx, combat, handlers) {
-  const card = el("div", `fighter-card enemy-card ${enemy.hp <= 0 ? "dead" : ""}`);
+  const card = el(
+    "div",
+    `fighter-card enemy-card ${enemy.hp <= 0 ? "dead" : ""}`
+  );
   const intent = getIntentDisplay(enemy);
   const statuses = formatStatuses(enemy.statuses);
+  const spriteCfg = getEnemySprite(enemy.spriteKey);
 
-  card.innerHTML = `
+  card.appendChild(
+    buildSpriteStage(
+      `enemy${idx}`,
+      spriteCfg,
+      enemy.name,
+      enemy.tier,
+      enemy.hp <= 0
+    )
+  );
+
+  const meta = el("div", "fighter-meta");
+  meta.innerHTML = `
     <div class="intent" title="${escapeHtml(intent.move?.name || "")}">${escapeHtml(intent.label)}</div>
     <div class="enemy-name">${escapeHtml(enemy.name)}</div>
     <div class="hp-bar"><div class="hp-fill" style="width:${(enemy.hp / enemy.maxHp) * 100}%"></div></div>
     <div class="hp-text">${enemy.hp}/${enemy.maxHp}${enemy.block ? ` · 格挡 ${enemy.block}` : ""}</div>
     <div class="statuses">${statuses}</div>
   `;
+  card.appendChild(meta);
 
   if (combat.phase === "player" && enemy.hp > 0) {
     card.classList.add("targetable");
@@ -183,7 +255,14 @@ function renderPlayer(combat) {
   const card = el("div", "fighter-card player-card");
   const statuses = formatStatuses(p.statuses);
   const thorns = p.thorns ? ` · 反弹 ${p.thorns}` : "";
-  card.innerHTML = `
+  const spriteCfg = getPlayerSprite();
+
+  card.appendChild(
+    buildSpriteStage("player", spriteCfg, "小十一", "player", p.hp <= 0)
+  );
+
+  const meta = el("div", "fighter-meta");
+  meta.innerHTML = `
     <div class="fighter-tag">你</div>
     <div class="player-name">小十一</div>
     <div class="hp-bar"><div class="hp-fill player" style="width:${(p.hp / p.maxHp) * 100}%"></div></div>
@@ -191,6 +270,7 @@ function renderPlayer(combat) {
     <div class="energy">能量 ${p.energy}/${p.maxEnergy}</div>
     <div class="statuses">${statuses}</div>
   `;
+  card.appendChild(meta);
   return card;
 }
 

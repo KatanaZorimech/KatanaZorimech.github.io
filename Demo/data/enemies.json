@@ -4,6 +4,7 @@
       "id": "demo_pup",
       "name": "小魔狗",
       "tier": "normal",
+      "sprite": "demo_pup",
       "maxHp": 42,
       "moves": [
         { "id": "bite", "name": "咬击", "intent": "attack", "damage": 8 },
@@ -20,6 +21,7 @@
       "id": "possessed",
       "name": "被附身的居民",
       "tier": "normal",
+      "sprite": null,
       "maxHp": 50,
       "moves": [
         { "id": "scratch", "name": "抓挠", "intent": "attack", "damage": 10 },
@@ -30,6 +32,7 @@
       "id": "shadow_vine",
       "name": "暗影藤蔓",
       "tier": "normal",
+      "sprite": null,
       "maxHp": 46,
       "moves": [
         {
@@ -46,6 +49,7 @@
       "id": "demo_hound",
       "name": "魔犬",
       "tier": "elite",
+      "sprite": "demo_hound",
       "maxHp": 95,
       "moves": [
         { "id": "pounce", "name": "扑咬", "intent": "attack", "damage": 16 },
@@ -63,6 +67,7 @@
       "id": "controlled_will",
       "name": "被控制的威尔",
       "tier": "elite",
+      "sprite": null,
       "maxHp": 110,
       "moves": [
         {
@@ -85,6 +90,7 @@
       "id": "mind_flayer",
       "name": "夺心魔",
       "tier": "boss",
+      "sprite": null,
       "maxHp": 220,
       "moves": [
         { "id": "tendril", "name": "触须抽打", "intent": "attack", "damage": 14 },
@@ -108,6 +114,7 @@
       "id": "vecna",
       "name": "维克那",
       "tier": "boss",
+      "sprite": null,
       "maxHp": 280,
       "moves": [
         {

@@ -1,0 +1,19 @@
+{
+  "player": {
+    "src": "assets/images/eleven.png",
+    "scale": 4,
+    "idle": true
+  },
+  "enemies": {
+    "demo_hound": {
+      "src": "assets/images/demo_hound.png",
+      "scale": 3.5,
+      "idle": true
+    },
+    "demo_pup": {
+      "src": "assets/images/demo_hound.png",
+      "scale": 2.5,
+      "idle": true
+    }
+  }
+}

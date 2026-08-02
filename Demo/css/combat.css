@@ -22,12 +22,169 @@
 }
 
 .fighter-card {
-  width: min(220px, 42vw);
+  width: min(240px, 44vw);
   padding: 1rem;
   border: 1px solid var(--border);
   background: var(--panel);
   text-align: center;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sprite-stage {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-height: 120px;
+  width: 100%;
+  margin-bottom: 0.15rem;
+}
+
+.battle-sprite {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  height: auto;
+  width: calc(32px * var(--scale, 4));
+  max-width: 100%;
+  user-select: none;
+  pointer-events: none;
+  transform-origin: center bottom;
+}
+
+.sprite-placeholder {
+  width: 56px;
+  height: 72px;
+  border: 2px solid rgba(196, 184, 212, 0.35);
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, rgba(80, 60, 90, 0.7), rgba(30, 20, 40, 0.9));
+  clip-path: polygon(50% 0%, 80% 22%, 80% 55%, 100% 100%, 0% 100%, 20% 55%, 20% 22%);
+  transform-origin: center bottom;
+}
+
+.sprite-placeholder.tier-elite {
+  border-color: rgba(255, 196, 72, 0.55);
+  background: linear-gradient(180deg, rgba(120, 70, 40, 0.75), rgba(40, 20, 20, 0.95));
+}
+
+.sprite-placeholder.tier-boss {
+  width: 72px;
+  height: 88px;
+  border-color: rgba(255, 42, 74, 0.55);
+  background: linear-gradient(180deg, rgba(90, 20, 40, 0.8), rgba(20, 8, 16, 0.95));
+}
+
+.sprite-actor.idle {
+  animation: sprite-idle 2.4s ease-in-out infinite;
+}
+
+.player-card .sprite-actor.anim-attack {
+  animation: sprite-attack-right 0.35s ease;
+}
+
+.enemy-card .sprite-actor.anim-attack {
+  animation: sprite-attack-left 0.35s ease;
+}
+
+.sprite-actor.anim-cast {
+  animation: sprite-cast 0.4s ease;
+}
+
+.sprite-actor.anim-hit {
+  animation: sprite-hit 0.35s ease;
+}
+
+.sprite-actor.anim-die,
+.sprite-stage.is-dead .sprite-actor {
+  animation: sprite-die 0.45s ease forwards;
+}
+
+@keyframes sprite-idle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.02, 0.98);
+  }
+}
+
+@keyframes sprite-attack-right {
+  0% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(28px) scale(1.05, 0.95);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sprite-attack-left {
+  0% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(-28px) scale(1.05, 0.95);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sprite-cast {
+  0%,
+  100% {
+    filter: brightness(1);
+    transform: translateY(0);
+  }
+  30% {
+    filter: brightness(1.5) drop-shadow(0 0 8px rgba(91, 141, 239, 0.8));
+    transform: translateY(-4px) scale(1.04);
+  }
+  60% {
+    filter: brightness(1.25) drop-shadow(0 0 6px rgba(255, 42, 74, 0.5));
+  }
+}
+
+@keyframes sprite-hit {
+  0%,
+  100% {
+    transform: translateX(0);
+    filter: brightness(1);
+  }
+  20% {
+    transform: translateX(-6px);
+    filter: brightness(2.2);
+  }
+  40% {
+    transform: translateX(6px);
+    filter: brightness(1.6);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes sprite-die {
+  0% {
+    transform: translateY(0) scale(1);
+    filter: grayscale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(16px) scale(0.9, 0.75);
+    filter: grayscale(1);
+    opacity: 0.25;
+  }
+}
+
+.fighter-meta {
+  width: 100%;
 }
 
 .player-card {

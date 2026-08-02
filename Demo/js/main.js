@@ -1,5 +1,6 @@
 import { loadCards, pickRewardOptions, resolveCard } from "./cards.js";
 import { loadEnemies, pickEncounter, createEnemyInstance } from "./enemies.js";
+import { loadSprites } from "./sprites.js";
 import { createCombat, syncPlayerHp } from "./combat.js";
 import {
   createNewRun,
@@ -19,6 +20,7 @@ import {
   renderCombat,
   bindCombatHandlers,
   renderPileModal,
+  playCombatAnims,
 } from "./ui/combat-ui.js";
 import { renderMap } from "./ui/map-ui.js";
 import {
@@ -40,7 +42,7 @@ let shopOffer = null;
 let scene = "menu";
 
 async function init() {
-  await Promise.all([loadCards(), loadEnemies()]);
+  await Promise.all([loadCards(), loadEnemies(), loadSprites()]);
   showMenu();
 }
 
@@ -164,6 +166,7 @@ function refreshCombat() {
     },
   });
   renderCombat(app, combat, combatHandlers);
+  playCombatAnims(app, combat);
 }
 
 function onCombatVictory() {

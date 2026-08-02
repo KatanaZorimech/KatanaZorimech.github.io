@@ -15,17 +15,24 @@ function addStatus(unit, id, n) {
   unit.statuses[id] = (Number(unit.statuses[id]) || 0) + n;
 }
 
-function tickStatuses(unit, side) {
-  // Vulnerable/weak tick down at end of owner's turn (StS-like simplification: end of round for both)
+function tickStatuses(unit) {
   for (const key of ["vulnerable", "weak"]) {
     if (unit.statuses[key]) {
       unit.statuses[key] -= 1;
       if (unit.statuses[key] <= 0) delete unit.statuses[key];
     }
   }
-  if (side === "player") {
-    // thorns lasts until end of player turn after enemy acted — clear at start of player turn instead
-  }
+}
+
+function pushAnim(combat, who, kind) {
+  if (!combat.anims) combat.anims = [];
+  combat.anims.push({ who, kind });
+}
+
+function whoFor(combat, unit) {
+  if (unit === combat.player) return "player";
+  const idx = combat.enemies.indexOf(unit);
+  return idx >= 0 ? `enemy${idx}` : null;
 }
 
 export function calcAttackDamage(base, attacker, defender) {
@@ -43,8 +50,15 @@ function applyDamage(target, amount, combat, source) {
     dmg -= blocked;
   }
   if (dmg > 0) {
+    const before = target.hp;
     target.hp = Math.max(0, target.hp - dmg);
-    // Thorns: when player is hit, reflect to the attacking enemy (sourceEnemy)
+    if (target.hp < before) {
+      const who = whoFor(combat, target);
+      if (who) {
+        pushAnim(combat, who, "hit");
+        if (target.hp <= 0) pushAnim(combat, who, "die");
+      }
+    }
     if (
       target === combat.player &&
       source === "enemy" &&
@@ -59,16 +73,33 @@ function applyDamage(target, amount, combat, source) {
         enemy.block -= blocked;
         td -= blocked;
       }
-      if (td > 0) enemy.hp = Math.max(0, enemy.hp - td);
-      combat.log.push(`反弹造成 ${combat.player.thorns} 点伤害`);
+      if (td > 0) {
+        const eb = enemy.hp;
+        enemy.hp = Math.max(0, enemy.hp - td);
+        combat.log.push(`反弹造成 ${combat.player.thorns} 点伤害`);
+        if (enemy.hp < eb) {
+          const eWho = whoFor(combat, enemy);
+          if (eWho) {
+            pushAnim(combat, eWho, "hit");
+            if (enemy.hp <= 0) pushAnim(combat, eWho, "die");
+          }
+        }
+      }
     }
   }
   return amount;
 }
 
-function applyHpLoss(target, amount) {
-  // Direct HP loss ignores block (overload, etc.) — except thorns uses applyHpLoss after calc
+function applyHpLoss(target, amount, combat) {
+  const before = target.hp;
   target.hp = Math.max(0, target.hp - amount);
+  if (combat && target.hp < before) {
+    const who = whoFor(combat, target);
+    if (who) {
+      pushAnim(combat, who, "hit");
+      if (target.hp <= 0) pushAnim(combat, who, "die");
+    }
+  }
 }
 
 function dealAttackToEnemy(combat, base, enemy) {
@@ -98,7 +129,7 @@ export function createCombat(playerRun, enemies, rng) {
   shuffle(deck, rng);
   const combat = {
     rng,
-    phase: "player", // player | enemy | won | lost | await_retrieve
+    phase: "player",
     player: {
       maxHp: playerRun.maxHp,
       hp: playerRun.hp,
@@ -121,8 +152,8 @@ export function createCombat(playerRun, enemies, rng) {
     log: ["战斗开始"],
     pendingRetrieve: null,
     drawPerTurn: DRAW_PER_TURN,
+    anims: [],
   };
-  // Sync strength status
   drawCards(combat, DRAW_PER_TURN);
   return combat;
 }
@@ -142,7 +173,7 @@ function drawCards(combat, n) {
 
 export function getPlayCost(cardInst) {
   const card = resolveCard(cardInst);
-  if (card.cost === "X") return 0; // checked separately
+  if (card.cost === "X") return 0;
   return card.cost;
 }
 
@@ -151,7 +182,7 @@ export function canPlayCard(combat, handIndex) {
   const inst = combat.player.hand[handIndex];
   if (!inst) return false;
   const card = resolveCard(inst);
-  if (card.cost === "X") return combat.player.energy >= 0; // can play with 0 energy for 0 hits
+  if (card.cost === "X") return combat.player.energy >= 0;
   return combat.player.energy >= card.cost;
 }
 
@@ -165,9 +196,6 @@ export function needsTarget(cardInst) {
   );
 }
 
-/**
- * @returns {{ ok: boolean, needRetrieve?: boolean, error?: string }}
- */
 export function playCard(combat, handIndex, enemyIndex = 0) {
   if (!canPlayCard(combat, handIndex)) return { ok: false, error: "无法打出" };
   const inst = combat.player.hand[handIndex];
@@ -183,18 +211,20 @@ export function playCard(combat, handIndex, enemyIndex = 0) {
     combat.player.energy -= card.cost;
   }
 
-  // Remove from hand first
   combat.player.hand.splice(handIndex, 1);
   combat.log.push(`打出 ${card.name}`);
 
-  // Sync strength into statuses for damage calc
   if (combat.player.strength) {
     combat.player.statuses.strength = combat.player.strength;
   }
 
+  const dealsDamage = card.effects.some(
+    (e) => e.op === "damage" || e.op === "damage_x_times"
+  );
+  pushAnim(combat, "player", dealsDamage ? "attack" : "cast");
+
   let needRetrieve = false;
 
-  // Apply buffs/debuffs before damage so same-card 易伤/虚弱能影响本次伤害
   const effectOrder = (op) => {
     if (op === "status" || op === "gain_strength" || op === "thorns") return 0;
     if (op === "damage" || op === "damage_x_times") return 1;
@@ -225,8 +255,7 @@ export function playCard(combat, handIndex, enemyIndex = 0) {
         combat.log.push(`获得 ${effect.n} 点格挡`);
         break;
       case "status": {
-        const target =
-          effect.target === "enemy" ? enemy : combat.player;
+        const target = effect.target === "enemy" ? enemy : combat.player;
         if (!target) break;
         addStatus(target, effect.id, effect.n);
         combat.log.push(
@@ -248,7 +277,7 @@ export function playCard(combat, handIndex, enemyIndex = 0) {
         break;
       }
       case "lose_hp":
-        applyHpLoss(combat.player, effect.n);
+        applyHpLoss(combat.player, effect.n, combat);
         combat.log.push(`失去 ${effect.n} 点生命`);
         break;
       case "gain_energy":
@@ -319,22 +348,26 @@ function statusName(id) {
 
 export function endPlayerTurn(combat) {
   if (combat.phase !== "player") return;
-  // Discard hand
   while (combat.player.hand.length) {
     combat.player.discard.push(combat.player.hand.pop());
   }
-  // Tick player statuses at end of turn
-  tickStatuses(combat.player, "player");
+  tickStatuses(combat.player);
   combat.phase = "enemy";
   runEnemyTurn(combat);
 }
 
 function runEnemyTurn(combat) {
-  for (const enemy of combat.enemies) {
+  for (let ei = 0; ei < combat.enemies.length; ei++) {
+    const enemy = combat.enemies[ei];
     if (enemy.hp <= 0) continue;
     enemy.block = 0;
     const move = peekMove(enemy);
     combat.log.push(`${enemy.name}：${move.name}`);
+
+    const isAttack = !!move.damage;
+    const isCast = !isAttack && (!!move.block || !!move.selfStatus || !!move.status);
+    if (isAttack) pushAnim(combat, `enemy${ei}`, "attack");
+    else if (isCast) pushAnim(combat, `enemy${ei}`, "cast");
 
     if (move.damage) {
       let dmg = move.damage + statusAmt(enemy, "strength");
@@ -364,7 +397,7 @@ function runEnemyTurn(combat) {
 
     advanceMove(enemy);
     enemy.intent = peekMove(enemy);
-    tickStatuses(enemy, "enemy");
+    tickStatuses(enemy);
 
     if (combat.player.hp <= 0) {
       combat.phase = "lost";
@@ -378,7 +411,6 @@ function runEnemyTurn(combat) {
     }
   }
 
-  // Start player turn
   combat.player.block = 0;
   combat.player.thorns = 0;
   combat.player.energy = combat.player.maxEnergy;
