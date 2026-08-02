@@ -1,6 +1,7 @@
 /**
  * Slay the Spire–style branching map (2 acts).
  * Nodes form a DAG by row; player picks among reachable next nodes.
+ * Rest sites are placed so every start→boss path has a similar count.
  */
 
 const NODE_LABELS = {
@@ -11,21 +12,159 @@ const NODE_LABELS = {
   boss: "Boss",
 };
 
+const REST_TARGET = 2; // desired rests per full path
+const REST_MAX = 3; // soft cap per path
+
 function randInt(rng, min, max) {
   return min + Math.floor(rng() * (max - min + 1));
 }
 
-function pickType(rng, row, totalRows) {
-  // last content row before boss prefers rest/shop
+/** Initial types — no rests; rests are assigned by balanceRests. */
+function pickType(rng, row) {
   if (row === 0) return "combat";
-  if (row === totalRows - 2) {
-    return rng() < 0.55 ? "rest" : "elite";
-  }
   const r = rng();
-  if (row >= 3 && r < 0.18) return "elite";
-  if (r < 0.22) return "rest";
-  if (r < 0.38) return "shop";
+  if (row >= 3 && r < 0.2) return "elite";
+  if (r < 0.22) return "shop";
   return "combat";
+}
+
+function setNodeType(node, type) {
+  node.type = type;
+  node.label = type === "boss" ? node.label : NODE_LABELS[type];
+  if (type !== "boss") {
+    // keep boss label (夺心魔 / 维克那)
+  }
+  if (type === "rest" || type === "combat" || type === "elite" || type === "shop") {
+    node.label = NODE_LABELS[type];
+  }
+}
+
+function enumeratePaths(start, byId) {
+  const paths = [];
+  function dfs(node, path) {
+    const nextPath = path.concat(node);
+    if (!node.next.length || node.type === "boss") {
+      paths.push(nextPath);
+      return;
+    }
+    for (const nid of node.next) {
+      const nxt = byId.get(nid);
+      if (nxt) dfs(nxt, nextPath);
+    }
+  }
+  dfs(start, []);
+  return paths;
+}
+
+function countRests(path) {
+  return path.filter((n) => n.type === "rest").length;
+}
+
+function pathHas(path, node) {
+  return path.some((n) => n.id === node.id);
+}
+
+/**
+ * Place / trim rest sites so each start→boss path is near REST_TARGET.
+ */
+function balanceRests(rows) {
+  const nodes = rows.flat();
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const start = rows[0][0];
+
+  const canBecomeRest = (n) =>
+    n.row > 0 && n.type !== "boss" && n.type !== "elite";
+
+  // Prefer mid/late rows for rest seeding
+  const preferredRow = Math.max(2, rows.length - 3);
+
+  // Seed: one rest on preferred row if possible (helps all lanes)
+  const seedRow = rows[preferredRow] || rows[Math.floor(rows.length / 2)];
+  if (seedRow) {
+    for (const n of seedRow) {
+      if (canBecomeRest(n)) {
+        setNodeType(n, "rest");
+        break;
+      }
+    }
+  }
+
+  // Add rests to short paths
+  for (let iter = 0; iter < 50; iter++) {
+    const paths = enumeratePaths(start, byId);
+    const short = paths.filter((p) => countRests(p) < REST_TARGET);
+    if (!short.length) break;
+
+    let best = null;
+    let bestScore = -Infinity;
+
+    for (const n of nodes) {
+      if (!canBecomeRest(n) || n.type === "rest") continue;
+
+      let help = 0;
+      let overshoot = 0;
+      for (const path of paths) {
+        if (!pathHas(path, n)) continue;
+        const after = countRests(path) + 1;
+        if (countRests(path) < REST_TARGET) help += 1;
+        if (after > REST_MAX) overshoot += 1;
+      }
+      if (help === 0) continue;
+
+      // Prefer later rows (camp before boss) and more helped short paths
+      const rowBonus = n.row * 0.15;
+      const score = help * 10 - overshoot * 6 + rowBonus;
+      if (score > bestScore) {
+        bestScore = score;
+        best = n;
+      }
+    }
+
+    if (!best) break;
+    setNodeType(best, "rest");
+  }
+
+  // Trim rests on paths that are too rich (without creating new shortfalls if possible)
+  for (let iter = 0; iter < 40; iter++) {
+    const paths = enumeratePaths(start, byId);
+    const long = paths.filter((p) => countRests(p) > REST_MAX);
+    if (!long.length) break;
+
+    let best = null;
+    let bestScore = -Infinity;
+
+    for (const n of nodes) {
+      if (n.type !== "rest") continue;
+
+      let longHits = 0;
+      let wouldShorten = 0;
+      for (const path of paths) {
+        if (!pathHas(path, n)) continue;
+        if (countRests(path) > REST_MAX) longHits += 1;
+        if (countRests(path) - 1 < REST_TARGET) wouldShorten += 1;
+      }
+      if (longHits === 0) continue;
+
+      const score = longHits * 10 - wouldShorten * 12;
+      if (score > bestScore) {
+        bestScore = score;
+        best = n;
+      }
+    }
+
+    if (!best || bestScore < 0) break;
+    setNodeType(best, "combat");
+  }
+
+  // Final pass: if any path still has 0 rests, force one
+  const paths = enumeratePaths(start, byId);
+  for (const path of paths) {
+    if (countRests(path) > 0) continue;
+    const candidate = [...path]
+      .reverse()
+      .find((n) => canBecomeRest(n) && n.type !== "rest");
+    if (candidate) setNodeType(candidate, "rest");
+  }
 }
 
 function generateAct(actIndex, bossId, bossLabel, rng) {
@@ -36,7 +175,7 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
     const count = row === 0 ? 1 : randInt(rng, 2, 4);
     const rowNodes = [];
     for (let col = 0; col < count; col++) {
-      const type = pickType(rng, row, contentRows + 1);
+      const type = pickType(rng, row);
       rowNodes.push({
         id: `a${actIndex}_r${row}_${col}`,
         row,
@@ -64,12 +203,10 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
   for (let r = 0; r < rows.length - 1; r++) {
     const cur = rows[r];
     const nxt = rows[r + 1];
-    // Ensure every next node has ≥1 parent
     const parentsFor = nxt.map(() => []);
 
     for (let i = 0; i < cur.length; i++) {
       const from = cur[i];
-      // Map column proportionally into next row
       const ideal = (i / Math.max(cur.length - 1, 1)) * (nxt.length - 1);
       const primary = Math.round(ideal);
       const targets = new Set([primary]);
@@ -78,8 +215,7 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
         if (side >= 0 && side < nxt.length) targets.add(side);
       }
       if (nxt.length > 2 && rng() < 0.25) {
-        const extra = randInt(rng, 0, nxt.length - 1);
-        targets.add(extra);
+        targets.add(randInt(rng, 0, nxt.length - 1));
       }
       for (const t of targets) {
         from.next.push(nxt[t].id);
@@ -87,7 +223,6 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
       }
     }
 
-    // Orphan repair: connect nearest parent
     for (let t = 0; t < nxt.length; t++) {
       if (parentsFor[t].length) continue;
       const ideal = (t / Math.max(nxt.length - 1, 1)) * (cur.length - 1);
@@ -95,11 +230,12 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
       cur[p].next.push(nxt[t].id);
     }
 
-    // Dedupe next arrays
     for (const node of cur) {
       node.next = [...new Set(node.next)];
     }
   }
+
+  balanceRests(rows);
 
   return {
     index: actIndex,
@@ -114,7 +250,6 @@ export function generateRunMap(rng) {
   const act1 = generateAct(1, "vecna", "维克那", rng);
   return {
     acts: [act0, act1],
-    // legacy key kept empty for old saves detection
     version: 2,
   };
 }
@@ -133,7 +268,6 @@ export function getCurrentNode(run) {
   return getNode(run, run.currentNodeId);
 }
 
-/** Nodes the player may travel to next (or first row if not started). */
 export function getAvailableNodes(run) {
   const act = getAct(run);
   if (!act) return [];
@@ -145,12 +279,10 @@ export function getAvailableNodes(run) {
   const cur = getNode(run, run.currentNodeId);
   if (!cur) return [];
 
-  // After completing current node, choose among its next links
   if (run.awaitingPathChoice) {
     return cur.next.map((id) => getNode(run, id)).filter(Boolean);
   }
 
-  // Still need to enter/complete current node
   return [];
 }
 
@@ -158,7 +290,6 @@ export function isNodeAvailable(run, nodeId) {
   return getAvailableNodes(run).some((n) => n.id === nodeId);
 }
 
-/** Call when player selects a path node to travel to. */
 export function travelToNode(run, nodeId) {
   if (!isNodeAvailable(run, nodeId)) return false;
   run.currentNodeId = nodeId;
@@ -169,13 +300,11 @@ export function travelToNode(run, nodeId) {
   return true;
 }
 
-/** Call after finishing a node's encounter/rest/shop. */
 export function completeCurrentNode(run) {
   const cur = getCurrentNode(run);
   if (!cur) return { done: false };
 
   if (cur.type === "boss") {
-    // Advance act or win
     if (run.actIndex >= run.map.acts.length - 1) {
       run.completed = true;
       run.awaitingPathChoice = false;

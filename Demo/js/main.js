@@ -15,7 +15,11 @@ import {
   travelToNode,
   completeCurrentNode,
 } from "./map.js";
-import { renderCombat, bindCombatHandlers } from "./ui/combat-ui.js";
+import {
+  renderCombat,
+  bindCombatHandlers,
+  renderPileModal,
+} from "./ui/combat-ui.js";
 import { renderMap } from "./ui/map-ui.js";
 import {
   renderReward,
@@ -154,6 +158,10 @@ function refreshCombat() {
     refresh: () => refreshCombat(),
     onVictory: () => onCombatVictory(),
     onDefeat: () => onCombatDefeat(),
+    onViewPile(pileKey) {
+      const modal = renderPileModal(combat, pileKey, () => modal.remove());
+      app.appendChild(modal);
+    },
   });
   renderCombat(app, combat, combatHandlers);
 }

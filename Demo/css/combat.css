@@ -2,21 +2,53 @@
   padding-bottom: 1rem;
 }
 
-.enemies-row {
+.combat-arena {
   display: flex;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: space-between;
   gap: 1.5rem;
-  min-height: 160px;
-  margin-bottom: 1rem;
+  min-height: 200px;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
 }
 
-.enemy-card {
-  width: 200px;
+.enemies-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.fighter-card {
+  width: min(220px, 42vw);
   padding: 1rem;
   border: 1px solid var(--border);
   background: var(--panel);
   text-align: center;
   border-radius: 4px;
+}
+
+.player-card {
+  border-color: rgba(91, 141, 239, 0.45);
+  background: rgba(20, 30, 50, 0.55);
+  align-self: center;
+}
+
+.fighter-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  color: var(--electric);
+  border: 1px solid rgba(91, 141, 239, 0.4);
+  padding: 0.1rem 0.45rem;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-display);
+}
+
+.enemy-card {
+  border-color: var(--border);
 }
 
 .enemy-card.dead {
@@ -54,7 +86,8 @@
   }
 }
 
-.enemy-name {
+.enemy-name,
+.player-name {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.15rem;
@@ -91,49 +124,76 @@
   min-height: 1em;
 }
 
-.player-bar {
-  border: 1px solid rgba(91, 141, 239, 0.35);
-  background: rgba(20, 30, 50, 0.5);
-  padding: 0.85rem 1rem;
-  border-radius: 4px;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.35rem 1rem;
-  align-items: center;
-}
-
-.player-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  grid-column: 1;
-}
-
-.player-bar .hp-bar {
-  grid-column: 2;
-}
-
-.player-bar .hp-text {
-  grid-column: 3;
-}
-
 .energy {
-  grid-column: 1 / -1;
+  margin-top: 0.45rem;
   font-family: var(--font-display);
   color: var(--electric);
   letter-spacing: 0.08em;
 }
 
-.player-bar .statuses {
-  grid-column: 1 / -1;
-}
-
 .piles {
   display: flex;
-  gap: 1.25rem;
+  gap: 0.65rem;
   justify-content: center;
-  margin: 0.75rem 0 0;
+  margin: 0.5rem 0 0.25rem;
+  flex-wrap: wrap;
+}
+
+.pile-btn {
+  font-family: var(--font-display);
   font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--cream);
+  background: rgba(20, 10, 28, 0.75);
+  border: 1px solid rgba(196, 184, 212, 0.3);
+  border-radius: 4px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.pile-btn:hover {
+  border-color: var(--electric);
+  background: rgba(30, 58, 95, 0.35);
+  transform: translateY(-1px);
+}
+
+.pile-count {
+  min-width: 1.4rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 2px;
+  background: rgba(91, 141, 239, 0.2);
+  color: var(--electric);
+  text-align: center;
+  font-weight: 700;
+}
+
+.pile-note {
   color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 0.75rem;
+}
+
+.pile-empty {
+  color: var(--muted);
+  text-align: center;
+  width: 100%;
+}
+
+.pile-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  max-height: 50vh;
+  overflow: auto;
+}
+
+.pile-modal .card.compact {
+  width: auto;
 }
 
 .combat-actions {
@@ -172,8 +232,16 @@
 }
 
 @media (max-width: 600px) {
-  .player-bar {
-    grid-template-columns: 1fr;
+  .combat-arena {
+    gap: 0.75rem;
+  }
+  .fighter-card {
+    width: min(160px, 46vw);
+    padding: 0.7rem;
+  }
+  .enemy-name,
+  .player-name {
+    font-size: 1rem;
   }
   .card {
     width: 120px;

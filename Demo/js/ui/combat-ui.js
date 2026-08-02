@@ -24,19 +24,31 @@ export function renderCombat(root, combat, handlers) {
     delete combat.player.statuses.strength;
   }
 
-  const top = el("div", "combat-top");
-  const log = el("div", "combat-log");
-  log.innerHTML = combat.log
-    .slice(-8)
-    .map((l) => `<div>${escapeHtml(l)}</div>`)
-    .join("");
+  const arena = el("div", "combat-arena");
+  arena.appendChild(renderPlayer(combat));
 
-  const enemiesRow = el("div", "enemies-row");
+  const enemiesCol = el("div", "enemies-col");
   combat.enemies.forEach((enemy, idx) => {
-    enemiesRow.appendChild(renderEnemy(enemy, idx, combat, handlers));
+    enemiesCol.appendChild(renderEnemy(enemy, idx, combat, handlers));
   });
+  arena.appendChild(enemiesCol);
 
-  const playerBar = renderPlayer(combat);
+  const piles = el("div", "piles");
+  piles.appendChild(
+    pileButton("抽牌堆", combat.player.deck.length, () =>
+      handlers.onViewPile("deck")
+    )
+  );
+  piles.appendChild(
+    pileButton("弃牌堆", combat.player.discard.length, () =>
+      handlers.onViewPile("discard")
+    )
+  );
+  piles.appendChild(
+    pileButton("消耗", combat.player.exhaust.length, () =>
+      handlers.onViewPile("exhaust")
+    )
+  );
 
   const hand = el("div", "hand");
   combat.player.hand.forEach((inst, idx) => {
@@ -50,16 +62,13 @@ export function renderCombat(root, combat, handlers) {
   endBtn.addEventListener("click", () => handlers.onEndTurn());
   actions.appendChild(endBtn);
 
-  const piles = el("div", "piles");
-  piles.innerHTML = `
-    <span>抽牌堆 ${combat.player.deck.length}</span>
-    <span>弃牌堆 ${combat.player.discard.length}</span>
-    <span>消耗 ${combat.player.exhaust.length}</span>
-  `;
+  const log = el("div", "combat-log");
+  log.innerHTML = combat.log
+    .slice(-8)
+    .map((l) => `<div>${escapeHtml(l)}</div>`)
+    .join("");
 
-  top.appendChild(enemiesRow);
-  root.appendChild(top);
-  root.appendChild(playerBar);
+  root.appendChild(arena);
   root.appendChild(piles);
   root.appendChild(hand);
   root.appendChild(actions);
@@ -82,8 +91,75 @@ export function renderCombat(root, combat, handlers) {
   }
 }
 
+function pileButton(label, count, onClick) {
+  const btn = el("button", "pile-btn");
+  btn.type = "button";
+  btn.innerHTML = `<span class="pile-label">${label}</span><span class="pile-count">${count}</span>`;
+  btn.addEventListener("click", onClick);
+  return btn;
+}
+
+export function renderPileModal(combat, pileKey, onClose) {
+  const titles = {
+    deck: "抽牌堆",
+    discard: "弃牌堆",
+    exhaust: "消耗牌堆",
+  };
+  const notes = {
+    deck: "顺序已打乱显示（与尖塔相同）",
+    discard: "按弃牌顺序排列",
+    exhaust: "本场战斗已消耗的牌",
+  };
+
+  let cards = (combat.player[pileKey] || []).slice();
+  if (pileKey === "deck") {
+    // Visual shuffle only — does not mutate combat state
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+  }
+
+  const modal = el("div", "modal");
+  const box = el("div", "modal-box pile-modal");
+  box.innerHTML = `
+    <h3>${titles[pileKey] || "牌堆"}（${cards.length}）</h3>
+    <p class="pile-note">${notes[pileKey] || ""}</p>
+  `;
+
+  const list = el("div", "pile-card-grid");
+  if (!cards.length) {
+    const empty = el("p", "pile-empty");
+    empty.textContent = "空";
+    list.appendChild(empty);
+  } else {
+    cards.forEach((inst) => {
+      const c = resolveCard(inst);
+      const div = el("div", `card compact rarity-${c.rarity}`);
+      div.innerHTML = `
+        <span class="card-name">${escapeHtml(c.name)}</span>
+        <span class="card-type">${typeLabel(c.type)} · 费用 ${c.cost === "X" ? "X" : c.cost}</span>
+        <span class="card-text">${escapeHtml(c.text)}</span>
+      `;
+      list.appendChild(div);
+    });
+  }
+  box.appendChild(list);
+
+  const close = el("button", "btn");
+  close.textContent = "关闭";
+  close.addEventListener("click", onClose);
+  box.appendChild(close);
+
+  modal.appendChild(box);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) onClose();
+  });
+  return modal;
+}
+
 function renderEnemy(enemy, idx, combat, handlers) {
-  const card = el("div", `enemy-card ${enemy.hp <= 0 ? "dead" : ""}`);
+  const card = el("div", `fighter-card enemy-card ${enemy.hp <= 0 ? "dead" : ""}`);
   const intent = getIntentDisplay(enemy);
   const statuses = formatStatuses(enemy.statuses);
 
@@ -104,23 +180,27 @@ function renderEnemy(enemy, idx, combat, handlers) {
 
 function renderPlayer(combat) {
   const p = combat.player;
-  const bar = el("div", "player-bar");
+  const card = el("div", "fighter-card player-card");
   const statuses = formatStatuses(p.statuses);
   const thorns = p.thorns ? ` · 反弹 ${p.thorns}` : "";
-  bar.innerHTML = `
+  card.innerHTML = `
+    <div class="fighter-tag">你</div>
     <div class="player-name">小十一</div>
     <div class="hp-bar"><div class="hp-fill player" style="width:${(p.hp / p.maxHp) * 100}%"></div></div>
     <div class="hp-text">${p.hp}/${p.maxHp}${p.block ? ` · 格挡 ${p.block}` : ""}${thorns}</div>
     <div class="energy">能量 ${p.energy}/${p.maxEnergy}</div>
     <div class="statuses">${statuses}</div>
   `;
-  return bar;
+  return card;
 }
 
 function renderCard(inst, idx, combat, handlers) {
   const card = resolveCard(inst);
   const playable = canPlayCard(combat, idx);
-  const node = el("button", `card rarity-${card.rarity} type-${card.type}${playable ? " playable" : " muted"}`);
+  const node = el(
+    "button",
+    `card rarity-${card.rarity} type-${card.type}${playable ? " playable" : " muted"}`
+  );
   const costLabel = card.cost === "X" ? "X" : String(card.cost);
   node.innerHTML = `
     <span class="card-cost">${costLabel}</span>
@@ -134,11 +214,15 @@ function renderCard(inst, idx, combat, handlers) {
     handlers.onPlayCard(idx);
   });
 
-  // Preview damage tooltip
-  if (card.type === "attack" || card.effects.some((e) => e.op === "damage" || e.op === "damage_x_times")) {
+  if (
+    card.type === "attack" ||
+    card.effects.some((e) => e.op === "damage" || e.op === "damage_x_times")
+  ) {
     const enemy = combat.enemies.find((e) => e.hp > 0);
     if (enemy) {
-      const dmgEff = card.effects.find((e) => e.op === "damage" || e.op === "damage_x_times");
+      const dmgEff = card.effects.find(
+        (e) => e.op === "damage" || e.op === "damage_x_times"
+      );
       if (dmgEff) {
         const preview = calcAttackDamage(dmgEff.n, combat.player, enemy);
         node.title = `预估伤害: ${preview}${dmgEff.op === "damage_x_times" ? " × 能量" : ""}`;
@@ -199,7 +283,6 @@ export function bindCombatHandlers(combat, callbacks) {
     onPlayCard(handIndex) {
       const inst = combat.player.hand[handIndex];
       const target = needsTarget(inst) ? selectedEnemy : 0;
-      // Prefer first living enemy if selected dead
       if (needsTarget(inst)) {
         if (!combat.enemies[target] || combat.enemies[target].hp <= 0) {
           selectedEnemy = combat.enemies.findIndex((e) => e.hp > 0);
@@ -215,6 +298,9 @@ export function bindCombatHandlers(combat, callbacks) {
     onRetrieve(discardIndex) {
       completeRetrieve(combat, discardIndex);
       callbacks.refresh();
+    },
+    onViewPile(pileKey) {
+      callbacks.onViewPile?.(pileKey);
     },
     onVictory: callbacks.onVictory,
     onDefeat: callbacks.onDefeat,
