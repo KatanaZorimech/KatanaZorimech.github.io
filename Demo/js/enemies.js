@@ -1,6 +1,14 @@
 let enemyDefs = null;
 let encounters = null;
 
+/** Weak → strong for map row bias */
+export const POWER_ORDER = [
+  "demo_pup",
+  "controlled_will",
+  "demo_hound",
+  "shadow_vine",
+];
+
 export async function loadEnemies() {
   const res = await fetch("./data/enemies.json");
   const data = await res.json();
@@ -13,6 +21,10 @@ export function getEnemyDef(id) {
   return enemyDefs[id];
 }
 
+export function getEncounters() {
+  return encounters;
+}
+
 function shuffleInPlace(arr, rng) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
@@ -22,12 +34,12 @@ function shuffleInPlace(arr, rng) {
 }
 
 /**
- * Draw without replacement so each fight cycles through the pool evenly.
- * Avoids immediate repeat when the bag refills.
+ * Fallback random draw (when node has no pre-assigned enemyId).
  */
 export function pickEncounter(tier, rng, run) {
-  if (tier === "bossFloor1") return encounters.bossFloor1;
-  if (tier === "bossFloor2") return encounters.bossFloor2;
+  if (tier === "boss" || tier === "bossFloor1" || tier === "bossFloor2") {
+    return encounters.boss || encounters.bossFloor2 || "vecna";
+  }
 
   const pool = encounters[tier];
   if (!pool || !pool.length) return null;
@@ -37,7 +49,6 @@ export function pickEncounter(tier, rng, run) {
 
   if (!bag || bag.length === 0) {
     bag = shuffleInPlace(pool.slice(), rng);
-    // If refill would start with the same enemy as last fight, rotate
     const last = run.lastEncounter?.[tier];
     if (last && bag.length > 1 && bag[bag.length - 1] === last) {
       bag.unshift(bag.pop());
@@ -66,16 +77,23 @@ export function createEnemyInstance(defId) {
     statuses: {},
     moveIndex: 0,
     intent: null,
+    transformed: false,
+    phaseId: null,
   };
 }
 
+function moveDef(enemy) {
+  const key = enemy.phaseId || enemy.id;
+  return enemyDefs[key];
+}
+
 export function peekMove(enemy) {
-  const def = enemyDefs[enemy.id];
+  const def = moveDef(enemy);
   return def.moves[enemy.moveIndex % def.moves.length];
 }
 
 export function advanceMove(enemy) {
-  const def = enemyDefs[enemy.id];
+  const def = moveDef(enemy);
   enemy.moveIndex = (enemy.moveIndex + 1) % def.moves.length;
 }
 
@@ -94,5 +112,55 @@ export function intentLabel(move) {
       return `蓄力 · 防 ${move.block || 0}`;
     default:
       return move.name;
+  }
+}
+
+/**
+ * Assign enemies to combat/elite nodes: lower rows weaker, even frequency.
+ */
+export function assignEncountersToRows(rows, rng) {
+  if (!encounters) return;
+  const normalPool = (encounters.normal || []).slice();
+  const elitePool = (encounters.elite || []).slice();
+
+  const combatNodes = [];
+  const eliteNodes = [];
+  for (const row of rows) {
+    for (const n of row) {
+      if (n.type === "combat") combatNodes.push(n);
+      else if (n.type === "elite") eliteNodes.push(n);
+    }
+  }
+
+  assignWithRowBias(combatNodes, normalPool, rng);
+  assignWithRowBias(eliteNodes, elitePool, rng);
+}
+
+function assignWithRowBias(nodes, pool, rng) {
+  if (!nodes.length || !pool.length) return;
+  nodes.sort((a, b) => a.row - b.row || a.col - b.col);
+
+  const counts = Object.fromEntries(pool.map((id) => [id, 0]));
+  const maxRow = Math.max(...nodes.map((n) => n.row), 1);
+
+  for (const node of nodes) {
+    const t = node.row / maxRow;
+    // Prefer weaker early, stronger late
+    let preferred;
+    if (pool.length === 1) preferred = pool[0];
+    else if (t < 0.4) preferred = pool[0];
+    else if (t > 0.6) preferred = pool[pool.length - 1];
+    else preferred = pool[Math.floor(rng() * pool.length)];
+
+    const minCount = Math.min(...pool.map((id) => counts[id]));
+    const underused = pool.filter((id) => counts[id] === minCount);
+
+    let pick;
+    if (underused.includes(preferred)) pick = preferred;
+    else if (counts[preferred] <= minCount + 1 && rng() < 0.55) pick = preferred;
+    else pick = underused[Math.floor(rng() * underused.length)];
+
+    node.enemyId = pick;
+    counts[pick] += 1;
   }
 }

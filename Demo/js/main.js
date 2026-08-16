@@ -142,7 +142,9 @@ function startCombat(node) {
   const rng = makeRng(run);
   let enemyId;
   if (node.type === "boss") {
-    enemyId = node.bossId;
+    enemyId = node.bossId || "vecna";
+  } else if (node.enemyId) {
+    enemyId = node.enemyId;
   } else if (node.type === "elite") {
     enemyId = pickEncounter("elite", rng, run);
   } else {

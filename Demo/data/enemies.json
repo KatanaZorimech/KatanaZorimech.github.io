@@ -4,10 +4,11 @@
       "id": "demo_pup",
       "name": "小魔狗",
       "tier": "normal",
+      "power": 1,
       "sprite": "demo_pup",
-      "maxHp": 42,
+      "maxHp": 40,
       "moves": [
-        { "id": "bite", "name": "咬击", "intent": "attack", "damage": 8 },
+        { "id": "bite", "name": "咬击", "intent": "attack", "damage": 7 },
         {
           "id": "rip",
           "name": "撕咬",
@@ -17,62 +18,71 @@
         }
       ]
     },
-    "shadow_vine": {
-      "id": "shadow_vine",
-      "name": "暗影藤蔓",
-      "tier": "normal",
-      "sprite": "shadow_vine",
-      "maxHp": 46,
-      "moves": [
-        {
-          "id": "entangle",
-          "name": "缠绕",
-          "intent": "attack_debuff",
-          "damage": 6,
-          "status": { "id": "vulnerable", "n": 1, "target": "player" }
-        },
-        { "id": "lash", "name": "抽打", "intent": "attack", "damage": 12 }
-      ]
-    },
-    "demo_hound": {
-      "id": "demo_hound",
-      "name": "魔犬",
-      "tier": "elite",
-      "sprite": "demo_hound",
-      "maxHp": 95,
-      "moves": [
-        { "id": "pounce", "name": "扑咬", "intent": "attack", "damage": 16 },
-        {
-          "id": "maul",
-          "name": "撕裂",
-          "intent": "attack_debuff",
-          "damage": 11,
-          "status": { "id": "weak", "n": 2, "target": "player" }
-        },
-        { "id": "frenzy", "name": "狂袭", "intent": "attack", "damage": 14 }
-      ]
-    },
     "controlled_will": {
       "id": "controlled_will",
       "name": "被控制的威尔",
-      "tier": "elite",
+      "tier": "normal",
+      "power": 2,
       "sprite": "controlled_will",
-      "maxHp": 110,
+      "maxHp": 68,
       "moves": [
         {
           "id": "shadow_bolt",
           "name": "暗影箭",
           "intent": "attack_debuff",
-          "damage": 12,
-          "status": { "id": "vulnerable", "n": 2, "target": "player" }
+          "damage": 10,
+          "status": { "id": "vulnerable", "n": 1, "target": "player" }
         },
         {
           "id": "empower",
           "name": "暗影赋能",
           "intent": "buff",
-          "selfStatus": { "id": "strength", "n": 2 }
+          "selfStatus": { "id": "strength", "n": 1 }
         },
-        { "id": "possessed_strike", "name": "附身重击", "intent": "attack", "damage": 18 }
+        { "id": "possessed_strike", "name": "附身重击", "intent": "attack", "damage": 13 }
+      ]
+    },
+    "demo_hound": {
+      "id": "demo_hound",
+      "name": "精英魔犬",
+      "tier": "elite",
+      "power": 3,
+      "sprite": "demo_hound",
+      "maxHp": 100,
+      "moves": [
+        { "id": "pounce", "name": "扑咬", "intent": "attack", "damage": 15 },
+        {
+          "id": "maul",
+          "name": "撕裂",
+          "intent": "attack_debuff",
+          "damage": 12,
+          "status": { "id": "weak", "n": 2, "target": "player" }
+        },
+        { "id": "frenzy", "name": "狂袭", "intent": "attack", "damage": 17 }
+      ]
+    },
+    "shadow_vine": {
+      "id": "shadow_vine",
+      "name": "暗影藤蔓",
+      "tier": "elite",
+      "power": 4,
+      "sprite": "shadow_vine",
+      "maxHp": 125,
+      "moves": [
+        {
+          "id": "entangle",
+          "name": "缠绕",
+          "intent": "attack_debuff",
+          "damage": 14,
+          "status": { "id": "vulnerable", "n": 2, "target": "player" }
+        },
+        { "id": "lash", "name": "抽打", "intent": "attack", "damage": 20 },
+        {
+          "id": "choke",
+          "name": "绞杀",
+          "intent": "attack",
+          "damage": 18
+        }
       ]
     },
     "mind_flayer": {
@@ -82,12 +92,12 @@
       "sprite": "mind_flayer",
       "maxHp": 220,
       "moves": [
-        { "id": "tendril", "name": "触须抽打", "intent": "attack", "damage": 14 },
+        { "id": "tendril", "name": "触须抽打", "intent": "attack", "damage": 16 },
         {
           "id": "mind_crush",
           "name": "心灵碾压",
           "intent": "attack_debuff",
-          "damage": 10,
+          "damage": 12,
           "status": { "id": "weak", "n": 2, "target": "player" }
         },
         {
@@ -96,7 +106,7 @@
           "intent": "buff",
           "selfStatus": { "id": "strength", "n": 2 }
         },
-        { "id": "flay", "name": "夺心", "intent": "attack", "damage": 22 }
+        { "id": "flay", "name": "夺心", "intent": "attack", "damage": 24 }
       ]
     },
     "vecna": {
@@ -104,25 +114,24 @@
       "name": "维克那",
       "tier": "boss",
       "sprite": "vecna",
-      "maxHp": 280,
+      "maxHp": 300,
       "moves": [
         {
           "id": "curse",
           "name": "诅咒凝视",
           "intent": "attack_debuff",
-          "damage": 12,
+          "damage": 14,
           "status": { "id": "vulnerable", "n": 2, "target": "player" }
         },
         { "id": "bone_crush", "name": "碎骨", "intent": "attack", "damage": 18 },
-        { "id": "charge", "name": "蓄力", "intent": "charge", "block": 10 },
-        { "id": "ultimate", "name": "暗影裁决", "intent": "attack", "damage": 32 }
+        { "id": "charge", "name": "蓄力", "intent": "charge", "block": 12 },
+        { "id": "ultimate", "name": "暗影裁决", "intent": "attack", "damage": 28 }
       ]
     }
   },
   "encounters": {
-    "normal": ["demo_pup", "shadow_vine"],
-    "elite": ["demo_hound", "controlled_will"],
-    "bossFloor1": "mind_flayer",
-    "bossFloor2": "vecna"
+    "normal": ["demo_pup", "controlled_will"],
+    "elite": ["demo_hound", "shadow_vine"],
+    "boss": "vecna"
   }
 }

@@ -56,14 +56,18 @@ export function cardsByRarity(rarity) {
 }
 
 export function pickRewardOptions(rng, count = 3) {
+  const starterIds = new Set([...new Set(starterDeckIds)]);
   const pool = [];
   for (const c of Object.values(cardDefs)) {
+    if (starterIds.has(c.id)) continue;
     const weight = c.rarity === "common" ? 10 : c.rarity === "uncommon" ? 5 : 2;
     for (let i = 0; i < weight; i++) pool.push(c.id);
   }
   const picked = [];
   const used = new Set();
-  while (picked.length < count && pool.length) {
+  let guard = 0;
+  while (picked.length < count && pool.length && guard < 500) {
+    guard += 1;
     const id = pool[Math.floor(rng() * pool.length)];
     if (used.has(id)) continue;
     used.add(id);

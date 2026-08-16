@@ -16,7 +16,13 @@ const STATUS_LABEL = {
   strength: "力量",
 };
 
-const ANIM_CLASSES = ["anim-attack", "anim-cast", "anim-hit", "anim-die"];
+const ANIM_CLASSES = [
+  "anim-attack",
+  "anim-cast",
+  "anim-hit",
+  "anim-die",
+  "anim-transform",
+];
 
 export function renderCombat(root, combat, handlers) {
   root.innerHTML = "";

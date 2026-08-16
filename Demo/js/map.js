@@ -2,7 +2,10 @@
  * Slay the Spire–style branching map (2 acts).
  * Nodes form a DAG by row; player picks among reachable next nodes.
  * Rest sites are placed so every start→boss path has a similar count.
+ * Combat/elite nodes get enemyId pre-assigned (weak bottom → strong top).
  */
+
+import { assignEncountersToRows } from "./enemies.js";
 
 const NODE_LABELS = {
   combat: "遭遇",
@@ -20,23 +23,21 @@ function randInt(rng, min, max) {
 }
 
 /** Initial types — no rests; rests are assigned by balanceRests. */
-function pickType(rng, row) {
+function pickType(rng, row, contentRows) {
   if (row === 0) return "combat";
+  const progress = row / Math.max(contentRows - 1, 1);
   const r = rng();
-  if (row >= 3 && r < 0.2) return "elite";
-  if (r < 0.22) return "shop";
+  // Upper rows: more elites; lower rows: mostly combat
+  if (progress >= 0.5 && r < 0.38) return "elite";
+  if (progress < 0.35 && r < 0.1) return "elite";
+  if (r < 0.2) return "shop";
   return "combat";
 }
 
 function setNodeType(node, type) {
   node.type = type;
-  node.label = type === "boss" ? node.label : NODE_LABELS[type];
-  if (type !== "boss") {
-    // keep boss label (夺心魔 / 维克那)
-  }
-  if (type === "rest" || type === "combat" || type === "elite" || type === "shop") {
-    node.label = NODE_LABELS[type];
-  }
+  if (type === "boss") return;
+  node.label = NODE_LABELS[type];
 }
 
 function enumeratePaths(start, byId) {
@@ -175,7 +176,7 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
     const count = row === 0 ? 1 : randInt(rng, 2, 4);
     const rowNodes = [];
     for (let col = 0; col < count; col++) {
-      const type = pickType(rng, row);
+      const type = pickType(rng, row, contentRows);
       rowNodes.push({
         id: `a${actIndex}_r${row}_${col}`,
         row,
@@ -236,6 +237,7 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
   }
 
   balanceRests(rows);
+  assignEncountersToRows(rows, rng);
 
   return {
     index: actIndex,
@@ -246,7 +248,7 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
 }
 
 export function generateRunMap(rng) {
-  const act0 = generateAct(0, "mind_flayer", "夺心魔", rng);
+  const act0 = generateAct(0, "vecna", "维克那", rng);
   const act1 = generateAct(1, "vecna", "维克那", rng);
   return {
     acts: [act0, act1],

@@ -59,31 +59,34 @@ function applyDamage(target, amount, combat, source) {
         if (target.hp <= 0) pushAnim(combat, who, "die");
       }
     }
-    if (
-      target === combat.player &&
-      source === "enemy" &&
-      combat.player.thorns > 0 &&
-      combat._thornSource
-    ) {
-      const enemy = combat._thornSource;
-      let td = combat.player.thorns;
-      if (statusAmt(enemy, "vulnerable") > 0) td = Math.floor(td * 1.5);
-      if (enemy.block > 0) {
-        const blocked = Math.min(enemy.block, td);
-        enemy.block -= blocked;
-        td -= blocked;
-      }
-      if (td > 0) {
-        const eb = enemy.hp;
-        enemy.hp = Math.max(0, enemy.hp - td);
-        combat.log.push(`反弹造成 ${combat.player.thorns} 点伤害`);
-        if (enemy.hp < eb) {
-          const eWho = whoFor(combat, enemy);
-          if (eWho) {
-            pushAnim(combat, eWho, "hit");
-            if (enemy.hp <= 0) pushAnim(combat, eWho, "die");
-          }
+  }
+  // 反弹：被敌人攻击时触发（即使格挡完全挡住也要反弹）
+  if (
+    target === combat.player &&
+    source === "enemy" &&
+    combat.player.thorns > 0 &&
+    combat._thornSource &&
+    amount > 0
+  ) {
+    const enemy = combat._thornSource;
+    let td = combat.player.thorns;
+    if (statusAmt(enemy, "vulnerable") > 0) td = Math.floor(td * 1.5);
+    if (enemy.block > 0) {
+      const blocked = Math.min(enemy.block, td);
+      enemy.block -= blocked;
+      td -= blocked;
+    }
+    if (td > 0) {
+      const eb = enemy.hp;
+      enemy.hp = Math.max(0, enemy.hp - td);
+      combat.log.push(`反弹造成 ${td} 点伤害`);
+      if (enemy.hp < eb) {
+        const eWho = whoFor(combat, enemy);
+        if (eWho) {
+          pushAnim(combat, eWho, "hit");
+          if (enemy.hp <= 0) pushAnim(combat, eWho, "die");
         }
+        checkBossTransform(combat, enemy);
       }
     }
   }
@@ -113,7 +116,25 @@ function dealAttackToEnemy(combat, base, enemy) {
   combat.log.push(
     `造成 ${dmg} 点伤害 → ${enemy.name}${vuln ? "（易伤）" : ""}`
   );
+  checkBossTransform(combat, enemy);
   return dmg;
+}
+
+/** 维克那血量过半时变身为夺心魔 */
+function checkBossTransform(combat, enemy) {
+  if (!enemy || enemy.hp <= 0) return;
+  if (enemy.id !== "vecna" || enemy.transformed) return;
+  if (enemy.hp > enemy.maxHp * 0.5) return;
+
+  enemy.transformed = true;
+  enemy.phaseId = "mind_flayer";
+  enemy.name = "夺心魔";
+  enemy.spriteKey = "mind_flayer";
+  enemy.moveIndex = 0;
+  enemy.intent = peekMove(enemy);
+  const who = whoFor(combat, enemy);
+  if (who) pushAnim(combat, who, "transform");
+  combat.log.push("维克那的身形扭曲崩解——夺心魔自暗影中显现！");
 }
 
 function shuffle(arr, rng) {
