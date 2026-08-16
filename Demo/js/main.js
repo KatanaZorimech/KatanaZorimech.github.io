@@ -144,13 +144,14 @@ function startCombat(node) {
   if (node.type === "boss") {
     enemyId = node.bossId;
   } else if (node.type === "elite") {
-    enemyId = pickEncounter("elite", rng);
+    enemyId = pickEncounter("elite", rng, run);
   } else {
-    enemyId = pickEncounter("normal", rng);
+    enemyId = pickEncounter("normal", rng, run);
   }
   const enemy = createEnemyInstance(enemyId);
   combat = createCombat(run, [enemy], rng);
   scene = "combat";
+  saveRun(run);
   refreshCombat();
 }
 

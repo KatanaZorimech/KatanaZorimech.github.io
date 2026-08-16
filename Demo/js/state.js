@@ -18,6 +18,8 @@ export function createNewRun(seed = Date.now()) {
     currentNodeId: null,
     awaitingPathChoice: false,
     visitedNodeIds: [],
+    encounterBags: { normal: [], elite: [] },
+    lastEncounter: {},
     completed: false,
   };
   // Build map with seeded rng
@@ -54,6 +56,8 @@ export function loadRun() {
     const run = JSON.parse(raw);
     if (!run.map || run.map.version !== 2 || !run.map.acts) return null;
     if (typeof run.waffles !== "number") run.waffles = 0;
+    if (!run.encounterBags) run.encounterBags = { normal: [], elite: [] };
+    if (!run.lastEncounter) run.lastEncounter = {};
     return run;
   } catch (_) {
     return null;

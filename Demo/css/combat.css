@@ -22,7 +22,7 @@
 }
 
 .fighter-card {
-  width: min(240px, 44vw);
+  width: min(260px, 46vw);
   padding: 1rem;
   border: 1px solid var(--border);
   background: var(--panel);
@@ -39,17 +39,20 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  min-height: 120px;
+  min-height: calc(40px * 4 + 8px);
   width: 100%;
   margin-bottom: 0.15rem;
+  overflow: visible;
 }
 
 .battle-sprite {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  height: auto;
-  width: calc(32px * var(--scale, 4));
-  max-width: 100%;
+  /* 统一显示高度，与主角一致（scale 默认 4 → 160px） */
+  height: calc(40px * var(--scale, 4));
+  width: auto;
+  max-width: min(200px, 100%);
+  object-fit: contain;
   user-select: none;
   pointer-events: none;
   transform-origin: center bottom;

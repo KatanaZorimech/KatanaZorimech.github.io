@@ -68,6 +68,7 @@
       "name": "被控制的威尔",
       "tier": "elite",
       "sprite": "controlled_will",
+      "maxHp": 110,
       "moves": [
         {
           "id": "shadow_bolt",

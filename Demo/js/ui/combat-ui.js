@@ -234,11 +234,14 @@ function renderEnemy(enemy, idx, combat, handlers) {
   );
 
   const meta = el("div", "fighter-meta");
+  const maxHp = Number(enemy.maxHp) || 1;
+  const hp = Number.isFinite(Number(enemy.hp)) ? Number(enemy.hp) : maxHp;
+  const hpPct = Math.max(0, Math.min(100, (hp / maxHp) * 100));
   meta.innerHTML = `
     <div class="intent" title="${escapeHtml(intent.move?.name || "")}">${escapeHtml(intent.label)}</div>
     <div class="enemy-name">${escapeHtml(enemy.name)}</div>
-    <div class="hp-bar"><div class="hp-fill" style="width:${(enemy.hp / enemy.maxHp) * 100}%"></div></div>
-    <div class="hp-text">${enemy.hp}/${enemy.maxHp}${enemy.block ? ` · 格挡 ${enemy.block}` : ""}</div>
+    <div class="hp-bar"><div class="hp-fill" style="width:${hpPct}%"></div></div>
+    <div class="hp-text">${hp}/${maxHp}${enemy.block ? ` · 格挡 ${enemy.block}` : ""}</div>
     <div class="statuses">${statuses}</div>
   `;
   card.appendChild(meta);
