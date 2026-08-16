@@ -1,39 +1,40 @@
 {
   "player": {
-    "src": "assets/images/eleven.png",
+    "src": "assets/images/eleven.png?v=20260816",
     "scale": 4,
     "idle": true
   },
   "enemies": {
     "demo_hound": {
-      "src": "assets/images/demo_hound.png",
+      "src": "assets/images/demo_hound.png?v=20260816",
       "scale": 4,
       "idle": true
     },
     "demo_pup": {
-      "src": "assets/images/demo_pup.png",
+      "src": "assets/images/demo_pup.png?v=20260816",
       "scale": 4,
       "idle": true
     },
     "vecna": {
-      "src": "assets/images/vecna.png",
+      "src": "assets/images/vecna.png?v=20260816",
       "scale": 4,
       "idle": true
     },
     "mind_flayer": {
-      "src": "assets/images/mind_flayer.png",
+      "src": "assets/images/mind_flayer.png?v=20260816",
       "scale": 4,
       "idle": true
     },
     "controlled_will": {
-      "src": "assets/images/controlled_will.png",
+      "src": "assets/images/controlled_will.png?v=20260816",
       "scale": 4,
       "idle": true
     },
     "shadow_vine": {
-      "src": "assets/images/shadow_vine.png",
+      "src": "assets/images/shadow_vine.png?v=20260816",
       "scale": 4,
-      "idle": true
+      "idle": true,
+      "wide": true
     }
   }
 }

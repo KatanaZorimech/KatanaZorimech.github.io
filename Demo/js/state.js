@@ -20,6 +20,7 @@ export function createNewRun(seed = Date.now()) {
     visitedNodeIds: [],
     encounterBags: { normal: [], elite: [] },
     lastEncounter: {},
+    combatCount: 0,
     completed: false,
   };
   // Build map with seeded rng
@@ -58,6 +59,9 @@ export function loadRun() {
     if (typeof run.waffles !== "number") run.waffles = 0;
     if (!run.encounterBags) run.encounterBags = { normal: [], elite: [] };
     if (!run.lastEncounter) run.lastEncounter = {};
+    if (typeof run.combatCount !== "number") {
+      run.combatCount = (run.visitedNodeIds || []).length > 0 ? 1 : 0;
+    }
     return run;
   } catch (_) {
     return null;

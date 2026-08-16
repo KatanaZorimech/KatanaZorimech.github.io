@@ -42,7 +42,7 @@ export function renderCombat(root, combat, handlers) {
   });
   arena.appendChild(enemiesCol);
 
-  const piles = el("div", "piles");
+  const piles = el("div", "piles piles-top");
   piles.appendChild(
     pileButton("抽牌堆", combat.player.deck.length, () =>
       handlers.onViewPile("deck")
@@ -80,8 +80,8 @@ export function renderCombat(root, combat, handlers) {
     .map((l) => `<div>${escapeHtml(l)}</div>`)
     .join("");
 
-  root.appendChild(arena);
   root.appendChild(piles);
+  root.appendChild(arena);
   root.appendChild(hint);
   root.appendChild(hand);
   root.appendChild(actions);
@@ -223,7 +223,8 @@ function buildSpriteStage(who, spriteCfg, name, tier, dead) {
 
   if (spriteCfg?.src) {
     const img = document.createElement("img");
-    img.className = `sprite-actor battle-sprite${spriteCfg.idle !== false ? " idle" : ""}`;
+    const wide = spriteCfg.wide ? " is-wide" : "";
+    img.className = `sprite-actor battle-sprite${wide}${spriteCfg.idle !== false ? " idle" : ""}`;
     img.src = spriteCfg.src;
     img.alt = name;
     img.draggable = false;

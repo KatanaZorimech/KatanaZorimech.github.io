@@ -1,4 +1,5 @@
 .scene-combat {
+  padding-top: 0;
   padding-bottom: 1rem;
 }
 
@@ -53,7 +54,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  height: 168px;
+  height: 180px;
   width: 100%;
   flex-shrink: 0;
   margin-bottom: 0.15rem;
@@ -64,7 +65,7 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   /* 框内统一占位：高度一致，贴底对齐 */
-  height: 160px;
+  height: 168px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
@@ -72,6 +73,13 @@
   user-select: none;
   pointer-events: none;
   transform-origin: center bottom;
+}
+
+.battle-sprite.is-wide {
+  height: auto;
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
 }
 
 .sprite-placeholder {
@@ -346,6 +354,18 @@
   flex-wrap: wrap;
 }
 
+.piles-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 0 0.65rem;
+  padding: 0.45rem 0.5rem;
+  background:
+    linear-gradient(180deg, rgba(12, 8, 6, 0.94), rgba(12, 8, 6, 0.78));
+  border-bottom: 1px solid rgba(196, 122, 58, 0.28);
+  backdrop-filter: blur(4px);
+}
+
 .pile-btn {
   font-family: var(--font-display);
   font-size: 0.8rem;
@@ -456,6 +476,9 @@
   .battle-sprite {
     height: 112px;
   }
+  .battle-sprite.is-wide {
+    max-height: 100px;
+  }
   .enemy-name,
   .player-name {
     font-size: 1rem;
@@ -464,4 +487,66 @@
     width: 120px;
     min-height: 160px;
   }
+}
+
+/* —— 新手指引 —— */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(6, 4, 3, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1.25rem;
+  pointer-events: auto;
+}
+
+.tutorial-panel {
+  width: min(420px, 100%);
+  margin-bottom: 1.5rem;
+  padding: 1.15rem 1.25rem 1rem;
+  border: 1px solid rgba(196, 122, 58, 0.45);
+  border-radius: 4px 14px 4px 10px;
+  background:
+    linear-gradient(165deg, rgba(48, 34, 24, 0.97), rgba(16, 10, 8, 0.98));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  animation: fade-in 0.3s ease;
+}
+
+.tutorial-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  color: var(--ember);
+  margin: 0 0 0.5rem;
+}
+
+.tutorial-body {
+  margin: 0 0 0.75rem;
+  color: var(--parchment);
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.tutorial-progress {
+  margin: 0 0 0.85rem;
+  font-size: 0.8rem;
+  color: rgba(196, 184, 212, 0.65);
+  letter-spacing: 0.06em;
+}
+
+.tutorial-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.tutorial-highlight {
+  position: relative;
+  z-index: 210;
+  box-shadow:
+    0 0 0 2px rgba(196, 122, 58, 0.85),
+    0 0 24px rgba(196, 122, 58, 0.35);
+  border-radius: 4px;
 }

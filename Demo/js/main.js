@@ -32,6 +32,7 @@ import {
 } from "./ui/reward-ui.js";
 
 import { initBgm, mountBgmToggle } from "./audio.js";
+import { mountCombatTutorial } from "./ui/tutorial.js";
 
 const app = document.getElementById("app");
 
@@ -42,6 +43,7 @@ let rewardOptions = null;
 let lastWaffleGain = 0;
 let shopOffer = null;
 let scene = "menu";
+let firstCombatPending = false;
 
 async function init() {
   await Promise.all([loadCards(), loadEnemies(), loadSprites()]);
@@ -71,12 +73,16 @@ function showMenu() {
   document.getElementById("btn-new").addEventListener("click", () => {
     clearSave();
     run = createNewRun();
+    run.combatCount = 0;
     saveRun(run);
     showMap();
   });
   document.getElementById("btn-continue").addEventListener("click", () => {
     run = loadRun();
     if (!run) return showMenu();
+    if (typeof run.combatCount !== "number") {
+      run.combatCount = (run.visitedNodeIds || []).length > 0 ? 1 : 0;
+    }
     showMap();
   });
 }
@@ -156,6 +162,8 @@ function startCombat(node) {
   }
   const enemy = createEnemyInstance(enemyId);
   combat = createCombat(run, [enemy], rng);
+  firstCombatPending = (run.combatCount || 0) === 0;
+  run.combatCount = (run.combatCount || 0) + 1;
   scene = "combat";
   saveRun(run);
   refreshCombat();
@@ -174,6 +182,14 @@ function refreshCombat() {
   });
   renderCombat(app, combat, combatHandlers);
   playCombatAnims(app, combat);
+  if (firstCombatPending) {
+    const shown = mountCombatTutorial(app, {
+      onDone: () => {
+        firstCombatPending = false;
+      },
+    });
+    if (!shown) firstCombatPending = false;
+  }
 }
 
 function onCombatVictory() {
