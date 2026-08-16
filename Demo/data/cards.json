@@ -85,14 +85,14 @@
       "rarity": "uncommon",
       "cost": 2,
       "exhaust": false,
-      "text": "获得 8 点格挡。抽 1 张牌。",
-      "upgradeText": "获得 10 点格挡。抽 1 张牌。",
+      "text": "获得 10 点格挡。抽 1 张牌。",
+      "upgradeText": "获得 12 点格挡。抽 1 张牌。",
       "effects": [
-        { "op": "block", "n": 8 },
+        { "op": "block", "n": 10 },
         { "op": "draw", "n": 1 }
       ],
       "upgradeEffects": [
-        { "op": "block", "n": 10 },
+        { "op": "block", "n": 12 },
         { "op": "draw", "n": 1 }
       ]
     },
@@ -164,14 +164,14 @@
       "cost": 2,
       "exhaust": false,
       "text": "造成 6 点伤害，本场战斗力量 +1。",
-      "upgradeText": "造成 8 点伤害，本场战斗力量 +1。",
+      "upgradeText": "造成 8 点伤害，本场战斗力量 +2。",
       "effects": [
         { "op": "damage", "n": 6 },
         { "op": "gain_strength", "n": 1 }
       ],
       "upgradeEffects": [
         { "op": "damage", "n": 8 },
-        { "op": "gain_strength", "n": 1 }
+        { "op": "gain_strength", "n": 2 }
       ]
     },
     {

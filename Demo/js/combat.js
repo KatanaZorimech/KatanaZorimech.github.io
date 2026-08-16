@@ -120,21 +120,32 @@ function dealAttackToEnemy(combat, base, enemy) {
   return dmg;
 }
 
-/** 维克那血量过半时变身为夺心魔 */
+/** 维克那血量过半时变身为夺心魔，并休息一回合 */
 function checkBossTransform(combat, enemy) {
-  if (!enemy || enemy.hp <= 0) return;
-  if (enemy.id !== "vecna" || enemy.transformed) return;
+  if (!enemy || enemy.transformed) return;
+  if (enemy.id !== "vecna") return;
   if (enemy.hp > enemy.maxHp * 0.5) return;
+
+  // 过量击杀仍进入二阶段
+  if (enemy.hp <= 0) {
+    enemy.hp = Math.max(1, Math.ceil(enemy.maxHp * 0.45));
+  }
 
   enemy.transformed = true;
   enemy.phaseId = "mind_flayer";
   enemy.name = "夺心魔";
   enemy.spriteKey = "mind_flayer";
   enemy.moveIndex = 0;
-  enemy.intent = peekMove(enemy);
+  enemy.stunnedTurns = 1;
+  enemy.intent = {
+    id: "reform",
+    name: "重塑身躯",
+    intent: "stun",
+  };
   const who = whoFor(combat, enemy);
   if (who) pushAnim(combat, who, "transform");
   combat.log.push("维克那的身形扭曲崩解——夺心魔自暗影中显现！");
+  combat.log.push("夺心魔正在凝实形体，下一回合无法行动。");
 }
 
 function shuffle(arr, rng) {
@@ -382,6 +393,21 @@ function runEnemyTurn(combat) {
     const enemy = combat.enemies[ei];
     if (enemy.hp <= 0) continue;
     enemy.block = 0;
+
+    if (enemy.stunnedTurns > 0) {
+      combat.log.push(`${enemy.name}：重塑身躯（休息）`);
+      pushAnim(combat, `enemy${ei}`, "cast");
+      enemy.stunnedTurns -= 1;
+      enemy.intent = peekMove(enemy);
+      tickStatuses(enemy);
+      if (combat.player.hp <= 0) {
+        combat.phase = "lost";
+        combat.log.push("你倒下了…");
+        return;
+      }
+      continue;
+    }
+
     const move = peekMove(enemy);
     combat.log.push(`${enemy.name}：${move.name}`);
 

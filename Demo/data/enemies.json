@@ -31,15 +31,15 @@
           "name": "暗影箭",
           "intent": "attack_debuff",
           "damage": 10,
-          "status": { "id": "vulnerable", "n": 1, "target": "player" }
+          "status": { "id": "vulnerable", "n": 2, "target": "player" }
         },
+        { "id": "possessed_strike", "name": "附身重击", "intent": "attack", "damage": 13 },
         {
           "id": "empower",
           "name": "暗影赋能",
           "intent": "buff",
           "selfStatus": { "id": "strength", "n": 1 }
-        },
-        { "id": "possessed_strike", "name": "附身重击", "intent": "attack", "damage": 13 }
+        }
       ]
     },
     "demo_hound": {

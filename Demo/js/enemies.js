@@ -79,6 +79,7 @@ export function createEnemyInstance(defId) {
     intent: null,
     transformed: false,
     phaseId: null,
+    stunnedTurns: 0,
   };
 }
 
@@ -108,6 +109,8 @@ export function intentLabel(move) {
       return `防 ${move.block}`;
     case "buff":
       return "强化";
+    case "stun":
+      return "休息";
     case "charge":
       return `蓄力 · 防 ${move.block || 0}`;
     default:

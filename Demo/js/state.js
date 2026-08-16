@@ -55,7 +55,7 @@ export function loadRun() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const run = JSON.parse(raw);
-    if (!run.map || run.map.version !== 2 || !run.map.acts) return null;
+    if (!run.map || run.map.version !== 3 || !run.map.acts) return null;
     if (typeof run.waffles !== "number") run.waffles = 0;
     if (!run.encounterBags) run.encounterBags = { normal: [], elite: [] };
     if (!run.lastEncounter) run.lastEncounter = {};

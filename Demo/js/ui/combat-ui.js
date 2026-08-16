@@ -592,6 +592,7 @@ function intentTooltip(move) {
     parts.push(`自身获得 ${move.selfStatus.id}×${move.selfStatus.n}`);
   }
   if (move.intent === "charge") parts.push("蓄力防御，下回合可能放出重击");
+  if (move.intent === "stun") parts.push("本回合无法行动");
   return parts.join("。") + "。";
 }
 

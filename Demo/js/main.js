@@ -205,6 +205,10 @@ function onCombatVictory() {
   const node = getCurrentNode(run);
   const tier =
     node?.type === "boss" ? "boss" : node?.type === "elite" ? "elite" : "normal";
+  const defeatedMindFlayer = combat.enemies.some(
+    (e) => e.transformed || e.phaseId === "mind_flayer" || e.id === "mind_flayer"
+  );
+  run.defeatedMindFlayer = !!defeatedMindFlayer;
   combat = null;
   clearCombatChrome();
 
@@ -317,12 +321,26 @@ function refreshShop() {
 function showWin() {
   scene = "win";
   clearCombatChrome();
+  const deckSize = run?.deck?.length ?? 0;
+  const waffles = run?.waffles ?? 0;
+  const beatMf = !!run?.defeatedMindFlayer;
   clearSave();
   app.innerHTML = `
     <section class="scene scene-end scene-win">
       <p class="menu-eyebrow">Shadows Fall</p>
-      <h2>暗影退去</h2>
-      <p>维克那倒下了。倒挂世界的尖塔暂时沉寂——你用一副牌组改写了结局。</p>
+      <h2>${beatMf ? "夺心魔已陨落" : "暗影退去"}</h2>
+      <p class="win-lead">
+        ${
+          beatMf
+            ? "你击溃了夺心魔。维克那的诅咒随之崩解，倒挂世界的尖塔暂时沉寂。"
+            : "维克那倒下了。倒挂世界的尖塔暂时沉寂——你用一副牌组改写了结局。"
+        }
+      </p>
+      <div class="win-settlement" role="status">
+        <div class="win-stat"><span class="win-stat-label">牌组</span><span class="win-stat-value">${deckSize} 张</span></div>
+        <div class="win-stat"><span class="win-stat-label">华夫饼</span><span class="win-stat-value">× ${waffles}</span></div>
+        <div class="win-stat"><span class="win-stat-label">结局</span><span class="win-stat-value">${beatMf ? "击败夺心魔" : "通关"}</span></div>
+      </div>
       <button class="btn btn-primary" id="btn-again">再来一局</button>
     </section>
   `;
