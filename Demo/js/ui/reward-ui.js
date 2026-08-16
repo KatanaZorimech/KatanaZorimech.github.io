@@ -1,7 +1,7 @@
 import { resolveCard } from "../cards.js";
 import { SHOP_PRICES } from "../state.js";
 
-export function renderReward(root, options, handlers, waffleGained = 0) {
+export function renderReward(root, options, handlers, waffleGained = 0, meta = {}) {
   root.innerHTML = "";
   root.className = "scene scene-reward";
 
@@ -18,7 +18,9 @@ export function renderReward(root, options, handlers, waffleGained = 0) {
 
   const sub = document.createElement("p");
   sub.className = "rest-blurb";
-  sub.textContent = "选择一张牌加入牌组";
+  sub.textContent = meta.eliteUpgraded
+    ? "精英战利：三张均为升级卡，选择一张加入牌组"
+    : "选择一张牌加入牌组";
   root.appendChild(sub);
 
   const row = document.createElement("div");

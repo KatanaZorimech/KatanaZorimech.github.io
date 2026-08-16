@@ -11,10 +11,25 @@ import {
 import { getPlayerSprite, getEnemySprite } from "../sprites.js";
 import { isTouchPlay } from "../mobile.js";
 
+const STATUS_INFO = {
+  vulnerable: {
+    label: "易伤",
+    tip: "易伤：受到的攻击伤害提高 50%。每回合结束层数 −1。",
+  },
+  weak: {
+    label: "虚弱",
+    tip: "虚弱：造成的攻击伤害降低 25%。每回合结束层数 −1。",
+  },
+  strength: {
+    label: "力量",
+    tip: "力量：每层使攻击伤害 +1。战斗中持续存在，不会自然衰减。",
+  },
+};
+
 const STATUS_LABEL = {
-  vulnerable: "易伤",
-  weak: "虚弱",
-  strength: "力量",
+  vulnerable: STATUS_INFO.vulnerable.label,
+  weak: STATUS_INFO.weak.label,
+  strength: STATUS_INFO.strength.label,
 };
 
 const ANIM_CLASSES = [
@@ -424,11 +439,12 @@ function renderEnemy(enemy, idx, combat, handlers) {
   const maxHp = Number(enemy.maxHp) || 1;
   const hp = Number.isFinite(Number(enemy.hp)) ? Number(enemy.hp) : maxHp;
   const hpPct = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+  const intentTip = intentTooltip(intent.move);
   meta.innerHTML = `
-    <div class="intent" title="${escapeHtml(intent.move?.name || "")}">${escapeHtml(intent.label)}</div>
+    <div class="intent status-tip" title="${escapeHtml(intentTip)}" data-tip="${escapeHtml(intentTip)}">${escapeHtml(intent.label)}</div>
     <div class="enemy-name">${escapeHtml(enemy.name)}</div>
     <div class="hp-bar"><div class="hp-fill" style="width:${hpPct}%"></div></div>
-    <div class="hp-text">${hp}/${maxHp}${enemy.block ? ` · 格挡 ${enemy.block}` : ""}</div>
+    <div class="hp-text">${hp}/${maxHp}${formatBlockChip(enemy.block)}</div>
     <div class="statuses">${statuses}</div>
   `;
   card.appendChild(meta);
@@ -443,7 +459,6 @@ function renderPlayer(combat) {
   const p = combat.player;
   const card = el("div", "fighter-card player-card");
   const statuses = formatStatuses(p.statuses);
-  const thorns = p.thorns ? ` · 反弹 ${p.thorns}` : "";
   const spriteCfg = getPlayerSprite();
 
   card.appendChild(
@@ -455,8 +470,8 @@ function renderPlayer(combat) {
     <div class="fighter-tag">你</div>
     <div class="player-name">小十一</div>
     <div class="hp-bar"><div class="hp-fill player" style="width:${(p.hp / p.maxHp) * 100}%"></div></div>
-    <div class="hp-text">${p.hp}/${p.maxHp}${p.block ? ` · 格挡 ${p.block}` : ""}${thorns}</div>
-    <div class="energy">能量 ${p.energy}/${p.maxEnergy}</div>
+    <div class="hp-text">${p.hp}/${p.maxHp}${formatBlockChip(p.block)}${formatThornsChip(p.thorns)}</div>
+    <div class="energy status-tip" title="能量：打出卡牌消耗能量。每回合开始回复至上限。" data-tip="能量：打出卡牌消耗能量。每回合开始回复至上限。">能量 ${p.energy}/${p.maxEnergy}</div>
     <div class="statuses">${statuses}</div>
   `;
   card.appendChild(meta);
@@ -537,8 +552,47 @@ function renderRetrieveModal(combat, handlers) {
 
 function formatStatuses(statuses) {
   return Object.entries(statuses || {})
-    .map(([k, v]) => `${STATUS_LABEL[k] || k}${v}`)
-    .join(" ");
+    .filter(([, v]) => Number(v) > 0)
+    .map(([k, v]) => {
+      const info = STATUS_INFO[k];
+      const label = info?.label || STATUS_LABEL[k] || k;
+      const tip = info?.tip || label;
+      return `<span class="status-pill status-tip status-${escapeHtml(k)}" title="${escapeHtml(tip)}" data-tip="${escapeHtml(tip)}">${escapeHtml(label)}${v}</span>`;
+    })
+    .join("");
+}
+
+function formatBlockChip(block) {
+  if (!block) return "";
+  const tip = "格挡：抵消受到的伤害。你的格挡在回合结束时清空；敌人的格挡在其行动前清空。";
+  return ` <span class="status-pill status-tip status-block" title="${escapeHtml(tip)}" data-tip="${escapeHtml(tip)}">格挡 ${block}</span>`;
+}
+
+function formatThornsChip(thorns) {
+  if (!thorns) return "";
+  const tip = "反弹：受到攻击时（含被完全格挡）对该敌人造成等量反弹伤害。回合结束时清空。";
+  return ` <span class="status-pill status-tip status-thorns" title="${escapeHtml(tip)}" data-tip="${escapeHtml(tip)}">反弹 ${thorns}</span>`;
+}
+
+function intentTooltip(move) {
+  if (!move) return "意图未知";
+  const parts = [move.name || "行动"];
+  if (move.damage) parts.push(`造成 ${move.damage} 点攻击伤害`);
+  if (move.block) parts.push(`获得 ${move.block} 点格挡`);
+  if (move.status?.id === "vulnerable") {
+    parts.push(`给予易伤 ${move.status.n} 层`);
+  } else if (move.status?.id === "weak") {
+    parts.push(`给予虚弱 ${move.status.n} 层`);
+  } else if (move.status) {
+    parts.push(`施加状态 ${move.status.id}×${move.status.n}`);
+  }
+  if (move.selfStatus?.id === "strength") {
+    parts.push(`自身力量 +${move.selfStatus.n}`);
+  } else if (move.selfStatus) {
+    parts.push(`自身获得 ${move.selfStatus.id}×${move.selfStatus.n}`);
+  }
+  if (move.intent === "charge") parts.push("蓄力防御，下回合可能放出重击");
+  return parts.join("。") + "。";
 }
 
 function typeLabel(t) {

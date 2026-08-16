@@ -55,7 +55,8 @@ export function cardsByRarity(rarity) {
   return Object.values(cardDefs).filter((c) => c.rarity === rarity);
 }
 
-export function pickRewardOptions(rng, count = 3) {
+export function pickRewardOptions(rng, count = 3, opts = {}) {
+  const upgraded = !!opts.upgraded;
   const starterIds = new Set([...new Set(starterDeckIds)]);
   const pool = [];
   for (const c of Object.values(cardDefs)) {
@@ -71,7 +72,7 @@ export function pickRewardOptions(rng, count = 3) {
     const id = pool[Math.floor(rng() * pool.length)];
     if (used.has(id)) continue;
     used.add(id);
-    picked.push(createCardInstance(id, false));
+    picked.push(createCardInstance(id, upgraded));
   }
   return picked;
 }

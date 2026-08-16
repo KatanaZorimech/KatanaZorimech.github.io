@@ -213,7 +213,7 @@ function onCombatVictory() {
   run.waffles = (run.waffles || 0) + lastWaffleGain;
 
   // Final boss: still show rewards then complete
-  rewardOptions = pickRewardOptions(rng, 3);
+  rewardOptions = pickRewardOptions(rng, 3, { upgraded: tier === "elite" });
   scene = "reward";
   renderReward(
     app,
@@ -229,7 +229,8 @@ function onCombatVictory() {
         finishNode();
       },
     },
-    lastWaffleGain
+    lastWaffleGain,
+    { eliteUpgraded: tier === "elite" }
   );
   saveRun(run);
 }
