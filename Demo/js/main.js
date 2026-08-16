@@ -33,6 +33,7 @@ import {
 
 import { initBgm, mountBgmToggle } from "./audio.js";
 import { mountCombatTutorial } from "./ui/tutorial.js";
+import { mountLandscapeGate } from "./mobile.js";
 
 const app = document.getElementById("app");
 
@@ -49,6 +50,7 @@ async function init() {
   await Promise.all([loadCards(), loadEnemies(), loadSprites()]);
   initBgm();
   mountBgmToggle(document.body);
+  mountLandscapeGate();
   showMenu();
 }
 

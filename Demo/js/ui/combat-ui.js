@@ -9,6 +9,7 @@ import {
   calcAttackDamage,
 } from "../combat.js";
 import { getPlayerSprite, getEnemySprite } from "../sprites.js";
+import { isTouchPlay } from "../mobile.js";
 
 const STATUS_LABEL = {
   vulnerable: "易伤",
@@ -59,12 +60,17 @@ export function renderCombat(root, combat, handlers) {
     )
   );
 
+  const touch = isTouchPlay();
+  if (touch) root.classList.add("touch-play");
+
   const hint = el("p", "combat-hint");
-  hint.textContent = "攻击牌：拖到敌人头像框释放 · 技能牌：点击使用";
+  hint.textContent = touch
+    ? "攻击牌：点选后点敌人（仅一名敌人时可直接点牌） · 技能牌：点击使用"
+    : "攻击牌：拖到敌人头像框释放 · 技能牌：点击使用";
 
   const hand = el("div", "hand");
   combat.player.hand.forEach((inst, idx) => {
-    hand.appendChild(renderCard(inst, idx, combat, handlers));
+    hand.appendChild(renderCard(inst, idx, combat, handlers, touch));
   });
 
   const actions = el("div", "combat-actions");
@@ -103,7 +109,11 @@ export function renderCombat(root, combat, handlers) {
     root.appendChild(overlay);
   }
 
-  setupCardDragDrop(root, combat, handlers);
+  if (touch) {
+    setupTouchTargeting(root, combat, handlers);
+  } else {
+    setupCardDragDrop(root, combat, handlers);
+  }
 }
 
 /** Drain combat.anims and play CSS classes on sprite actors. */
@@ -134,6 +144,68 @@ export function playCombatAnims(root, combat) {
       };
       actor.addEventListener("animationend", onEnd);
     }, i * 70);
+  });
+}
+
+function livingEnemyIndexes(combat) {
+  return combat.enemies
+    .map((e, i) => (e.hp > 0 ? i : -1))
+    .filter((i) => i >= 0);
+}
+
+/** Mobile: tap attack card (auto-cast if one foe), or select then tap enemy. */
+function setupTouchTargeting(root, combat, handlers) {
+  if (combat.phase !== "player") return;
+
+  let selected = null;
+
+  const clearSelection = () => {
+    selected = null;
+    root.classList.remove("is-targeting");
+    root.querySelectorAll(".card.card-selected").forEach((n) => {
+      n.classList.remove("card-selected");
+    });
+  };
+
+  const selectCard = (handIndex, node) => {
+    clearSelection();
+    selected = handIndex;
+    node.classList.add("card-selected");
+    root.classList.add("is-targeting");
+  };
+
+  root.querySelectorAll(".card[data-hand-index]").forEach((node) => {
+    if (node.dataset.needsTarget !== "1") return;
+    node.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (node.disabled || combat.phase !== "player") return;
+      const handIndex = Number(node.dataset.handIndex);
+      const living = livingEnemyIndexes(combat);
+
+      if (selected === handIndex) {
+        clearSelection();
+        return;
+      }
+
+      if (living.length === 1) {
+        handlers.onPlayCard(handIndex, living[0]);
+        return;
+      }
+
+      if (living.length === 0) return;
+      selectCard(handIndex, node);
+    });
+  });
+
+  root.querySelectorAll(".enemy-card.targetable").forEach((card) => {
+    card.addEventListener("click", () => {
+      if (selected == null || combat.phase !== "player") return;
+      const idx = Number(card.dataset.enemyIndex);
+      if (!combat.enemies[idx] || combat.enemies[idx].hp <= 0) return;
+      const handIndex = selected;
+      clearSelection();
+      handlers.onPlayCard(handIndex, idx);
+    });
   });
 }
 
@@ -370,7 +442,7 @@ function renderPlayer(combat) {
   return card;
 }
 
-function renderCard(inst, idx, combat, handlers) {
+function renderCard(inst, idx, combat, handlers, touch = false) {
   const card = resolveCard(inst);
   const playable = canPlayCard(combat, idx);
   const targetNeeded = needsTarget(inst);
@@ -381,20 +453,27 @@ function renderCard(inst, idx, combat, handlers) {
   node.dataset.handIndex = String(idx);
   node.dataset.needsTarget = targetNeeded ? "1" : "0";
   const costLabel = card.cost === "X" ? "X" : String(card.cost);
+  const targetHint = targetNeeded
+    ? touch
+      ? " · 点选"
+      : " · 拖拽"
+    : "";
   node.innerHTML = `
     <span class="card-cost">${costLabel}</span>
     <span class="card-name">${escapeHtml(card.name)}</span>
-    <span class="card-type">${typeLabel(card.type)}${targetNeeded ? " · 拖拽" : ""}</span>
+    <span class="card-type">${typeLabel(card.type)}${targetHint}</span>
     <span class="card-text">${escapeHtml(card.text)}</span>
   `;
   node.disabled = !playable;
 
-  // Non-targeted skills: click to play. Targeted attacks: drag only.
+  // Non-targeted skills: click to play. Targeted: touch uses setupTouchTargeting; desktop drag.
   if (!targetNeeded) {
     node.addEventListener("click", () => {
       if (!playable) return;
       handlers.onPlayCard(idx);
     });
+  } else if (touch) {
+    node.title = "点击出牌；多名敌人时先点牌再点敌人";
   } else {
     node.title = "拖到敌人头像框释放";
   }
@@ -410,7 +489,8 @@ function renderCard(inst, idx, combat, handlers) {
       );
       if (dmgEff) {
         const preview = calcAttackDamage(dmgEff.n, combat.player, enemy);
-        node.title = `拖到敌人释放 · 预估伤害: ${preview}${dmgEff.op === "damage_x_times" ? " × 能量" : ""}`;
+        const how = touch ? "点击" : "拖到敌人释放";
+        node.title = `${how} · 预估伤害: ${preview}${dmgEff.op === "damage_x_times" ? " × 能量" : ""}`;
       }
     }
   }

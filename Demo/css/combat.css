@@ -489,6 +489,111 @@
   }
 }
 
+/* 手机横屏：战斗压缩为一屏可读 */
+@media (orientation: landscape) and (max-height: 500px) {
+  .scene-combat {
+    padding-bottom: 0.35rem;
+  }
+
+  .piles-top {
+    margin-bottom: 0.35rem;
+    padding: 0.25rem 0.35rem;
+  }
+
+  .pile-btn {
+    font-size: 0.72rem;
+    padding: 0.28rem 0.55rem;
+  }
+
+  .combat-arena {
+    min-height: 0;
+    margin-bottom: 0.25rem;
+    gap: 0.75rem;
+    padding: 0;
+  }
+
+  .fighter-card,
+  .player-card,
+  .enemy-card {
+    width: min(200px, 38vw);
+    min-height: 0;
+    padding: 0.45rem 0.55rem;
+    gap: 0.25rem;
+  }
+
+  .sprite-stage {
+    height: 88px;
+  }
+
+  .battle-sprite {
+    height: 82px;
+  }
+
+  .battle-sprite.is-wide {
+    max-height: 72px;
+  }
+
+  .intent,
+  .enemy-name,
+  .player-name {
+    font-size: 0.85rem;
+  }
+
+  .hp-text,
+  .energy,
+  .statuses {
+    font-size: 0.75rem;
+  }
+
+  .combat-hint {
+    font-size: 0.72rem;
+    margin: 0.15rem 0 0;
+  }
+
+  .hand {
+    min-height: 0;
+    margin: 0.3rem 0;
+    gap: 0.35rem;
+  }
+
+  .card {
+    width: 108px;
+    min-height: 132px;
+    padding: 0.45rem;
+    font-size: 0.78rem;
+  }
+
+  .combat-actions {
+    margin: 0.25rem 0;
+  }
+
+  .btn-end {
+    padding: 0.45rem 1.1rem;
+  }
+
+  .combat-log {
+    max-height: 3.2rem;
+    font-size: 0.72rem;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 400px) {
+  .sprite-stage {
+    height: 64px;
+  }
+  .battle-sprite {
+    height: 58px;
+  }
+  .card {
+    width: 96px;
+    min-height: 112px;
+  }
+  .combat-log {
+    display: none;
+  }
+}
+
 /* —— 新手指引 —— */
 .tutorial-overlay {
   position: fixed;

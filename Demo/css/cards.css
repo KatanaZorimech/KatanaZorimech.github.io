@@ -155,13 +155,25 @@
   margin: 0.35rem 0 0;
 }
 
-.is-dragging-attack .enemy-card.targetable {
+.is-dragging-attack .enemy-card.targetable,
+.is-targeting .enemy-card.targetable {
   outline: 1px dashed rgba(196, 122, 58, 0.55);
   outline-offset: 4px;
+  cursor: pointer;
 }
 
 .enemy-card.drop-hover {
   border-color: var(--blood-bright) !important;
   box-shadow: 0 0 22px rgba(196, 60, 42, 0.5);
   transform: translateY(-2px);
+}
+
+.card.card-selected {
+  border-color: var(--ember) !important;
+  box-shadow: 0 0 0 2px rgba(196, 122, 58, 0.75), 0 8px 20px rgba(0, 0, 0, 0.45);
+  transform: translateY(-8px);
+}
+
+.touch-play .card.needs-target {
+  touch-action: manipulation;
 }
