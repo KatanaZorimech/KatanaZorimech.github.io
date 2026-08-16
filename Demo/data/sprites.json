@@ -11,8 +11,23 @@
       "idle": true
     },
     "demo_pup": {
-      "src": "assets/images/demo_hound.png",
-      "scale": 2.5,
+      "src": "assets/images/demo_pup.png",
+      "scale": 3,
+      "idle": true
+    },
+    "vecna": {
+      "src": "assets/images/vecna.png",
+      "scale": 3.5,
+      "idle": true
+    },
+    "mind_flayer": {
+      "src": "assets/images/mind_flayer.png",
+      "scale": 3.5,
+      "idle": true
+    },
+    "controlled_will": {
+      "src": "assets/images/controlled_will.png",
+      "scale": 4,
       "idle": true
     }
   }

@@ -67,8 +67,7 @@
       "id": "controlled_will",
       "name": "被控制的威尔",
       "tier": "elite",
-      "sprite": null,
-      "maxHp": 110,
+      "sprite": "controlled_will",
       "moves": [
         {
           "id": "shadow_bolt",
@@ -90,7 +89,7 @@
       "id": "mind_flayer",
       "name": "夺心魔",
       "tier": "boss",
-      "sprite": null,
+      "sprite": "mind_flayer",
       "maxHp": 220,
       "moves": [
         { "id": "tendril", "name": "触须抽打", "intent": "attack", "damage": 14 },
@@ -114,7 +113,7 @@
       "id": "vecna",
       "name": "维克那",
       "tier": "boss",
-      "sprite": null,
+      "sprite": "vecna",
       "maxHp": 280,
       "moves": [
         {
