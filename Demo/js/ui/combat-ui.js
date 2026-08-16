@@ -28,6 +28,7 @@ const ANIM_CLASSES = [
 export function renderCombat(root, combat, handlers) {
   root.innerHTML = "";
   root.className = "scene scene-combat";
+  document.body.classList.remove("combat-touch-fit");
   if (combat.player.strength) {
     combat.player.statuses.strength = combat.player.strength;
   } else {
@@ -61,7 +62,10 @@ export function renderCombat(root, combat, handlers) {
   );
 
   const touch = isTouchPlay();
-  if (touch) root.classList.add("touch-play");
+  if (touch) {
+    root.classList.add("touch-play");
+    document.body.classList.add("combat-touch-fit");
+  }
 
   const hint = el("p", "combat-hint");
   hint.textContent = touch
@@ -82,16 +86,33 @@ export function renderCombat(root, combat, handlers) {
 
   const log = el("div", "combat-log");
   log.innerHTML = combat.log
-    .slice(-8)
+    .slice(-6)
     .map((l) => `<div>${escapeHtml(l)}</div>`)
     .join("");
 
-  root.appendChild(piles);
-  root.appendChild(arena);
-  root.appendChild(hint);
-  root.appendChild(hand);
-  root.appendChild(actions);
-  root.appendChild(log);
+  if (touch) {
+    // Compact single-screen shell: top bar → arena → hand row
+    const top = el("div", "combat-topbar");
+    top.appendChild(piles);
+    top.appendChild(actions);
+    const stage = el("div", "combat-stage");
+    stage.appendChild(arena);
+    const dock = el("div", "combat-dock");
+    dock.appendChild(hint);
+    dock.appendChild(hand);
+    root.appendChild(top);
+    root.appendChild(stage);
+    root.appendChild(dock);
+    // log stays available in DOM for desktop parity but hidden via CSS on touch
+    root.appendChild(log);
+  } else {
+    root.appendChild(piles);
+    root.appendChild(arena);
+    root.appendChild(hint);
+    root.appendChild(hand);
+    root.appendChild(actions);
+    root.appendChild(log);
+  }
 
   if (combat.phase === "await_retrieve") {
     root.appendChild(renderRetrieveModal(combat, handlers));

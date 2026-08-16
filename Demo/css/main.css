@@ -20,7 +20,7 @@
   --font-display: "Cinzel", "Noto Serif SC", serif;
   --font-body: "Noto Serif SC", "Songti SC", serif;
   --font-ornament: "MedievalSharp", "Cinzel", serif;
-  --bg-image: url("../assets/images/bg-upside.png");
+  --bg-image: url("../assets/images/bg-upside.webp");
 }
 
 *,
@@ -43,6 +43,17 @@ body {
     linear-gradient(180deg, rgba(10, 6, 4, 0.55) 0%, rgba(8, 4, 2, 0.72) 45%, rgba(4, 2, 1, 0.88) 100%),
     var(--bg-image) center / cover fixed;
   min-height: 100vh;
+}
+
+@supports not (background-image: url("x.webp")) {
+  body {
+    background-image:
+      linear-gradient(180deg, rgba(10, 6, 4, 0.55) 0%, rgba(8, 4, 2, 0.72) 45%, rgba(4, 2, 1, 0.88) 100%),
+      url("../assets/images/bg-upside.png");
+    background-size: auto, cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
 }
 
 /* Hand-drawn paper grain / soot */
@@ -592,6 +603,29 @@ body.is-portrait-blocked #app,
 body.is-portrait-blocked .bgm-toggle {
   visibility: hidden;
   pointer-events: none;
+}
+
+/* 触屏战斗时，页面本身也不滚动 */
+body.combat-touch-fit {
+  overflow: hidden;
+  height: 100dvh;
+}
+
+body.combat-touch-fit #app {
+  max-width: none;
+  min-height: 0;
+  height: 100dvh;
+  padding: 0.35rem 0.55rem;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+body.combat-touch-fit .bgm-toggle {
+  top: 0.25rem;
+  right: 0.35rem;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.65rem;
+  opacity: 0.85;
 }
 
 /* —— 手机横屏整体收紧 —— */

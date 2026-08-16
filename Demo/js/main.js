@@ -54,9 +54,14 @@ async function init() {
   showMenu();
 }
 
+function clearCombatChrome() {
+  document.body.classList.remove("combat-touch-fit");
+}
+
 function showMenu() {
   scene = "menu";
   combat = null;
+  clearCombatChrome();
   const hasSave = !!loadRun();
   app.innerHTML = `
     <section class="scene scene-menu">
@@ -93,6 +98,7 @@ function showMap() {
   scene = "map";
   combat = null;
   shopOffer = null;
+  clearCombatChrome();
   if (run.completed) {
     showWin();
     return;
@@ -200,6 +206,7 @@ function onCombatVictory() {
   const tier =
     node?.type === "boss" ? "boss" : node?.type === "elite" ? "elite" : "normal";
   combat = null;
+  clearCombatChrome();
 
   const rng = makeRng(run);
   lastWaffleGain = waffleReward(tier, rng);
@@ -239,6 +246,7 @@ function finishNode() {
 
 function onCombatDefeat() {
   combat = null;
+  clearCombatChrome();
   clearSave();
   scene = "gameover";
   app.innerHTML = `
@@ -253,6 +261,7 @@ function onCombatDefeat() {
 
 function showRest() {
   scene = "rest";
+  clearCombatChrome();
   renderRest(app, run, {
     onHeal() {
       restHeal(run);
@@ -279,6 +288,7 @@ function showUpgrade() {
 
 function showShop() {
   scene = "shop";
+  clearCombatChrome();
   const rng = makeRng(run);
   shopOffer = buildShopOffer(rng, pickRewardOptions);
   refreshShop();
@@ -305,6 +315,7 @@ function refreshShop() {
 
 function showWin() {
   scene = "win";
+  clearCombatChrome();
   clearSave();
   app.innerHTML = `
     <section class="scene scene-end scene-win">
