@@ -17,22 +17,11 @@
         }
       ]
     },
-    "possessed": {
-      "id": "possessed",
-      "name": "被附身的居民",
-      "tier": "normal",
-      "sprite": null,
-      "maxHp": 50,
-      "moves": [
-        { "id": "scratch", "name": "抓挠", "intent": "attack", "damage": 10 },
-        { "id": "guard", "name": "堵挡", "intent": "defend", "block": 8 }
-      ]
-    },
     "shadow_vine": {
       "id": "shadow_vine",
       "name": "暗影藤蔓",
       "tier": "normal",
-      "sprite": null,
+      "sprite": "shadow_vine",
       "maxHp": 46,
       "moves": [
         {
@@ -131,7 +120,7 @@
     }
   },
   "encounters": {
-    "normal": ["demo_pup", "possessed", "shadow_vine"],
+    "normal": ["demo_pup", "shadow_vine"],
     "elite": ["demo_hound", "controlled_will"],
     "bossFloor1": "mind_flayer",
     "bossFloor2": "vecna"

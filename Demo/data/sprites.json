@@ -29,6 +29,11 @@
       "src": "assets/images/controlled_will.png",
       "scale": 4,
       "idle": true
+    },
+    "shadow_vine": {
+      "src": "assets/images/shadow_vine.png",
+      "scale": 4,
+      "idle": true
     }
   }
 }
