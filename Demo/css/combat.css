@@ -557,10 +557,11 @@
 
 .scene-combat.touch-play .combat-dock {
   min-height: 0;
-  padding: 0.15rem 0 0.25rem;
+  padding: 0.1rem 0 0.2rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  align-items: center;
+  gap: 0.1rem;
 }
 
 .scene-combat.touch-play .combat-hint {
@@ -569,42 +570,65 @@
 
 .scene-combat.touch-play .hand {
   min-height: 0;
-  margin: 0;
-  gap: 0.3rem;
+  width: 100%;
+  margin: 0 auto;
+  gap: 0.28rem;
   flex-wrap: nowrap;
   overflow-x: auto;
   overflow-y: hidden;
-  justify-content: flex-start;
-  padding: 0.15rem 0.1rem 0.35rem;
+  justify-content: safe center;
+  align-items: flex-end;
+  padding: 0.2rem 0.35rem 0.4rem;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
+  box-sizing: border-box;
 }
 
 .scene-combat.touch-play .card {
   flex: 0 0 auto;
-  width: clamp(84px, 16.5vw, 108px);
+  width: clamp(92px, 17vw, 118px);
   min-height: 0;
-  height: clamp(92px, 24dvh, 118px);
-  padding: 0.3rem 0.35rem;
-  font-size: 0.7rem;
+  height: clamp(108px, 28dvh, 138px);
+  padding: 0.28rem 0.32rem 0.3rem;
+  gap: 0.12rem;
+  font-size: 0.58rem;
   transform: none;
+  align-items: stretch;
 }
 
 .scene-combat.touch-play .card.card-selected {
   transform: translateY(-4px);
 }
 
+.scene-combat.touch-play .card-cost {
+  top: 0.22rem;
+  left: 0.22rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  font-size: 0.62rem;
+}
+
 .scene-combat.touch-play .card-name {
-  font-size: 0.78rem;
+  margin-top: 1.05rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+
+.scene-combat.touch-play .card-type {
+  font-size: 0.48rem;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
 }
 
 .scene-combat.touch-play .card-text {
-  font-size: 0.68rem;
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  flex: 1 1 auto;
+  font-size: 0.52rem;
+  line-height: 1.28;
+  overflow: visible;
+  display: block;
+  -webkit-line-clamp: unset;
+  word-break: break-word;
 }
 
 .scene-combat.touch-play .combat-log {
