@@ -48,17 +48,18 @@
       "tier": "elite",
       "power": 3,
       "sprite": "demo_hound",
-      "maxHp": 100,
+      "maxHp": 88,
       "moves": [
-        { "id": "pounce", "name": "扑咬", "intent": "attack", "damage": 15 },
+        { "id": "pounce", "name": "扑咬", "intent": "attack", "damage": 11 },
         {
           "id": "maul",
           "name": "撕裂",
           "intent": "attack_debuff",
-          "damage": 12,
-          "status": { "id": "weak", "n": 2, "target": "player" }
+          "damage": 8,
+          "status": { "id": "weak", "n": 1, "target": "player" }
         },
-        { "id": "frenzy", "name": "狂袭", "intent": "attack", "damage": 17 }
+        { "id": "brace", "name": "蓄势", "intent": "defend", "block": 8 },
+        { "id": "frenzy", "name": "狂袭", "intent": "attack", "damage": 14 }
       ]
     },
     "shadow_vine": {
@@ -67,21 +68,22 @@
       "tier": "elite",
       "power": 4,
       "sprite": "shadow_vine",
-      "maxHp": 125,
+      "maxHp": 96,
       "moves": [
         {
           "id": "entangle",
           "name": "缠绕",
           "intent": "attack_debuff",
-          "damage": 14,
-          "status": { "id": "vulnerable", "n": 2, "target": "player" }
+          "damage": 9,
+          "status": { "id": "vulnerable", "n": 1, "target": "player" }
         },
-        { "id": "lash", "name": "抽打", "intent": "attack", "damage": 20 },
+        { "id": "coil", "name": "盘绕", "intent": "defend", "block": 10 },
+        { "id": "lash", "name": "抽打", "intent": "attack", "damage": 13 },
         {
           "id": "choke",
           "name": "绞杀",
           "intent": "attack",
-          "damage": 18
+          "damage": 11
         }
       ]
     },
@@ -90,23 +92,24 @@
       "name": "夺心魔",
       "tier": "boss",
       "sprite": "mind_flayer",
-      "maxHp": 220,
+      "maxHp": 180,
       "moves": [
-        { "id": "tendril", "name": "触须抽打", "intent": "attack", "damage": 16 },
+        { "id": "tendril", "name": "触须抽打", "intent": "attack", "damage": 12 },
         {
           "id": "mind_crush",
           "name": "心灵碾压",
           "intent": "attack_debuff",
-          "damage": 12,
-          "status": { "id": "weak", "n": 2, "target": "player" }
+          "damage": 9,
+          "status": { "id": "weak", "n": 1, "target": "player" }
         },
         {
           "id": "gather_power",
           "name": "凝聚力量",
           "intent": "buff",
-          "selfStatus": { "id": "strength", "n": 2 }
+          "selfStatus": { "id": "strength", "n": 1 }
         },
-        { "id": "flay", "name": "夺心", "intent": "attack", "damage": 24 }
+        { "id": "ward", "name": "暗影护壁", "intent": "defend", "block": 10 },
+        { "id": "flay", "name": "夺心", "intent": "attack", "damage": 16 }
       ]
     },
     "vecna": {
@@ -114,18 +117,19 @@
       "name": "维克那",
       "tier": "boss",
       "sprite": "vecna",
-      "maxHp": 300,
+      "maxHp": 220,
       "moves": [
         {
           "id": "curse",
           "name": "诅咒凝视",
           "intent": "attack_debuff",
-          "damage": 14,
-          "status": { "id": "vulnerable", "n": 2, "target": "player" }
+          "damage": 10,
+          "status": { "id": "vulnerable", "n": 1, "target": "player" }
         },
-        { "id": "bone_crush", "name": "碎骨", "intent": "attack", "damage": 18 },
-        { "id": "charge", "name": "蓄力", "intent": "charge", "block": 12 },
-        { "id": "ultimate", "name": "暗影裁决", "intent": "attack", "damage": 28 }
+        { "id": "bone_crush", "name": "碎骨", "intent": "attack", "damage": 12 },
+        { "id": "charge", "name": "蓄力", "intent": "charge", "block": 10 },
+        { "id": "ultimate", "name": "暗影裁决", "intent": "attack", "damage": 18 },
+        { "id": "veil", "name": "暗幕", "intent": "defend", "block": 8 }
       ]
     }
   },
