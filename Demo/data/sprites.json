@@ -12,17 +12,17 @@
     },
     "demo_pup": {
       "src": "assets/images/demo_pup.png",
-      "scale": 7,
+      "scale": 4,
       "idle": true
     },
     "vecna": {
       "src": "assets/images/vecna.png",
-      "scale": 7,
+      "scale": 4,
       "idle": true
     },
     "mind_flayer": {
       "src": "assets/images/mind_flayer.png",
-      "scale": 7,
+      "scale": 4,
       "idle": true
     },
     "controlled_will": {

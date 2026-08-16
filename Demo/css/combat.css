@@ -4,7 +4,7 @@
 
 .combat-arena {
   display: flex;
-  align-items: stretch;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1.5rem;
   min-height: 200px;
@@ -16,13 +16,15 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 1rem;
   flex: 1;
 }
 
 .fighter-card {
-  width: min(280px, 48vw);
+  width: 260px;
+  max-width: 48vw;
+  min-height: 360px;
   padding: 1rem;
   border: 1px solid var(--border);
   background: var(--panel);
@@ -32,6 +34,14 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  box-sizing: border-box;
+}
+
+.player-card,
+.enemy-card {
+  width: 260px;
+  max-width: 48vw;
+  min-height: 360px;
 }
 
 .sprite-stage {
@@ -39,33 +49,36 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  min-height: 200px;
+  height: 168px;
   width: 100%;
+  flex-shrink: 0;
   margin-bottom: 0.15rem;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .battle-sprite {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  /* 统一显示高度，与主角一致（scale 默认 4 → 160px） */
-  height: calc(40px * var(--scale, 4));
+  /* 框内统一占位：高度一致，贴底对齐 */
+  height: 160px;
   width: auto;
-  max-width: min(280px, 100%);
+  max-width: 100%;
   object-fit: contain;
+  object-position: bottom center;
   user-select: none;
   pointer-events: none;
   transform-origin: center bottom;
 }
 
 .sprite-placeholder {
-  width: 56px;
-  height: 72px;
+  width: 72px;
+  height: 96px;
   border: 2px solid rgba(196, 184, 212, 0.35);
   border-radius: 4px 4px 2px 2px;
   background: linear-gradient(180deg, rgba(80, 60, 90, 0.7), rgba(30, 20, 40, 0.9));
   clip-path: polygon(50% 0%, 80% 22%, 80% 55%, 100% 100%, 0% 100%, 20% 55%, 20% 22%);
   transform-origin: center bottom;
+  align-self: flex-end;
 }
 
 .sprite-placeholder.tier-elite {
@@ -75,7 +88,7 @@
 
 .sprite-placeholder.tier-boss {
   width: 72px;
-  height: 88px;
+  height: 96px;
   border-color: rgba(255, 42, 74, 0.55);
   background: linear-gradient(180deg, rgba(90, 20, 40, 0.8), rgba(20, 8, 16, 0.95));
 }
@@ -211,12 +224,16 @@
 
 .fighter-meta {
   width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .player-card {
   border-color: rgba(91, 141, 239, 0.45);
   background: rgba(20, 30, 50, 0.55);
-  align-self: center;
+  align-self: flex-end;
 }
 
 .fighter-tag {
@@ -417,10 +434,20 @@
 @media (max-width: 600px) {
   .combat-arena {
     gap: 0.75rem;
+    align-items: flex-end;
   }
-  .fighter-card {
-    width: min(160px, 46vw);
+  .fighter-card,
+  .player-card,
+  .enemy-card {
+    width: min(168px, 46vw);
+    min-height: 300px;
     padding: 0.7rem;
+  }
+  .sprite-stage {
+    height: 120px;
+  }
+  .battle-sprite {
+    height: 112px;
   }
   .enemy-name,
   .player-name {
