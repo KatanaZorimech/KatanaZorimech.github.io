@@ -9,10 +9,10 @@
 import { assignEncountersToRows } from "./enemies.js";
 
 const NODE_LABELS = {
-  combat: "??",
-  elite: "??",
-  rest: "???????",
-  shop: "??",
+  combat: "遭遇",
+  elite: "精英",
+  rest: "威尔家的地下室",
+  shop: "商店",
   boss: "Boss",
 };
 
@@ -360,15 +360,15 @@ function generateAct(actIndex, bossId, bossLabel, rng) {
 
   return {
     index: actIndex,
-    name: actIndex === 0 ? "??? � ???" : "????",
+    name: actIndex === 0 ? "霍金斯 · 实验室" : "逆世界",
     bossId,
     nodes: rows.flat(),
   };
 }
 
 export function generateRunMap(rng) {
-  const act0 = generateAct(0, "vecna", "???", rng);
-  const act1 = generateAct(1, "vecna", "???", rng);
+  const act0 = generateAct(0, "vecna", "维克那", rng);
+  const act1 = generateAct(1, "vecna", "维克那", rng);
   return {
     acts: [act0, act1],
     version: 3,

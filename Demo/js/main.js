@@ -68,7 +68,7 @@ function showMenu() {
       <div class="menu-glow" aria-hidden="true"></div>
       <p class="menu-eyebrow">Shadows Fall</p>
       <h1 class="menu-title">暗影降临</h1>
-      <p class="menu-tagline">Hawkins 之外，倒挂世界的尖塔正在苏醒。以念力构筑牌组，直面夺心魔与维克那。</p>
+      <p class="menu-tagline">Hawkins 之外，逆世界的尖塔正在苏醒。以念力构筑牌组，直面夺心魔与维克那。</p>
       <div class="menu-actions">
         <button class="btn btn-primary" id="btn-new">开始旅程</button>
         <button class="btn" id="btn-continue" ${hasSave ? "" : "disabled"}>继续游戏</button>
@@ -332,8 +332,8 @@ function showWin() {
       <p class="win-lead">
         ${
           beatMf
-            ? "你击溃了夺心魔。维克那的诅咒随之崩解，倒挂世界的尖塔暂时沉寂。"
-            : "维克那倒下了。倒挂世界的尖塔暂时沉寂——你用一副牌组改写了结局。"
+            ? "你击溃了夺心魔。维克那的诅咒随之崩解，逆世界的尖塔暂时沉寂。"
+            : "维克那倒下了。逆世界的尖塔暂时沉寂——你用一副牌组改写了结局。"
         }
       </p>
       <div class="win-settlement" role="status">
