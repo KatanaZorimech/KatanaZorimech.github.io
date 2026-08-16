@@ -173,8 +173,8 @@ function rarityLabel(r) {
   return r === "common" ? "普通" : r === "uncommon" ? "强力" : "稀有";
 }
 
-export function buildShopOffer(rng, pickRewardOptions) {
-  const cards = pickRewardOptions(rng, 5);
+export function buildShopOffer(rng, pickRewardOptions, avoidIds = []) {
+  const cards = pickRewardOptions(rng, 5, { avoidIds });
   return cards.map((card) => {
     const resolved = resolveCard(card);
     return {

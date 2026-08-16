@@ -57,22 +57,58 @@ export function cardsByRarity(rarity) {
 
 export function pickRewardOptions(rng, count = 3, opts = {}) {
   const upgraded = !!opts.upgraded;
+  const avoid = new Set(opts.avoidIds || []);
   const starterIds = new Set([...new Set(starterDeckIds)]);
-  const pool = [];
+
+  const candidates = [];
   for (const c of Object.values(cardDefs)) {
     if (starterIds.has(c.id)) continue;
-    const weight = c.rarity === "common" ? 10 : c.rarity === "uncommon" ? 5 : 2;
-    for (let i = 0; i < weight; i++) pool.push(c.id);
+    candidates.push(c.id);
   }
-  const picked = [];
+
+  const weightOf = (id) => {
+    const r = cardDefs[id].rarity;
+    return r === "common" ? 10 : r === "uncommon" ? 5 : 2;
+  };
+
+  function drawFrom(ids, n, already) {
+    const pool = [];
+    for (const id of ids) {
+      if (already.has(id)) continue;
+      const w = weightOf(id);
+      for (let i = 0; i < w; i++) pool.push(id);
+    }
+    const out = [];
+    let guard = 0;
+    while (out.length < n && pool.length && guard < 800) {
+      guard += 1;
+      const id = pool[Math.floor(rng() * pool.length)];
+      if (already.has(id)) continue;
+      already.add(id);
+      out.push(id);
+    }
+    return out;
+  }
+
+  const pickedIds = [];
   const used = new Set();
-  let guard = 0;
-  while (picked.length < count && pool.length && guard < 500) {
-    guard += 1;
-    const id = pool[Math.floor(rng() * pool.length)];
-    if (used.has(id)) continue;
-    used.add(id);
-    picked.push(createCardInstance(id, upgraded));
+  const fresh = candidates.filter((id) => !avoid.has(id));
+  pickedIds.push(...drawFrom(fresh, count, used));
+  if (pickedIds.length < count) {
+    pickedIds.push(...drawFrom(candidates, count - pickedIds.length, used));
   }
-  return picked;
+
+  return pickedIds.map((id) => createCardInstance(id, upgraded));
+}
+
+/** Record reward/shop offers so future picks prefer unseen cards. */
+export function noteSeenRewardIds(run, cardInstances) {
+  if (!run.seenRewardIds) run.seenRewardIds = [];
+  const seen = new Set(run.seenRewardIds);
+  for (const inst of cardInstances || []) {
+    if (inst?.defId && !seen.has(inst.defId)) {
+      seen.add(inst.defId);
+      run.seenRewardIds.push(inst.defId);
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { loadCards, pickRewardOptions, resolveCard } from "./cards.js";
+import { loadCards, pickRewardOptions, resolveCard, noteSeenRewardIds } from "./cards.js";
 import { loadEnemies, pickEncounter, createEnemyInstance } from "./enemies.js";
 import { loadSprites } from "./sprites.js";
 import { createCombat, syncPlayerHp } from "./combat.js";
@@ -216,8 +216,22 @@ function onCombatVictory() {
   lastWaffleGain = waffleReward(tier, rng);
   run.waffles = (run.waffles || 0) + lastWaffleGain;
 
-  // Final boss: still show rewards then complete
-  rewardOptions = pickRewardOptions(rng, 3, { upgraded: tier === "elite" });
+  const isFinalBoss =
+    node?.type === "boss" && run.actIndex >= (run.map?.acts?.length || 1) - 1;
+
+  // 击败夺心魔（终幕）：无卡牌奖励，直接胜利结算
+  if (defeatedMindFlayer && isFinalBoss) {
+    run.completed = true;
+    saveRun(run);
+    showWin();
+    return;
+  }
+
+  rewardOptions = pickRewardOptions(rng, 3, {
+    upgraded: tier === "elite",
+    avoidIds: run.seenRewardIds || [],
+  });
+  noteSeenRewardIds(run, rewardOptions);
   scene = "reward";
   renderReward(
     app,
@@ -295,7 +309,12 @@ function showShop() {
   scene = "shop";
   clearCombatChrome();
   const rng = makeRng(run);
-  shopOffer = buildShopOffer(rng, pickRewardOptions);
+  shopOffer = buildShopOffer(rng, pickRewardOptions, run.seenRewardIds || []);
+  noteSeenRewardIds(
+    run,
+    shopOffer.map((e) => e.card)
+  );
+  saveRun(run);
   refreshShop();
 }
 
@@ -332,10 +351,15 @@ function showWin() {
       <p class="win-lead">
         ${
           beatMf
-            ? "你击溃了夺心魔。维克那的诅咒随之崩解，逆世界的尖塔暂时沉寂。"
+            ? "触须崩碎，暗影退潮。你站在逆世界的废墟上，Hawkins 的灯火重新清晰起来。"
             : "维克那倒下了。逆世界的尖塔暂时沉寂——你用一副牌组改写了结局。"
         }
       </p>
+      ${
+        beatMf
+          ? `<p class="win-epilogue">胜利结语：念力仍在指尖震颤，但诅咒的低语已经散去。这一次，小十一没有让任何人被黑暗带走。华夫饼的甜香仿佛从很远的地方传来——像是威尔家地下室那盏灯，还亮着。</p>`
+          : ""
+      }
       <div class="win-settlement" role="status">
         <div class="win-stat"><span class="win-stat-label">牌组</span><span class="win-stat-value">${deckSize} 张</span></div>
         <div class="win-stat"><span class="win-stat-label">华夫饼</span><span class="win-stat-value">× ${waffles}</span></div>
