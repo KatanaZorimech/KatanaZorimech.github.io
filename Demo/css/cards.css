@@ -8,19 +8,36 @@
   min-height: 180px;
   padding: 0.75rem;
   border: 1px solid var(--border);
-  background: linear-gradient(165deg, #221028 0%, #120818 100%);
+  background:
+    linear-gradient(165deg, rgba(58, 42, 28, 0.95) 0%, rgba(28, 18, 12, 0.98) 100%);
   color: var(--cream);
   text-align: left;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 3px 14px 3px 10px;
   font-family: var(--font-body);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    inset 0 0 24px rgba(0, 0, 0, 0.25),
+    0 6px 0 rgba(0, 0, 0, 0.35);
   transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
 }
 
 .card.playable:hover {
   transform: translateY(-10px);
-  border-color: var(--neon-red);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  border-color: var(--ember);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
+.card.needs-target.playable {
+  cursor: grab;
+}
+
+.card.needs-target.playable:active,
+.card.dragging {
+  cursor: grabbing;
+  opacity: 0.35;
 }
 
 .card.muted {
@@ -39,6 +56,18 @@
   min-height: 200px;
 }
 
+.card-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10050;
+  pointer-events: none;
+  opacity: 0.92;
+  transform: rotate(-4deg);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  filter: drop-shadow(0 0 8px rgba(196, 90, 50, 0.45));
+}
+
 .card-cost {
   position: absolute;
   top: 0.4rem;
@@ -47,12 +76,13 @@
   height: 1.6rem;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  background: var(--void-blue);
-  border: 1px solid var(--electric);
+  border-radius: 40% 60% 45% 55%;
+  background: var(--ink-soft);
+  border: 1px solid var(--ember);
   font-family: var(--font-display);
   font-size: 0.85rem;
   font-weight: 700;
+  color: var(--parchment);
 }
 
 .card-name {
@@ -61,6 +91,7 @@
   font-weight: 700;
   font-size: 0.95rem;
   letter-spacing: 0.04em;
+  color: var(--parchment);
 }
 
 .card-type {
@@ -72,29 +103,31 @@
 
 .card-text {
   font-size: 0.78rem;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--fog);
 }
 
 .rarity-common {
-  border-color: rgba(196, 184, 212, 0.35);
+  border-color: rgba(168, 144, 112, 0.4);
 }
 
 .rarity-uncommon {
-  border-color: rgba(91, 141, 239, 0.55);
+  border-color: rgba(154, 123, 79, 0.7);
 }
 
 .rarity-rare {
-  border-color: rgba(255, 196, 72, 0.55);
-  box-shadow: inset 0 0 20px rgba(255, 196, 72, 0.08);
+  border-color: rgba(196, 122, 58, 0.75);
+  box-shadow:
+    inset 0 0 20px rgba(196, 122, 58, 0.12),
+    0 6px 0 rgba(0, 0, 0, 0.35);
 }
 
 .type-attack .card-name {
-  color: #ff8a9a;
+  color: #e09078;
 }
 
 .type-skill .card-name {
-  color: #9ec0ff;
+  color: #c4b48a;
 }
 
 .hand {
@@ -112,4 +145,23 @@
   gap: 1rem;
   justify-content: center;
   margin: 1.5rem 0;
+}
+
+.combat-hint {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  margin: 0.35rem 0 0;
+}
+
+.is-dragging-attack .enemy-card.targetable {
+  outline: 1px dashed rgba(196, 122, 58, 0.55);
+  outline-offset: 4px;
+}
+
+.enemy-card.drop-hover {
+  border-color: var(--blood-bright) !important;
+  box-shadow: 0 0 22px rgba(196, 60, 42, 0.5);
+  transform: translateY(-2px);
 }

@@ -59,6 +59,9 @@ export function renderCombat(root, combat, handlers) {
     )
   );
 
+  const hint = el("p", "combat-hint");
+  hint.textContent = "攻击牌：拖到敌人头像框释放 · 技能牌：点击使用";
+
   const hand = el("div", "hand");
   combat.player.hand.forEach((inst, idx) => {
     hand.appendChild(renderCard(inst, idx, combat, handlers));
@@ -79,6 +82,7 @@ export function renderCombat(root, combat, handlers) {
 
   root.appendChild(arena);
   root.appendChild(piles);
+  root.appendChild(hint);
   root.appendChild(hand);
   root.appendChild(actions);
   root.appendChild(log);
@@ -98,6 +102,8 @@ export function renderCombat(root, combat, handlers) {
     overlay.appendChild(btn);
     root.appendChild(overlay);
   }
+
+  setupCardDragDrop(root, combat, handlers);
 }
 
 /** Drain combat.anims and play CSS classes on sprite actors. */
@@ -129,6 +135,86 @@ export function playCombatAnims(root, combat) {
       actor.addEventListener("animationend", onEnd);
     }, i * 70);
   });
+}
+
+function setupCardDragDrop(root, combat, handlers) {
+  if (combat.phase !== "player") return;
+
+  let drag = null;
+  let ghost = null;
+
+  const clearDropHighlight = () => {
+    root.querySelectorAll(".enemy-card.drop-hover").forEach((n) => {
+      n.classList.remove("drop-hover");
+    });
+  };
+
+  const endDrag = () => {
+    if (ghost) ghost.remove();
+    ghost = null;
+    if (drag?.node) drag.node.classList.remove("dragging");
+    drag = null;
+    clearDropHighlight();
+    root.classList.remove("is-dragging-attack");
+  };
+
+  root.querySelectorAll(".card[data-hand-index]").forEach((node) => {
+    const handIndex = Number(node.dataset.handIndex);
+    const needsDrop = node.dataset.needsTarget === "1";
+    if (!needsDrop) return;
+
+    node.addEventListener("pointerdown", (e) => {
+      if (node.disabled || combat.phase !== "player") return;
+      if (e.button !== 0) return;
+      e.preventDefault();
+      node.setPointerCapture(e.pointerId);
+
+      drag = { handIndex, node, pointerId: e.pointerId };
+      node.classList.add("dragging");
+      root.classList.add("is-dragging-attack");
+
+      ghost = node.cloneNode(true);
+      ghost.classList.add("card-drag-ghost");
+      ghost.style.width = `${node.offsetWidth}px`;
+      document.body.appendChild(ghost);
+      moveGhost(e.clientX, e.clientY);
+    });
+
+    node.addEventListener("pointermove", (e) => {
+      if (!drag || drag.pointerId !== e.pointerId) return;
+      moveGhost(e.clientX, e.clientY);
+      clearDropHighlight();
+      const target = enemyAtPoint(root, e.clientX, e.clientY);
+      if (target) target.classList.add("drop-hover");
+    });
+
+    node.addEventListener("pointerup", (e) => {
+      if (!drag || drag.pointerId !== e.pointerId) return;
+      const target = enemyAtPoint(root, e.clientX, e.clientY);
+      const idx = target ? Number(target.dataset.enemyIndex) : -1;
+      const handIndex = drag.handIndex;
+      endDrag();
+      if (idx >= 0 && combat.enemies[idx] && combat.enemies[idx].hp > 0) {
+        handlers.onPlayCard(handIndex, idx);
+      }
+    });
+
+    node.addEventListener("pointercancel", () => endDrag());
+  });
+
+  function moveGhost(x, y) {
+    if (!ghost) return;
+    ghost.style.transform = `translate(${x - ghost.offsetWidth / 2}px, ${y - ghost.offsetHeight / 2}px)`;
+  }
+}
+
+function enemyAtPoint(root, x, y) {
+  const stack = document.elementsFromPoint(x, y);
+  for (const el of stack) {
+    const card = el.closest?.(".enemy-card.targetable");
+    if (card && root.contains(card)) return card;
+  }
+  return null;
 }
 
 function buildSpriteStage(who, spriteCfg, name, tier, dead) {
@@ -225,6 +311,7 @@ function renderEnemy(enemy, idx, combat, handlers) {
     "div",
     `fighter-card enemy-card ${enemy.hp <= 0 ? "dead" : ""}`
   );
+  card.dataset.enemyIndex = String(idx);
   const intent = getIntentDisplay(enemy);
   const statuses = formatStatuses(enemy.statuses);
   const spriteCfg = getEnemySprite(enemy.spriteKey);
@@ -254,7 +341,6 @@ function renderEnemy(enemy, idx, combat, handlers) {
 
   if (combat.phase === "player" && enemy.hp > 0) {
     card.classList.add("targetable");
-    card.addEventListener("click", () => handlers.onSelectEnemy?.(idx));
   }
   return card;
 }
@@ -286,22 +372,31 @@ function renderPlayer(combat) {
 function renderCard(inst, idx, combat, handlers) {
   const card = resolveCard(inst);
   const playable = canPlayCard(combat, idx);
+  const targetNeeded = needsTarget(inst);
   const node = el(
     "button",
-    `card rarity-${card.rarity} type-${card.type}${playable ? " playable" : " muted"}`
+    `card rarity-${card.rarity} type-${card.type}${playable ? " playable" : " muted"}${targetNeeded ? " needs-target" : ""}`
   );
+  node.dataset.handIndex = String(idx);
+  node.dataset.needsTarget = targetNeeded ? "1" : "0";
   const costLabel = card.cost === "X" ? "X" : String(card.cost);
   node.innerHTML = `
     <span class="card-cost">${costLabel}</span>
     <span class="card-name">${escapeHtml(card.name)}</span>
-    <span class="card-type">${typeLabel(card.type)}</span>
+    <span class="card-type">${typeLabel(card.type)}${targetNeeded ? " · 拖拽" : ""}</span>
     <span class="card-text">${escapeHtml(card.text)}</span>
   `;
   node.disabled = !playable;
-  node.addEventListener("click", () => {
-    if (!playable) return;
-    handlers.onPlayCard(idx);
-  });
+
+  // Non-targeted skills: click to play. Targeted attacks: drag only.
+  if (!targetNeeded) {
+    node.addEventListener("click", () => {
+      if (!playable) return;
+      handlers.onPlayCard(idx);
+    });
+  } else {
+    node.title = "拖到敌人头像框释放";
+  }
 
   if (
     card.type === "attack" ||
@@ -314,7 +409,7 @@ function renderCard(inst, idx, combat, handlers) {
       );
       if (dmgEff) {
         const preview = calcAttackDamage(dmgEff.n, combat.player, enemy);
-        node.title = `预估伤害: ${preview}${dmgEff.op === "damage_x_times" ? " × 能量" : ""}`;
+        node.title = `拖到敌人释放 · 预估伤害: ${preview}${dmgEff.op === "damage_x_times" ? " × 能量" : ""}`;
       }
     }
   }
@@ -363,21 +458,17 @@ function escapeHtml(s) {
 }
 
 export function bindCombatHandlers(combat, callbacks) {
-  let selectedEnemy = 0;
-
   return {
-    onSelectEnemy(idx) {
-      selectedEnemy = idx;
-    },
-    onPlayCard(handIndex) {
+    onPlayCard(handIndex, enemyIndex) {
       const inst = combat.player.hand[handIndex];
-      const target = needsTarget(inst) ? selectedEnemy : 0;
+      if (!inst) return;
+      let target = 0;
       if (needsTarget(inst)) {
-        if (!combat.enemies[target] || combat.enemies[target].hp <= 0) {
-          selectedEnemy = combat.enemies.findIndex((e) => e.hp > 0);
-        }
+        if (enemyIndex === undefined || enemyIndex < 0) return;
+        target = enemyIndex;
+        if (!combat.enemies[target] || combat.enemies[target].hp <= 0) return;
       }
-      const result = playCard(combat, handIndex, selectedEnemy);
+      const result = playCard(combat, handIndex, target);
       if (result.ok) callbacks.refresh();
     },
     onEndTurn() {

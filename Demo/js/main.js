@@ -31,6 +31,8 @@ import {
   buildShopOffer,
 } from "./ui/reward-ui.js";
 
+import { initBgm, mountBgmToggle } from "./audio.js";
+
 const app = document.getElementById("app");
 
 let run = null;
@@ -43,6 +45,8 @@ let scene = "menu";
 
 async function init() {
   await Promise.all([loadCards(), loadEnemies(), loadSprites()]);
+  initBgm();
+  mountBgmToggle(document.body);
   showMenu();
 }
 

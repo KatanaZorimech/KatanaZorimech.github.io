@@ -27,14 +27,18 @@
   min-height: 360px;
   padding: 1rem;
   border: 1px solid var(--border);
-  background: var(--panel);
+  background:
+    linear-gradient(165deg, rgba(48, 34, 24, 0.92), rgba(16, 10, 8, 0.95));
   text-align: center;
-  border-radius: 4px;
+  border-radius: 4px 16px 4px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   box-sizing: border-box;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 8px 0 rgba(0, 0, 0, 0.35);
 }
 
 .player-card,
@@ -231,8 +235,9 @@
 }
 
 .player-card {
-  border-color: rgba(91, 141, 239, 0.45);
-  background: rgba(20, 30, 50, 0.55);
+  border-color: rgba(154, 123, 79, 0.55);
+  background:
+    linear-gradient(165deg, rgba(42, 36, 28, 0.92), rgba(18, 14, 10, 0.95));
   align-self: flex-end;
 }
 
@@ -240,11 +245,12 @@
   display: inline-block;
   font-size: 0.7rem;
   letter-spacing: 0.12em;
-  color: var(--electric);
-  border: 1px solid rgba(91, 141, 239, 0.4);
+  color: var(--ember);
+  border: 1px solid rgba(196, 122, 58, 0.45);
   padding: 0.1rem 0.45rem;
   margin-bottom: 0.35rem;
   font-family: var(--font-display);
+  border-radius: 2px 6px 2px 4px;
 }
 
 .enemy-card {
@@ -268,11 +274,12 @@
   display: inline-block;
   padding: 0.25rem 0.6rem;
   margin-bottom: 0.5rem;
-  background: rgba(255, 42, 74, 0.2);
-  border: 1px solid var(--neon-red);
+  background: rgba(139, 26, 26, 0.28);
+  border: 1px solid rgba(196, 90, 50, 0.55);
   font-family: var(--font-display);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
+  border-radius: 2px 8px 2px 6px;
   animation: intent-glow 2s ease-in-out infinite;
 }
 
@@ -304,12 +311,12 @@
 
 .hp-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8b1530, var(--neon-red));
+  background: linear-gradient(90deg, #5a1810, var(--blood-bright));
   transition: width 0.25s ease;
 }
 
 .hp-fill.player {
-  background: linear-gradient(90deg, #1e3a5f, var(--electric));
+  background: linear-gradient(90deg, #4a3a24, var(--ember));
 }
 
 .hp-text {
@@ -320,14 +327,14 @@
 .statuses {
   margin-top: 0.35rem;
   font-size: 0.75rem;
-  color: #ffc448;
+  color: var(--ember);
   min-height: 1em;
 }
 
 .energy {
   margin-top: 0.45rem;
   font-family: var(--font-display);
-  color: var(--electric);
+  color: var(--ember);
   letter-spacing: 0.08em;
 }
 
@@ -343,10 +350,10 @@
   font-family: var(--font-display);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
-  color: var(--cream);
-  background: rgba(20, 10, 28, 0.75);
-  border: 1px solid rgba(196, 184, 212, 0.3);
-  border-radius: 4px;
+  color: var(--parchment);
+  background: rgba(22, 14, 10, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 2px 10px 2px 8px;
   padding: 0.4rem 0.75rem;
   cursor: pointer;
   display: inline-flex;
@@ -365,8 +372,8 @@
   min-width: 1.4rem;
   padding: 0.05rem 0.35rem;
   border-radius: 2px;
-  background: rgba(91, 141, 239, 0.2);
-  color: var(--electric);
+  background: rgba(196, 122, 58, 0.2);
+  color: var(--ember);
   text-align: center;
   font-weight: 700;
 }
