@@ -42,6 +42,27 @@ export function calcAttackDamage(base, attacker, defender) {
   return Math.max(0, dmg);
 }
 
+function ensureCombatStats(combat) {
+  if (!combat.stats) {
+    combat.stats = {
+      damageDealt: 0,
+      damageTaken: 0,
+      cardsPlayed: 0,
+    };
+  }
+  return combat.stats;
+}
+
+function recordHpLoss(combat, target, hpLost, source) {
+  if (!combat || !hpLost) return;
+  const stats = ensureCombatStats(combat);
+  if (target === combat.player) {
+    stats.damageTaken += hpLost;
+  } else if (source === "player" || source === "thorns") {
+    stats.damageDealt += hpLost;
+  }
+}
+
 function applyDamage(target, amount, combat, source) {
   let dmg = amount;
   if (target.block > 0) {
@@ -52,7 +73,9 @@ function applyDamage(target, amount, combat, source) {
   if (dmg > 0) {
     const before = target.hp;
     target.hp = Math.max(0, target.hp - dmg);
-    if (target.hp < before) {
+    const lost = before - target.hp;
+    if (lost > 0) {
+      recordHpLoss(combat, target, lost, source);
       const who = whoFor(combat, target);
       if (who) {
         pushAnim(combat, who, "hit");
@@ -79,8 +102,10 @@ function applyDamage(target, amount, combat, source) {
     if (td > 0) {
       const eb = enemy.hp;
       enemy.hp = Math.max(0, enemy.hp - td);
+      const thornLost = eb - enemy.hp;
+      recordHpLoss(combat, enemy, thornLost, "thorns");
       combat.log.push(`反弹造成 ${td} 点伤害`);
-      if (enemy.hp < eb) {
+      if (thornLost > 0) {
         const eWho = whoFor(combat, enemy);
         if (eWho) {
           pushAnim(combat, eWho, "hit");
@@ -96,7 +121,9 @@ function applyDamage(target, amount, combat, source) {
 function applyHpLoss(target, amount, combat) {
   const before = target.hp;
   target.hp = Math.max(0, target.hp - amount);
-  if (combat && target.hp < before) {
+  const lost = before - target.hp;
+  if (combat && lost > 0) {
+    recordHpLoss(combat, target, lost, "self");
     const who = whoFor(combat, target);
     if (who) {
       pushAnim(combat, who, "hit");
@@ -185,6 +212,11 @@ export function createCombat(playerRun, enemies, rng) {
     pendingRetrieve: null,
     drawPerTurn: DRAW_PER_TURN,
     anims: [],
+    stats: {
+      damageDealt: 0,
+      damageTaken: 0,
+      cardsPlayed: 0,
+    },
   };
   drawCards(combat, DRAW_PER_TURN);
   return combat;
@@ -244,6 +276,7 @@ export function playCard(combat, handIndex, enemyIndex = 0) {
   }
 
   combat.player.hand.splice(handIndex, 1);
+  ensureCombatStats(combat).cardsPlayed += 1;
   combat.log.push(`打出 ${card.name}`);
 
   if (combat.player.strength) {

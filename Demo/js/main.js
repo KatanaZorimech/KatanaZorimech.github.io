@@ -10,6 +10,8 @@ import {
   clearSave,
   restHeal,
   waffleReward,
+  mergeCombatStats,
+  computeRunScore,
 } from "./state.js";
 import {
   getCurrentNode,
@@ -202,6 +204,7 @@ function refreshCombat() {
 
 function onCombatVictory() {
   syncPlayerHp(combat, run);
+  mergeCombatStats(run, combat);
   const node = getCurrentNode(run);
   const tier =
     node?.type === "boss" ? "boss" : node?.type === "elite" ? "elite" : "normal";
@@ -216,11 +219,8 @@ function onCombatVictory() {
   lastWaffleGain = waffleReward(tier, rng);
   run.waffles = (run.waffles || 0) + lastWaffleGain;
 
-  const isFinalBoss =
-    node?.type === "boss" && run.actIndex >= (run.map?.acts?.length || 1) - 1;
-
-  // 击败夺心魔（终幕）：无卡牌奖励，直接胜利结算
-  if (defeatedMindFlayer && isFinalBoss) {
+  // 只要击败夺心魔（维克那二阶段），跳过卡牌奖励，直接胜利结算
+  if (defeatedMindFlayer) {
     run.completed = true;
     saveRun(run);
     showWin();
@@ -340,35 +340,64 @@ function refreshShop() {
 function showWin() {
   scene = "win";
   clearCombatChrome();
-  const deckSize = run?.deck?.length ?? 0;
-  const waffles = run?.waffles ?? 0;
-  const beatMf = !!run?.defeatedMindFlayer;
+  const snapshot = {
+    deckSize: run?.deck?.length ?? 0,
+    waffles: run?.waffles ?? 0,
+    hp: run?.hp ?? 0,
+    maxHp: run?.maxHp ?? 70,
+    beatMf: !!run?.defeatedMindFlayer,
+    stats: {
+      damageDealt: run?.stats?.damageDealt || 0,
+      damageTaken: run?.stats?.damageTaken || 0,
+      cardsPlayed: run?.stats?.cardsPlayed || 0,
+    },
+    score: computeRunScore(run),
+  };
   clearSave();
+  run = null;
+
   app.innerHTML = `
     <section class="scene scene-end scene-win">
       <p class="menu-eyebrow">Shadows Fall</p>
-      <h2>${beatMf ? "夺心魔已陨落" : "暗影退去"}</h2>
+      <h2>${snapshot.beatMf ? "夺心魔已陨落" : "暗影退去"}</h2>
       <p class="win-lead">
         ${
-          beatMf
+          snapshot.beatMf
             ? "触须崩碎，暗影退潮。你站在逆世界的废墟上，Hawkins 的灯火重新清晰起来。"
             : "维克那倒下了。逆世界的尖塔暂时沉寂——你用一副牌组改写了结局。"
         }
       </p>
-      ${
-        beatMf
-          ? `<p class="win-epilogue">胜利结语：念力仍在指尖震颤，但诅咒的低语已经散去。这一次，小十一没有让任何人被黑暗带走。华夫饼的甜香仿佛从很远的地方传来——像是威尔家地下室那盏灯，还亮着。</p>`
-          : ""
-      }
+      <p class="win-epilogue">
+        ${
+          snapshot.beatMf
+            ? "胜利结语：念力仍在指尖震颤，但诅咒的低语已经散去。这一次，小十一没有让任何人被黑暗带走。华夫饼的甜香仿佛从很远的地方传来——像是威尔家地下室那盏灯，还亮着。"
+            : "胜利结语：尖塔的阴影退到地平线外。你收拢牌组，Hawkins 的夜晚终于安静了一些。"
+        }
+      </p>
       <div class="win-settlement" role="status">
-        <div class="win-stat"><span class="win-stat-label">牌组</span><span class="win-stat-value">${deckSize} 张</span></div>
-        <div class="win-stat"><span class="win-stat-label">华夫饼</span><span class="win-stat-value">× ${waffles}</span></div>
-        <div class="win-stat"><span class="win-stat-label">结局</span><span class="win-stat-value">${beatMf ? "击败夺心魔" : "通关"}</span></div>
+        <div class="win-stat"><span class="win-stat-label">造成伤害</span><span class="win-stat-value">${snapshot.stats.damageDealt}</span></div>
+        <div class="win-stat"><span class="win-stat-label">承受伤害</span><span class="win-stat-value">${snapshot.stats.damageTaken}</span></div>
+        <div class="win-stat"><span class="win-stat-label">打出卡牌</span><span class="win-stat-value">${snapshot.stats.cardsPlayed}</span></div>
+        <div class="win-stat"><span class="win-stat-label">华夫饼</span><span class="win-stat-value">× ${snapshot.waffles}</span></div>
+        <div class="win-stat"><span class="win-stat-label">剩余生命</span><span class="win-stat-value">${snapshot.hp}/${snapshot.maxHp}</span></div>
+        <div class="win-stat"><span class="win-stat-label">牌组</span><span class="win-stat-value">${snapshot.deckSize} 张</span></div>
+        <div class="win-stat win-stat-score"><span class="win-stat-label">总分</span><span class="win-stat-value">${snapshot.score}</span></div>
       </div>
-      <button class="btn btn-primary" id="btn-again">再来一局</button>
+      <p class="win-score-note">总分 = 造成伤害 + 华夫饼×12 + 出牌×6 + 残血×8 − 承伤×0.5</p>
+      <div class="win-actions">
+        <button class="btn" id="btn-title">返回标题</button>
+        <button class="btn btn-primary" id="btn-again">再来一局</button>
+      </div>
     </section>
   `;
-  document.getElementById("btn-again").addEventListener("click", showMenu);
+  document.getElementById("btn-title").addEventListener("click", showMenu);
+  document.getElementById("btn-again").addEventListener("click", () => {
+    clearSave();
+    run = createNewRun();
+    run.combatCount = 0;
+    saveRun(run);
+    showMap();
+  });
 }
 
 init().catch((err) => {
