@@ -250,6 +250,7 @@ function setupCardDragDrop(root, combat, handlers) {
 
   let drag = null;
   let ghost = null;
+  let listenersBound = false;
 
   const clearDropHighlight = () => {
     root.querySelectorAll(".enemy-card.drop-hover").forEach((n) => {
@@ -257,63 +258,129 @@ function setupCardDragDrop(root, combat, handlers) {
     });
   };
 
+  const removeGhosts = () => {
+    if (ghost) {
+      ghost.remove();
+      ghost = null;
+    }
+    // Mac 上偶发未收到 pointerup，扫掉残留幽灵
+    document.querySelectorAll(".card-drag-ghost").forEach((n) => n.remove());
+  };
+
+  const unbindDocListeners = () => {
+    if (!listenersBound) return;
+    document.removeEventListener("pointermove", onDocPointerMove, true);
+    document.removeEventListener("pointerup", onDocPointerUp, true);
+    document.removeEventListener("pointercancel", onDocPointerUp, true);
+    window.removeEventListener("blur", onBlurCancel);
+    listenersBound = false;
+  };
+
   const endDrag = () => {
-    if (ghost) ghost.remove();
-    ghost = null;
-    if (drag?.node) drag.node.classList.remove("dragging");
+    const node = drag?.node;
+    const pointerId = drag?.pointerId;
+    if (node && pointerId != null) {
+      try {
+        if (node.hasPointerCapture?.(pointerId)) {
+          node.releasePointerCapture(pointerId);
+        }
+      } catch (_) {
+        /* ignore */
+      }
+      node.removeEventListener("lostpointercapture", onLostCapture);
+      node.classList.remove("dragging");
+    }
+    removeGhosts();
     drag = null;
     clearDropHighlight();
     root.classList.remove("is-dragging-attack");
+    unbindDocListeners();
   };
 
+  function onDocPointerMove(e) {
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    moveGhost(e.clientX, e.clientY);
+    clearDropHighlight();
+    const target = enemyAtPoint(root, e.clientX, e.clientY);
+    if (target) target.classList.add("drop-hover");
+  }
+
+  function onDocPointerUp(e) {
+    if (!drag || drag.pointerId !== e.pointerId) return;
+    const target = enemyAtPoint(root, e.clientX, e.clientY);
+    const idx = target ? Number(target.dataset.enemyIndex) : -1;
+    const handIndex = drag.handIndex;
+    endDrag();
+    if (idx >= 0 && combat.enemies[idx] && combat.enemies[idx].hp > 0) {
+      handlers.onPlayCard(handIndex, idx);
+    }
+  }
+
+  function onLostCapture(e) {
+    // Safari/Mac：capture 丢失时未必再有 pointerup。
+    // 延后清理，避免抢在同帧 pointerup（成功投放）之前把 drag 清掉。
+    const pointerId = e.pointerId;
+    requestAnimationFrame(() => {
+      if (drag && drag.pointerId === pointerId) endDrag();
+    });
+  }
+
+  function onBlurCancel() {
+    if (drag) endDrag();
+  }
+
+  function moveGhost(x, y) {
+    if (!ghost) return;
+    const w = ghost.offsetWidth || 0;
+    const h = ghost.offsetHeight || 0;
+    ghost.style.transform = `translate(${x - w / 2}px, ${y - h / 2}px) rotate(-4deg)`;
+  }
+
   root.querySelectorAll(".card[data-hand-index]").forEach((node) => {
-    const handIndex = Number(node.dataset.handIndex);
-    const needsDrop = node.dataset.needsTarget === "1";
-    if (!needsDrop) return;
+    if (node.dataset.needsTarget !== "1") return;
+
+    node.addEventListener("dragstart", (e) => e.preventDefault());
 
     node.addEventListener("pointerdown", (e) => {
       if (node.disabled || combat.phase !== "player") return;
       if (e.button !== 0) return;
-      e.preventDefault();
-      node.setPointerCapture(e.pointerId);
+      // 避免未结束的拖拽叠出多个幽灵
+      if (drag) endDrag();
 
+      e.preventDefault();
+      e.stopPropagation();
+
+      const handIndex = Number(node.dataset.handIndex);
       drag = { handIndex, node, pointerId: e.pointerId };
       node.classList.add("dragging");
       root.classList.add("is-dragging-attack");
 
+      try {
+        node.setPointerCapture(e.pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+      node.addEventListener("lostpointercapture", onLostCapture);
+
       ghost = node.cloneNode(true);
+      ghost.classList.remove("dragging");
       ghost.classList.add("card-drag-ghost");
+      ghost.removeAttribute("data-hand-index");
+      ghost.tabIndex = -1;
+      ghost.setAttribute("aria-hidden", "true");
       ghost.style.width = `${node.offsetWidth}px`;
       document.body.appendChild(ghost);
       moveGhost(e.clientX, e.clientY);
-    });
 
-    node.addEventListener("pointermove", (e) => {
-      if (!drag || drag.pointerId !== e.pointerId) return;
-      moveGhost(e.clientX, e.clientY);
-      clearDropHighlight();
-      const target = enemyAtPoint(root, e.clientX, e.clientY);
-      if (target) target.classList.add("drop-hover");
-    });
-
-    node.addEventListener("pointerup", (e) => {
-      if (!drag || drag.pointerId !== e.pointerId) return;
-      const target = enemyAtPoint(root, e.clientX, e.clientY);
-      const idx = target ? Number(target.dataset.enemyIndex) : -1;
-      const handIndex = drag.handIndex;
-      endDrag();
-      if (idx >= 0 && combat.enemies[idx] && combat.enemies[idx].hp > 0) {
-        handlers.onPlayCard(handIndex, idx);
+      if (!listenersBound) {
+        document.addEventListener("pointermove", onDocPointerMove, true);
+        document.addEventListener("pointerup", onDocPointerUp, true);
+        document.addEventListener("pointercancel", onDocPointerUp, true);
+        window.addEventListener("blur", onBlurCancel);
+        listenersBound = true;
       }
     });
-
-    node.addEventListener("pointercancel", () => endDrag());
   });
-
-  function moveGhost(x, y) {
-    if (!ghost) return;
-    ghost.style.transform = `translate(${x - ghost.offsetWidth / 2}px, ${y - ghost.offsetHeight / 2}px)`;
-  }
 }
 
 function enemyAtPoint(root, x, y) {
