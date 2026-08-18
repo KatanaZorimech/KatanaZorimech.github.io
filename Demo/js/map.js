@@ -11,7 +11,7 @@ import { assignEncountersToRows } from "./enemies.js";
 const NODE_LABELS = {
   combat: "遭遇",
   elite: "精英",
-  rest: "威尔家的地下室",
+  rest: "威尔的木屋",
   shop: "商店",
   boss: "Boss",
 };

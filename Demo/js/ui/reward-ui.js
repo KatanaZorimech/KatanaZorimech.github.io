@@ -54,13 +54,13 @@ export function renderRest(root, run, handlers) {
   root.className = "scene scene-rest";
 
   const title = document.createElement("h2");
-  title.textContent = "威尔家的地下室";
+  title.textContent = "威尔的木屋";
   root.appendChild(title);
 
   const blurb = document.createElement("p");
   blurb.className = "rest-blurb";
   blurb.textContent =
-    "熟悉的灯串与对讲机嗡鸣。在火堆旁恢复体力，或强化一张牌。";
+    "木屋灯串微亮，对讲机偶尔嗡鸣。在壁炉旁恢复体力，或强化一张牌。";
   root.appendChild(blurb);
 
   const actions = document.createElement("div");
@@ -69,7 +69,7 @@ export function renderRest(root, run, handlers) {
   const healBtn = document.createElement("button");
   healBtn.className = "btn";
   const healAmt = Math.floor(run.maxHp * 0.3);
-  healBtn.textContent = `靠着火堆休息（回复 ${healAmt} 生命）`;
+  healBtn.textContent = `靠着壁炉休息（回复 ${healAmt} 生命）`;
   healBtn.addEventListener("click", () => handlers.onHeal());
   actions.appendChild(healBtn);
 

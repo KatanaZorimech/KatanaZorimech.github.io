@@ -29,17 +29,18 @@
   padding: 1rem;
   border: 1px solid var(--border);
   background:
-    linear-gradient(165deg, rgba(48, 34, 24, 0.92), rgba(16, 10, 8, 0.95));
+    linear-gradient(165deg, rgba(42, 28, 18, 0.94), rgba(12, 8, 6, 0.96));
   text-align: center;
-  border-radius: 4px 16px 4px 12px;
+  border-radius: 3px 18px 4px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   box-sizing: border-box;
   box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
-    0 8px 0 rgba(0, 0, 0, 0.35);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 0 40px rgba(0, 0, 0, 0.25),
+    0 8px 0 rgba(0, 0, 0, 0.4);
 }
 
 .player-card,
@@ -282,12 +283,13 @@
   display: inline-block;
   padding: 0.25rem 0.6rem;
   margin-bottom: 0.5rem;
-  background: rgba(139, 26, 26, 0.28);
-  border: 1px solid rgba(196, 90, 50, 0.55);
+  background: rgba(139, 26, 26, 0.32);
+  border: 1px solid rgba(224, 52, 44, 0.45);
   font-family: var(--font-display);
   font-size: 0.8rem;
   letter-spacing: 0.04em;
   border-radius: 2px 8px 2px 6px;
+  box-shadow: 0 0 10px rgba(224, 52, 44, 0.18);
   animation: intent-glow 2s ease-in-out infinite;
 }
 
@@ -295,9 +297,11 @@
   0%,
   100% {
     opacity: 0.85;
+    box-shadow: 0 0 8px rgba(224, 52, 44, 0.15);
   }
   50% {
     opacity: 1;
+    box-shadow: 0 0 14px rgba(224, 52, 44, 0.35);
   }
 }
 
@@ -463,8 +467,9 @@
 }
 
 .pile-btn:hover {
-  border-color: var(--electric);
-  background: rgba(30, 58, 95, 0.35);
+  border-color: var(--neon-red);
+  background: rgba(80, 20, 16, 0.4);
+  box-shadow: var(--glow-red);
   transform: translateY(-1px);
 }
 
@@ -650,21 +655,29 @@
 
 .scene-combat.touch-play .hand {
   min-height: 0;
+  height: clamp(118px, 30dvh, 150px);
   width: 100%;
+  max-width: none;
   margin: 0 auto;
-  gap: 0.28rem;
+  gap: 0;
   flex-wrap: nowrap;
   overflow-x: auto;
-  overflow-y: hidden;
-  justify-content: safe center;
+  overflow-y: visible;
+  justify-content: center;
   align-items: flex-end;
   padding: 0.2rem 0.35rem 0.4rem;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   box-sizing: border-box;
+  perspective: none;
 }
 
-.scene-combat.touch-play .card {
+.scene-combat.touch-play .hand > .card {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  margin-left: 0;
+  margin-right: -16px;
   flex: 0 0 auto;
   width: clamp(92px, 17vw, 118px);
   min-height: 0;
@@ -672,12 +685,24 @@
   padding: 0.28rem 0.32rem 0.3rem;
   gap: 0.12rem;
   font-size: 0.58rem;
-  transform: none;
   align-items: stretch;
+  transform:
+    translateX(0)
+    rotate(var(--fan-rot, 0deg))
+    translateY(var(--fan-y, 0px));
 }
 
-.scene-combat.touch-play .card.card-selected {
-  transform: translateY(-4px);
+.scene-combat.touch-play .hand > .card:last-child {
+  margin-right: 0;
+}
+
+.scene-combat.touch-play .hand > .card.card-selected {
+  z-index: 80;
+  transform:
+    translateX(0)
+    rotate(var(--fan-rot, 0deg))
+    translateY(calc(var(--fan-y, 0px) - 16px))
+    scale(1.04);
 }
 
 .scene-combat.touch-play .card-cost {

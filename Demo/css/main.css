@@ -1,26 +1,27 @@
 :root {
-  --ink: #1a120c;
-  --ink-soft: #2a1c14;
-  --parchment: #d4c4a8;
-  --parchment-dark: #a89070;
-  --blood: #8b1a1a;
-  --blood-bright: #c43c2a;
+  --ink: #0c0806;
+  --ink-soft: #1a100c;
+  --parchment: #d8c4a0;
+  --parchment-dark: #9a7a52;
+  --blood: #6e1010;
+  --blood-bright: #c22e28;
   --ember: #c47a3a;
-  --moss: #3d4a32;
-  --iron: #6b6358;
-  --fog: #c9bda8;
-  --muted: #8a7d6c;
-  --cream: #efe4d0;
-  --panel: rgba(22, 14, 10, 0.82);
-  --panel-edge: rgba(196, 168, 112, 0.45);
-  --border: rgba(160, 120, 70, 0.55);
-  --neon-red: var(--blood-bright);
-  --electric: #9a7b4f;
-  --void-blue: #3a2e24;
+  --moss: #2e3828;
+  --iron: #5c544c;
+  --fog: #c4b49a;
+  --muted: #7a6c5a;
+  --cream: #efe2cc;
+  --panel: rgba(14, 8, 6, 0.88);
+  --panel-edge: rgba(180, 120, 70, 0.5);
+  --border: rgba(150, 100, 55, 0.65);
+  --neon-red: #e0342c;
+  --electric: #a87848;
+  --void-blue: #2a1c18;
   --font-display: "Cinzel", "Noto Serif SC", serif;
   --font-body: "Noto Serif SC", "Songti SC", serif;
   --font-ornament: "MedievalSharp", "Cinzel", serif;
   --bg-image: url("../assets/images/bg-upside.webp");
+  --glow-red: 0 0 12px rgba(224, 52, 44, 0.35);
 }
 
 *,
@@ -170,7 +171,7 @@ body::after {
   color: var(--parchment);
   text-shadow:
     0 2px 0 #1a1008,
-    0 0 28px rgba(196, 60, 42, 0.35);
+    0 0 28px rgba(224, 52, 44, 0.4);
 }
 
 .menu-tagline {
@@ -218,22 +219,27 @@ body::after {
   font-weight: 600;
   border: 1px solid var(--border);
   background:
-    linear-gradient(180deg, rgba(60, 42, 28, 0.95), rgba(28, 18, 12, 0.95));
+    linear-gradient(180deg, rgba(52, 34, 22, 0.96), rgba(18, 10, 8, 0.97));
   color: var(--parchment);
   padding: 0.7rem 1.4rem;
   cursor: pointer;
-  border-radius: 3px 12px 3px 10px;
+  border-radius: 2px 14px 3px 11px;
   letter-spacing: 0.08em;
   box-shadow:
-    inset 0 1px 0 rgba(255, 230, 180, 0.08),
-    0 4px 0 rgba(0, 0, 0, 0.45);
-  transition: transform 0.12s, border-color 0.2s, filter 0.2s;
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 220, 160, 0.06),
+    0 5px 0 rgba(0, 0, 0, 0.5);
+  transition: transform 0.12s, border-color 0.2s, filter 0.2s, box-shadow 0.2s;
 }
 
 .btn:hover:not(:disabled) {
-  border-color: var(--ember);
+  border-color: var(--neon-red);
   filter: brightness(1.08);
   transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+    var(--glow-red),
+    0 5px 0 rgba(0, 0, 0, 0.5);
 }
 
 .btn:disabled {
@@ -242,9 +248,10 @@ body::after {
 }
 
 .btn-primary {
-  background: linear-gradient(160deg, #6a2218, #3a120e 55%, #1a0a08);
-  border-color: rgba(196, 100, 60, 0.55);
+  background: linear-gradient(160deg, #7a1c18, #3a0e0c 55%, #140606);
+  border-color: rgba(224, 52, 44, 0.55);
   color: var(--cream);
+  text-shadow: 0 0 10px rgba(224, 52, 44, 0.35);
 }
 
 .btn-end {

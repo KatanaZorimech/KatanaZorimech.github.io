@@ -8,7 +8,7 @@ import {
 const TYPE_ICON = {
   combat: "⚔",
   elite: "☠",
-  rest: "🔥",
+  rest: "🏠",
   shop: "🏪",
   boss: "👁",
 };
@@ -36,7 +36,7 @@ export function renderMap(root, run, handlers) {
 
   const legend = document.createElement("p");
   legend.className = "map-legend";
-  legend.textContent = "⚔遭遇  ☠精英  🔥威尔家的地下室  🏪商店  👁Boss";
+  legend.textContent = "⚔遭遇  ☠精英  🏠威尔的木屋  🏪商店  👁Boss";
   root.appendChild(legend);
 
   const canvas = document.createElement("div");

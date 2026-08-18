@@ -10,6 +10,7 @@ import {
 } from "../combat.js";
 import { getPlayerSprite, getEnemySprite } from "../sprites.js";
 import { isTouchPlay } from "../mobile.js";
+import { playSfx } from "../audio.js";
 
 const STATUS_INFO = {
   vulnerable: {
@@ -88,9 +89,12 @@ export function renderCombat(root, combat, handlers) {
     : "攻击牌：拖到敌人头像框释放 · 技能牌：点击使用";
 
   const hand = el("div", "hand");
+  const handCount = combat.player.hand.length;
+  hand.dataset.count = String(handCount);
   combat.player.hand.forEach((inst, idx) => {
-    hand.appendChild(renderCard(inst, idx, combat, handlers, touch));
+    hand.appendChild(renderCard(inst, idx, combat, handlers, touch, handCount));
   });
+  layoutFanHand(hand);
 
   const actions = el("div", "combat-actions");
   const endBtn = el("button", "btn btn-end");
@@ -159,6 +163,11 @@ export function playCombatAnims(root, combat) {
 
   queue.forEach((ev, i) => {
     window.setTimeout(() => {
+      if (ev.kind === "attack") {
+        if (ev.who === "player") playSfx("playerAttack");
+        else if (String(ev.who).startsWith("enemy")) playSfx("enemyAttack");
+      }
+
       const stage = root.querySelector(`[data-fighter="${ev.who}"]`);
       const actor = stage?.querySelector(".sprite-actor");
       if (!actor) return;
@@ -180,6 +189,28 @@ export function playCombatAnims(root, combat) {
       };
       actor.addEventListener("animationend", onEnd);
     }, i * 70);
+  });
+}
+
+/** Apply fan-arc CSS variables to hand cards. */
+function layoutFanHand(handEl) {
+  const cards = [...handEl.querySelectorAll(".card[data-hand-index]")];
+  const n = cards.length;
+  if (!n) return;
+  const totalSpread = Math.min(42, 10 + n * 4); // degrees
+  const step = n === 1 ? 0 : totalSpread / (n - 1);
+  const start = n === 1 ? 0 : -totalSpread / 2;
+  // Horizontal spacing shrinks as hand grows
+  const xStep = Math.max(28, 78 - n * 4);
+  const xStart = n === 1 ? 0 : -((n - 1) * xStep) / 2;
+  cards.forEach((card, i) => {
+    const angle = start + step * i;
+    const x = xStart + xStep * i;
+    const y = Math.abs(angle) * 0.55;
+    card.style.setProperty("--fan-rot", `${angle}deg`);
+    card.style.setProperty("--fan-x", `${x}px`);
+    card.style.setProperty("--fan-y", `${y}px`);
+    card.style.setProperty("--fan-z", String(i + 1));
   });
 }
 
@@ -545,7 +576,7 @@ function renderPlayer(combat) {
   return card;
 }
 
-function renderCard(inst, idx, combat, handlers, touch = false) {
+function renderCard(inst, idx, combat, handlers, touch = false, handCount = 1) {
   const card = resolveCard(inst);
   const playable = canPlayCard(combat, idx);
   const targetNeeded = needsTarget(inst);
@@ -555,6 +586,8 @@ function renderCard(inst, idx, combat, handlers, touch = false) {
   );
   node.dataset.handIndex = String(idx);
   node.dataset.needsTarget = targetNeeded ? "1" : "0";
+  node.style.setProperty("--fan-z", String(idx + 1));
+  void handCount;
   const costLabel = card.cost === "X" ? "X" : String(card.cost);
   const targetHint = targetNeeded
     ? touch
