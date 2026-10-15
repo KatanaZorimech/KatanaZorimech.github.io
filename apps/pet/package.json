@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "author": "Desktop Pet",
-  "description": "桌面宠物 — LLM 对话（阶段 C）",
+  "description": "桌面宠物 — 选区摘要/翻译（阶段 D）",
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "npm run build && electron .",

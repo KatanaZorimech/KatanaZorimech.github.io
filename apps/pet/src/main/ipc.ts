@@ -5,17 +5,27 @@ import {
   getChatHistory,
   sendChatMessage,
 } from "./chat";
-import { getPublicSettings, loadSettings, saveSettings, type LlmSettings } from "./store";
+import { abortSelection, runSelectionAction } from "./selection";
+import { registerSelectionShortcuts } from "./shortcuts";
+import {
+  getPublicSettings,
+  loadSettings,
+  saveSettings,
+  type LlmSettings,
+  type SelectionSettings,
+} from "./store";
 
-export type LayoutMode = "compact" | "chat" | "settings";
+export type LayoutMode = "compact" | "chat" | "settings" | "guidance";
 
 const LAYOUT: Record<LayoutMode, { width: number; height: number }> = {
   compact: { width: 190, height: 220 },
   chat: { width: 420, height: 480 },
-  settings: { width: 380, height: 460 },
+  settings: { width: 400, height: 560 },
+  guidance: { width: 400, height: 480 },
 };
 
 let layoutMode: LayoutMode = "compact";
+let getWindowRef: (() => BrowserWindow | null) | null = null;
 
 function applyLayout(win: BrowserWindow, mode: LayoutMode): void {
   layoutMode = mode;
@@ -23,7 +33,6 @@ function applyLayout(win: BrowserWindow, mode: LayoutMode): void {
   const bounds = win.getBounds();
   const display = screen.getDisplayMatching(bounds);
   const work = display.workArea;
-  // 以窗口右下角为锚点向左上展开，并把气泡放在宠物左侧
   let nextX = bounds.x + bounds.width - size.width;
   let nextY = bounds.y + bounds.height - size.height;
   nextX = Math.min(Math.max(work.x + 8, nextX), work.x + work.width - size.width - 8);
@@ -41,7 +50,14 @@ export function getSettings() {
   return getPublicSettings();
 }
 
+function ensureChatOpen(win: BrowserWindow): void {
+  applyLayout(win, "chat");
+  win.webContents.send("pet:open-chat");
+}
+
 export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
+  getWindowRef = getWindow;
+
   ipcMain.handle("pet:get-settings", () => getSettings());
 
   ipcMain.handle("pet:move-by", (_event, dx: number, dy: number) => {
@@ -73,10 +89,29 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
     return getSettings();
   });
 
+  ipcMain.handle(
+    "pet:save-selection",
+    (_event, selection: Partial<SelectionSettings>) => {
+      saveSettings({ selection });
+      registerSelectionShortcuts(getWindow);
+      return getSettings();
+    },
+  );
+
+  ipcMain.handle("pet:ack-guidance", () => {
+    saveSettings({ selection: { guidanceSeen: true } });
+    return getSettings();
+  });
+
   ipcMain.handle("pet:set-layout", (_event, mode: LayoutMode) => {
     const win = getWindow();
     if (!win || win.isDestroyed()) return layoutMode;
-    if (mode === "compact" || mode === "chat" || mode === "settings") {
+    if (
+      mode === "compact" ||
+      mode === "chat" ||
+      mode === "settings" ||
+      mode === "guidance"
+    ) {
       applyLayout(win, mode);
     }
     return layoutMode;
@@ -93,14 +128,23 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
 
   ipcMain.handle("chat:abort", () => {
     abortChat();
+    abortSelection();
   });
 
   ipcMain.handle("chat:send", async (event, userText: string) => {
     return sendChatMessage(event.sender, userText);
   });
 
+  ipcMain.handle("selection:run", async (_event, action: "summarize" | "translate") => {
+    const win = getWindow();
+    if (!win || win.isDestroyed()) return { ok: false, error: "窗口不可用" };
+    ensureChatOpen(win);
+    return runSelectionAction(win, action);
+  });
+
   ipcMain.handle("pet:quit", () => {
     abortChat();
+    abortSelection();
     app.quit();
   });
 
@@ -128,20 +172,21 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
       {
         label: "打开聊天",
         click: () => {
-          applyLayout(win, "chat");
-          event.sender.send("pet:open-chat");
+          ensureChatOpen(win);
         },
       },
       {
-        label: "摘要",
+        label: "摘要所选",
         click: () => {
-          event.sender.send("pet:toast", "摘要将在阶段 D 开放");
+          ensureChatOpen(win);
+          void runSelectionAction(win, "summarize");
         },
       },
       {
-        label: "翻译",
+        label: "翻译所选",
         click: () => {
-          event.sender.send("pet:toast", "翻译将在阶段 D 开放");
+          ensureChatOpen(win);
+          void runSelectionAction(win, "translate");
         },
       },
       {
@@ -170,6 +215,7 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
         label: "退出",
         click: () => {
           abortChat();
+          abortSelection();
           app.quit();
         },
       },
@@ -177,4 +223,8 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
 
     menu.popup({ window: win });
   });
+}
+
+export function getWindowGetter(): (() => BrowserWindow | null) | null {
+  return getWindowRef;
 }

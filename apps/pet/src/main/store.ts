@@ -9,10 +9,24 @@ export type LlmSettings = {
   temperature: number;
 };
 
+export type SelectionSettings = {
+  /** 弹出「摘要 / 翻译」选择的全局快捷键 */
+  shortcutAction: string;
+  /** 直接摘要 */
+  shortcutSummarize: string;
+  /** 直接翻译 */
+  shortcutTranslate: string;
+  /** 读剪贴板前是否先模拟 Ctrl/Cmd+C（尽力而为） */
+  simulateCopy: boolean;
+  /** 是否已看过权限/隐私引导 */
+  guidanceSeen: boolean;
+};
+
 export type AppSettings = {
   alwaysOnTop: boolean;
   sfxEnabled: boolean;
   llm: LlmSettings;
+  selection: SelectionSettings;
 };
 
 const DEFAULTS: AppSettings = {
@@ -23,6 +37,13 @@ const DEFAULTS: AppSettings = {
     baseURL: "https://api.openai.com/v1",
     model: "gpt-4o-mini",
     temperature: 0.7,
+  },
+  selection: {
+    shortcutAction: "CommandOrControl+Shift+D",
+    shortcutSummarize: "CommandOrControl+Shift+S",
+    shortcutTranslate: "CommandOrControl+Shift+T",
+    simulateCopy: true,
+    guidanceSeen: false,
   },
 };
 
@@ -48,6 +69,10 @@ export function loadSettings(): AppSettings {
         ...DEFAULTS.llm,
         ...(parsed.llm ?? {}),
       },
+      selection: {
+        ...DEFAULTS.selection,
+        ...(parsed.selection ?? {}),
+      },
     };
   } catch {
     cache = clone(DEFAULTS);
@@ -59,6 +84,7 @@ export function saveSettings(patch: {
   alwaysOnTop?: boolean;
   sfxEnabled?: boolean;
   llm?: Partial<LlmSettings>;
+  selection?: Partial<SelectionSettings>;
 }): AppSettings {
   const current = loadSettings();
   const next: AppSettings = {
@@ -67,6 +93,10 @@ export function saveSettings(patch: {
     llm: {
       ...current.llm,
       ...(patch.llm ?? {}),
+    },
+    selection: {
+      ...current.selection,
+      ...(patch.selection ?? {}),
     },
   };
   if (typeof next.llm.temperature === "number") {
@@ -78,7 +108,9 @@ export function saveSettings(patch: {
   return clone(next);
 }
 
-export function getPublicSettings(): AppSettings & { llm: LlmSettings & { apiKeyMasked: string } } {
+export function getPublicSettings(): AppSettings & {
+  llm: LlmSettings & { apiKeyMasked: string };
+} {
   const s = loadSettings();
   const key = s.llm.apiKey;
   const apiKeyMasked =
@@ -87,8 +119,9 @@ export function getPublicSettings(): AppSettings & { llm: LlmSettings & { apiKey
     ...s,
     llm: {
       ...s.llm,
-      // 回传完整 key 以便设置页编辑；另附 masked 供展示
       apiKeyMasked,
     },
   };
 }
+
+export const SELECTION_MAX_CHARS = 4000;

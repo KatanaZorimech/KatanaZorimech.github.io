@@ -3,6 +3,12 @@ import path from "node:path";
 import { createPetWindow } from "./window";
 import { createTray } from "./tray";
 import { registerPetIpc } from "./ipc";
+import {
+  registerSelectionShortcuts,
+  unregisterSelectionShortcuts,
+} from "./shortcuts";
+import { abortChat } from "./chat";
+import { abortSelection } from "./selection";
 
 let petWindow: BrowserWindow | null = null;
 
@@ -20,6 +26,8 @@ if (!gotLock) {
   app.whenReady().then(() => {
     registerPetIpc(() => petWindow);
     petWindow = createPetWindow();
+    registerSelectionShortcuts(() => petWindow);
+
     createTray({
       getWindow: () => petWindow,
       onShow: () => {
@@ -30,6 +38,8 @@ if (!gotLock) {
         petWindow?.hide();
       },
       onQuit: () => {
+        abortChat();
+        abortSelection();
         app.quit();
       },
     });
@@ -37,12 +47,19 @@ if (!gotLock) {
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) {
         petWindow = createPetWindow();
+        registerSelectionShortcuts(() => petWindow);
       } else {
         petWindow?.show();
       }
     });
   });
 }
+
+app.on("will-quit", () => {
+  unregisterSelectionShortcuts();
+  abortChat();
+  abortSelection();
+});
 
 app.on("window-all-closed", () => {
   // 托盘常驻：关闭窗口不退出

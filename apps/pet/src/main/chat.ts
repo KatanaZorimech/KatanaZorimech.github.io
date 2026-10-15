@@ -14,6 +14,18 @@ export function clearChatHistory(): void {
   sessionHistory.length = 0;
 }
 
+export function appendHistoryTurn(turn: ChatTurn): void {
+  sessionHistory.push({ ...turn });
+}
+
+export function notifyChat(
+  sender: Electron.WebContents,
+  kind: "user",
+  text: string,
+): void {
+  if (!sender.isDestroyed()) sender.send("chat:user", text);
+}
+
 export function abortChat(): void {
   activeAbort?.abort();
   activeAbort = null;

@@ -8,18 +8,27 @@ export type LlmSettings = {
   apiKeyMasked?: string;
 };
 
+export type SelectionSettings = {
+  shortcutAction: string;
+  shortcutSummarize: string;
+  shortcutTranslate: string;
+  simulateCopy: boolean;
+  guidanceSeen: boolean;
+};
+
 export type PetSettings = {
   alwaysOnTop: boolean;
   sfxEnabled: boolean;
   llm: LlmSettings;
+  selection: SelectionSettings;
 };
 
-export type LayoutMode = "compact" | "chat" | "settings";
+export type LayoutMode = "compact" | "chat" | "settings" | "guidance";
 
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
 contextBridge.exposeInMainWorld("desktopPet", {
-  phase: "C",
+  phase: "D",
   locale: "zh-CN",
   moveBy: (dx: number, dy: number) => ipcRenderer.invoke("pet:move-by", dx, dy),
   getSettings: (): Promise<PetSettings> => ipcRenderer.invoke("pet:get-settings"),
@@ -29,6 +38,9 @@ contextBridge.exposeInMainWorld("desktopPet", {
     ipcRenderer.invoke("pet:set-sfx", enabled),
   saveLlm: (llm: Partial<LlmSettings>): Promise<PetSettings> =>
     ipcRenderer.invoke("pet:save-llm", llm),
+  saveSelection: (selection: Partial<SelectionSettings>): Promise<PetSettings> =>
+    ipcRenderer.invoke("pet:save-selection", selection),
+  ackGuidance: (): Promise<PetSettings> => ipcRenderer.invoke("pet:ack-guidance"),
   setLayout: (mode: LayoutMode): Promise<LayoutMode> =>
     ipcRenderer.invoke("pet:set-layout", mode),
   getLayout: (): Promise<LayoutMode> => ipcRenderer.invoke("pet:get-layout"),
@@ -41,6 +53,10 @@ contextBridge.exposeInMainWorld("desktopPet", {
     text: string,
   ): Promise<{ ok: true; content: string } | { ok: false; error: string }> =>
     ipcRenderer.invoke("chat:send", text),
+  runSelection: (
+    action: "summarize" | "translate",
+  ): Promise<{ ok: true } | { ok: false; error: string; needGuidance?: boolean }> =>
+    ipcRenderer.invoke("selection:run", action),
   onToast: (handler: (message: string) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, message: string) => {
       handler(message);
@@ -71,6 +87,11 @@ contextBridge.exposeInMainWorld("desktopPet", {
     };
     ipcRenderer.on("pet:layout", listener);
     return () => ipcRenderer.removeListener("pet:layout", listener);
+  },
+  onShowGuidance: (handler: () => void) => {
+    const listener = () => handler();
+    ipcRenderer.on("selection:show-guidance", listener);
+    return () => ipcRenderer.removeListener("selection:show-guidance", listener);
   },
   onChatUser: (handler: (text: string) => void) => {
     const listener = (_e: Electron.IpcRendererEvent, text: string) => handler(text);

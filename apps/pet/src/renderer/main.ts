@@ -136,10 +136,11 @@ function handleTap(): void {
 }
 
 function setLayoutMode(mode: LayoutMode): void {
-  app.classList.remove("mode-compact", "mode-chat", "mode-settings");
+  app.classList.remove("mode-compact", "mode-chat", "mode-settings", "mode-guidance");
   app.classList.add(`mode-${mode}`);
   chatPanel.hidden = mode !== "chat";
   settingsPanel.hidden = mode !== "settings";
+  if (mode !== "guidance") hideGuidance();
 }
 
 async function openChat(): Promise<void> {
@@ -192,11 +193,33 @@ async function fillSettingsForm(): Promise<void> {
   const modelInput = document.getElementById("set-model") as HTMLInputElement | null;
   const tempInput = document.getElementById("set-temperature") as HTMLInputElement | null;
   const tempValue = document.getElementById("temp-value");
+  const shortcutAction = document.getElementById("set-shortcut-action") as HTMLInputElement | null;
+  const shortcutSummarize = document.getElementById(
+    "set-shortcut-summarize",
+  ) as HTMLInputElement | null;
+  const shortcutTranslate = document.getElementById(
+    "set-shortcut-translate",
+  ) as HTMLInputElement | null;
+  const simulateCopy = document.getElementById("set-simulate-copy") as HTMLInputElement | null;
   if (keyInput) keyInput.value = s.llm.apiKey;
   if (baseInput) baseInput.value = s.llm.baseURL;
   if (modelInput) modelInput.value = s.llm.model;
   if (tempInput) tempInput.value = String(s.llm.temperature);
   if (tempValue) tempValue.textContent = String(s.llm.temperature);
+  if (shortcutAction) shortcutAction.value = s.selection.shortcutAction;
+  if (shortcutSummarize) shortcutSummarize.value = s.selection.shortcutSummarize;
+  if (shortcutTranslate) shortcutTranslate.value = s.selection.shortcutTranslate;
+  if (simulateCopy) simulateCopy.checked = s.selection.simulateCopy;
+}
+
+function showGuidance(): void {
+  const overlay = document.getElementById("guidance-overlay");
+  if (overlay) overlay.hidden = false;
+}
+
+function hideGuidance(): void {
+  const overlay = document.getElementById("guidance-overlay");
+  if (overlay) overlay.hidden = true;
 }
 
 fsm.subscribe((state, prev) => {
@@ -226,6 +249,20 @@ api.onOpenSettings(() => {
   void openSettings();
 });
 api.onLayout((mode) => setLayoutMode(mode));
+api.onShowGuidance(() => {
+  void api.setLayout("guidance").then(() => {
+    setLayoutMode("guidance");
+    showGuidance();
+  });
+});
+
+document.getElementById("guidance-ack")?.addEventListener("click", () => {
+  void api.ackGuidance().then(() => {
+    hideGuidance();
+    void api.setLayout("compact").then(() => setLayoutMode("compact"));
+    showToast("已确认选区说明");
+  });
+});
 
 api.onChatUser((text) => {
   appendBubble("user", text);
@@ -339,17 +376,33 @@ document.getElementById("settings-form")?.addEventListener("submit", (event) => 
   const keyInput = document.getElementById("set-api-key") as HTMLInputElement;
   const baseInput = document.getElementById("set-base-url") as HTMLInputElement;
   const modelInput = document.getElementById("set-model") as HTMLInputElement;
-  void api
-    .saveLlm({
+  const shortcutAction = document.getElementById("set-shortcut-action") as HTMLInputElement;
+  const shortcutSummarize = document.getElementById(
+    "set-shortcut-summarize",
+  ) as HTMLInputElement;
+  const shortcutTranslate = document.getElementById(
+    "set-shortcut-translate",
+  ) as HTMLInputElement;
+  const simulateCopy = document.getElementById("set-simulate-copy") as HTMLInputElement;
+  void Promise.all([
+    api.saveLlm({
       apiKey: keyInput.value.trim(),
       baseURL: baseInput.value.trim() || "https://api.openai.com/v1",
       model: modelInput.value.trim() || "gpt-4o-mini",
       temperature: Number(tempInput?.value ?? 0.7),
-    })
-    .then(() => {
-      showToast("设置已保存");
-    });
+    }),
+    api.saveSelection({
+      shortcutAction: shortcutAction.value.trim() || "CommandOrControl+Shift+D",
+      shortcutSummarize: shortcutSummarize.value.trim() || "CommandOrControl+Shift+S",
+      shortcutTranslate: shortcutTranslate.value.trim() || "CommandOrControl+Shift+T",
+      simulateCopy: simulateCopy.checked,
+    }),
+  ]).then(() => {
+    showToast("设置已保存");
+  });
 });
+
+console.info("[桌面宠物] 阶段 D 已加载");
 
 chatForm?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -364,5 +417,3 @@ chatForm?.addEventListener("submit", (event) => {
     }
   });
 });
-
-console.info("[桌面宠物] 阶段 C 已加载");

@@ -57,13 +57,61 @@
             <span>温度 <em id="temp-value">0.7</em></span>
             <input id="set-temperature" type="range" min="0" max="2" step="0.1" value="0.7" />
           </label>
-          <p class="settings-hint">Key 仅保存在本机用户目录；兼容 OpenAI / DeepSeek 等接口。</p>
+          <hr class="settings-sep" />
+          <label>
+            <span>选区动作快捷键</span>
+            <input id="set-shortcut-action" type="text" placeholder="CommandOrControl+Shift+D" />
+          </label>
+          <label>
+            <span>摘要快捷键</span>
+            <input id="set-shortcut-summarize" type="text" placeholder="CommandOrControl+Shift+S" />
+          </label>
+          <label>
+            <span>翻译快捷键</span>
+            <input id="set-shortcut-translate" type="text" placeholder="CommandOrControl+Shift+T" />
+          </label>
+          <label class="checkbox-row">
+            <input id="set-simulate-copy" type="checkbox" checked />
+            <span>读选区前先模拟复制（Cmd/Ctrl+C，尽力恢复剪贴板）</span>
+          </label>
+          <p class="settings-hint">
+            Key 仅保存在本机。选区摘要/翻译会把剪贴板文本发送到你配置的 LLM 接口。macOS
+            模拟复制需在「系统设置 → 隐私与安全性 → 辅助功能」中授权。
+          </p>
           <div class="settings-actions">
             <button type="submit" id="settings-save">保存</button>
             <button type="button" id="settings-to-chat" class="secondary-btn">去聊天</button>
           </div>
         </form>
       </section>
+
+      <div id="guidance-overlay" class="guidance-overlay" hidden>
+        <div class="guidance-card" role="dialog" aria-labelledby="guidance-title">
+          <h2 id="guidance-title">选区功能说明</h2>
+          <ol>
+            <li>先在其他应用中<strong>选中文字</strong>。</li>
+            <li>
+              使用快捷键或右键「摘要所选 / 翻译所选」。默认会<strong>模拟复制</strong>后读取剪贴板。
+            </li>
+            <li>
+              <strong>macOS</strong>：请到「系统设置 → 隐私与安全性 →
+              <strong>辅助功能</strong>」允许本应用，否则模拟复制可能失败（可改为手动复制）。
+            </li>
+            <li>
+              <strong>隐私</strong>：选中的文本会发送到你在设置中配置的 LLM
+              服务（不会发到我们的服务器）。请勿选择敏感信息。
+            </li>
+            <li>过长文本会截断至约 4000 字后再处理。</li>
+          </ol>
+          <p class="guidance-defaults">
+            默认快捷键：动作菜单
+            <code>Ctrl/Cmd+Shift+D</code> · 摘要
+            <code>Ctrl/Cmd+Shift+S</code> · 翻译
+            <code>Ctrl/Cmd+Shift+T</code>
+          </p>
+          <button type="button" id="guidance-ack">我知道了</button>
+        </div>
+      </div>
 
       <div id="pet-column" class="pet-column">
         <div id="pet-hit" class="pet-hit" title="单击、拖动或右键" aria-label="桌面宠物">

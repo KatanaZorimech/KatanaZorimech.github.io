@@ -44,7 +44,8 @@ body {
   cursor: pointer;
 }
 
-.mode-compact .side-panel {
+.mode-compact .side-panel,
+.mode-guidance .side-panel {
   display: none !important;
 }
 
@@ -760,4 +761,87 @@ body {
 .settings-actions {
   display: flex;
   gap: 8px;
+}
+
+.settings-sep {
+  border: none;
+  border-top: 1px solid rgba(80, 50, 30, 0.12);
+  margin: 2px 0;
+}
+
+.checkbox-row {
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 8px !important;
+}
+
+.checkbox-row input {
+  margin-top: 2px;
+}
+
+.guidance-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(30, 20, 12, 0.35);
+}
+
+.guidance-overlay[hidden] {
+  display: none !important;
+}
+
+.guidance-card {
+  width: min(360px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: #fffaf4;
+  color: #3a2a1c;
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  box-shadow: 0 12px 32px rgba(40, 28, 18, 0.28);
+  user-select: text;
+}
+
+.guidance-card h2 {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.guidance-card ol {
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.guidance-defaults {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #7a5a40;
+  line-height: 1.45;
+}
+
+.guidance-defaults code {
+  font-size: 10px;
+  background: rgba(80, 50, 30, 0.08);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.guidance-card button {
+  margin-top: 12px;
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  background: #d9783a;
+  color: #fff8ee;
 }
