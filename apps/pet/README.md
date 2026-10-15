@@ -1,6 +1,6 @@
 # 桌面宠物（阶段 E · 打磨）
 
-透明置顶宠物：交互表情、旁侧聊天、OpenAI 兼容 LLM、选区摘要/翻译。默认界面为**简体中文**。
+透明置顶宠物：交互表情、旁侧聊天、OpenAI 兼容 LLM、选区摘要/翻译。默认界面为**简体中文**。当前主用 **Windows**。
 
 ## 安装与运行
 
@@ -20,17 +20,20 @@ npm run pack    # 目录产物 → apps/pet/release/
 npm run dist    # 安装包（macOS dmg/zip，Windows nsis）
 ```
 
-正式分发建议配置代码签名；内测可跳过。
+当前**不做代码签名**；内测直接使用未签名包即可。
 
-## 配置 LLM
+## 配置 LLM（DeepSeek 默认）
 
-右键宠物 → **设置**：
+右键宠物 → **设置**。新安装预填：
 
-- API Key / Base URL / 模型 / 温度
-- 选区快捷键、是否先模拟复制
-- **开机自启**（可选）
+| 项 | 默认 |
+|----|------|
+| Base URL | `https://api.deepseek.com/v1` |
+| 模型 | `deepseek-chat` |
+| API Key | **空** — 请在本机粘贴你的 DeepSeek Key（勿提交到仓库） |
+| 开机自启 | **开启** |
 
-配置保存在本机 Electron `userData/desktop-pet-settings.json`，**不会上传到我们的服务器**。
+也可改填其他 OpenAI 兼容接口。配置保存在本机 `userData/desktop-pet-settings.json`，**不会上传到我们的服务器**。
 
 ## 选区摘要 / 翻译
 

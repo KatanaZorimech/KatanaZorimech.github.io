@@ -33,11 +33,11 @@ export type AppSettings = {
 const DEFAULTS: AppSettings = {
   alwaysOnTop: true,
   sfxEnabled: false,
-  openAtLogin: false,
+  openAtLogin: true,
   llm: {
     apiKey: "",
-    baseURL: "https://api.openai.com/v1",
-    model: "gpt-4o-mini",
+    baseURL: "https://api.deepseek.com/v1",
+    model: "deepseek-chat",
     temperature: 0.7,
   },
   selection: {

@@ -47,11 +47,11 @@
           </label>
           <label>
             <span>Base URL</span>
-            <input id="set-base-url" type="url" placeholder="https://api.openai.com/v1" />
+            <input id="set-base-url" type="url" placeholder="https://api.deepseek.com/v1" />
           </label>
           <label>
             <span>模型</span>
-            <input id="set-model" type="text" placeholder="gpt-4o-mini" />
+            <input id="set-model" type="text" placeholder="deepseek-chat" />
           </label>
           <label>
             <span>温度 <em id="temp-value">0.7</em></span>
@@ -75,8 +75,8 @@
             <span>读选区前先模拟复制（Cmd/Ctrl+C，尽力恢复剪贴板）</span>
           </label>
           <label class="checkbox-row">
-            <input id="set-open-at-login" type="checkbox" />
-            <span>开机自启（macOS / Windows；Linux 视桌面环境而定）</span>
+            <input id="set-open-at-login" type="checkbox" checked />
+            <span>开机自启（默认开启；macOS / Windows；Linux 视桌面环境而定）</span>
           </label>
           <p class="settings-hint">
             Key 仅保存在本机用户目录。选区摘要/翻译会把剪贴板文本发送到你配置的 LLM

@@ -390,8 +390,8 @@ document.getElementById("settings-form")?.addEventListener("submit", (event) => 
   void Promise.all([
     api.saveLlm({
       apiKey: keyInput.value.trim(),
-      baseURL: baseInput.value.trim() || "https://api.openai.com/v1",
-      model: modelInput.value.trim() || "gpt-4o-mini",
+      baseURL: baseInput.value.trim() || "https://api.deepseek.com/v1",
+      model: modelInput.value.trim() || "deepseek-chat",
       temperature: Number(tempInput?.value ?? 0.7),
     }),
     api.saveSelection({

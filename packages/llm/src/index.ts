@@ -49,7 +49,7 @@ const DEFAULT_SYSTEM =
 
 function normalizeBaseURL(baseURL: string): string {
   const trimmed = baseURL.trim().replace(/\/+$/, "");
-  if (!trimmed) return "https://api.openai.com/v1";
+  if (!trimmed) return "https://api.deepseek.com/v1";
   return trimmed.endsWith("/v1") ? trimmed : `${trimmed}/v1`;
 }
 
@@ -182,8 +182,8 @@ async function parseSseStream(
 
 export function createLlmClient(config: LlmConfig): LlmClient {
   const apiKey = config.apiKey.trim();
-  const baseURL = normalizeBaseURL(config.baseURL || "https://api.openai.com/v1");
-  const model = (config.model || "gpt-4o-mini").trim();
+  const baseURL = normalizeBaseURL(config.baseURL || "https://api.deepseek.com/v1");
+  const model = (config.model || "deepseek-chat").trim();
   const temperature = config.temperature ?? 0.7;
 
   if (!apiKey) {
