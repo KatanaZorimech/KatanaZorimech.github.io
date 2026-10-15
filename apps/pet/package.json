@@ -12,7 +12,7 @@
     "typecheck": "npm run build -w @desktop-pet/llm && npm run build -w @desktop-pet/pet-fsm && node scripts/sync-fsm.mjs && tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
-    "dist:win": "npm run build && electron-builder --win nsis portable --x64"
+    "dist:win": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis portable zip --x64"
   },
   "dependencies": {
     "@desktop-pet/llm": "0.1.0"
@@ -54,22 +54,37 @@
       "executableName": "DesktopPet",
       "signAndEditExecutable": false,
       "target": [
-        "nsis",
-        "portable"
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
       ]
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
+      "runAfterFinish": true,
       "shortcutName": "桌面宠物",
-      "artifactName": "DesktopPet-Setup-Windows.${ext}"
+      "artifactName": "DesktopPet-Setup-Windows.${ext}",
+      "installerLanguages": ["zh_CN", "en_US"],
+      "language": "2052"
     },
     "portable": {
       "artifactName": "DesktopPet-Portable-Windows.${ext}"
     },
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "linux": {
       "target": [
         "AppImage"
