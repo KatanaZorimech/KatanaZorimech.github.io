@@ -11,7 +11,8 @@
     "start": "electron .",
     "typecheck": "npm run build -w @desktop-pet/llm && npm run build -w @desktop-pet/pet-fsm && node scripts/sync-fsm.mjs && tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
     "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win nsis portable --x64"
   },
   "dependencies": {
     "@desktop-pet/llm": "0.1.0"
@@ -50,10 +51,24 @@
       ]
     },
     "win": {
+      "executableName": "DesktopPet",
+      "signAndEditExecutable": false,
       "target": [
         "nsis",
         "portable"
       ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "桌面宠物",
+      "artifactName": "DesktopPet-Setup-Windows.${ext}"
+    },
+    "portable": {
+      "artifactName": "DesktopPet-Portable-Windows.${ext}"
     },
     "linux": {
       "target": [
