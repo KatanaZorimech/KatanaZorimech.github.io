@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="pet-root" class="pet-root" title="拖动我～" aria-label="桌面宠物">
-      <div class="pet" role="img" aria-label="占位宠物">
+    <div id="pet-root" class="pet-root" title="单击、拖动或右键" aria-label="桌面宠物">
+      <div class="pet is-idle" data-state="idle" role="img" aria-label="占位宠物">
         <div class="pet-shadow"></div>
         <div class="pet-body">
           <div class="pet-ear pet-ear--l"></div>
@@ -23,11 +23,17 @@
             <div class="pet-blush pet-blush--l"></div>
             <div class="pet-blush pet-blush--r"></div>
             <div class="pet-mouth"></div>
+            <div class="pet-brow pet-brow--l"></div>
+            <div class="pet-brow pet-brow--r"></div>
           </div>
+          <div class="pet-sweat" aria-hidden="true"></div>
+          <div class="pet-heart pet-heart--1" aria-hidden="true"></div>
+          <div class="pet-heart pet-heart--2" aria-hidden="true"></div>
         </div>
       </div>
-      <p class="pet-hint">按住拖动</p>
+      <p class="pet-hint">单击 / 拖动 / 右键</p>
+      <div id="pet-toast" class="pet-toast" data-visible="false" role="status"></div>
     </div>
-    <script src="./main.js"></script>
+    <script type="module" src="./main.js"></script>
   </body>
 </html>

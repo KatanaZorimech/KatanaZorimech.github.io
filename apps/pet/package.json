@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "author": "Desktop Pet",
-  "description": "桌面宠物 — 透明置顶窗口（阶段 A）",
+  "description": "桌面宠物 — 交互与表情（阶段 B）",
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "npm run build && electron .",
-    "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
+    "build": "node scripts/sync-fsm.mjs && tsc -p tsconfig.main.json && tsc -p tsconfig.renderer.json && node scripts/copy-static.mjs",
     "start": "electron .",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "node scripts/sync-fsm.mjs && tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder"
   },

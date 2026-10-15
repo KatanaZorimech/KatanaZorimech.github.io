@@ -5,6 +5,7 @@ Demo/.tools/
 node_modules/
 apps/pet/dist/
 apps/pet/release/
+packages/*/dist/
 *.log
 .DS_Store
 npm-debug.log*

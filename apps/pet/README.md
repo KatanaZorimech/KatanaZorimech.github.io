@@ -1,47 +1,30 @@
-# 桌面宠物（阶段 A）
+# 桌面宠物（阶段 B）
 
-透明置顶无边框 Electron 窗口 + idle 动画占位角色 + 拖拽 + 系统托盘。
+透明置顶无边框窗口 + FSM 表情交互 + 右键菜单。
 
 ## 本地运行
 
-在仓库根目录：
-
 ```bash
+# 仓库根目录
 npm install
 npm run build
 npm start
 ```
 
-或进入本目录：
+## 交互
+
+| 操作 | 反馈 |
+|------|------|
+| 拖动 | `drag`：倾斜、瞪眼、汗珠 |
+| 单击 | `click`：挤压 + 眯眼 |
+| 双击 | `happy`：跳动 + 爱心 |
+| 右键 | 菜单 + 短暂表情 |
+
+右键菜单（简体中文）：置顶、打开聊天、摘要、翻译、设置、音效、退出。  
+聊天 / 摘要 / 翻译 / 设置为占位提示；置顶与退出可用。音效默认关闭。
+
+## 打包
 
 ```bash
-cd apps/pet
-npm install   # 若未在根目录装过
-npm run build
-npm start
-```
-
-开发时改代码后重新 `npm run build && npm start`。
-
-## 打包安装包
-
-```bash
-# 当前平台目录产物
 npm run pack -w @desktop-pet/pet
-
-# 安装包（macOS → dmg/zip，Windows → nsis；需在对应 OS 上构建）
-npm run dist -w @desktop-pet/pet
 ```
-
-产物在 `apps/pet/release/`。
-
-## 托盘
-
-- **显示宠物 / 隐藏宠物**
-- **退出**
-
-用户界面文案为简体中文。
-
-## 阶段边界
-
-本阶段 **不包含**：LLM 聊天、选区摘要/翻译、点击/双击/右键完整 FSM。

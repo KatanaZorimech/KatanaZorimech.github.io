@@ -1,8 +1,8 @@
 import { BrowserWindow, screen } from "electron";
 import path from "node:path";
 
-const PET_WIDTH = 180;
-const PET_HEIGHT = 200;
+const PET_WIDTH = 190;
+const PET_HEIGHT = 220;
 
 export function createPetWindow(): BrowserWindow {
   const display = screen.getPrimaryDisplay();

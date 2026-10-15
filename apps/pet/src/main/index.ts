@@ -2,6 +2,7 @@ import { app, BrowserWindow } from "electron";
 import path from "node:path";
 import { createPetWindow } from "./window";
 import { createTray } from "./tray";
+import { registerPetIpc } from "./ipc";
 
 let petWindow: BrowserWindow | null = null;
 
@@ -17,6 +18,7 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    registerPetIpc(() => petWindow);
     petWindow = createPetWindow();
     createTray({
       getWindow: () => petWindow,
@@ -43,10 +45,7 @@ if (!gotLock) {
 }
 
 app.on("window-all-closed", () => {
-  // 托盘常驻：关闭窗口不退出（macOS / Windows 均保留托盘）
-  if (process.platform !== "darwin") {
-    // Windows：仍由托盘「退出」结束进程；此处不主动 quit
-  }
+  // 托盘常驻：关闭窗口不退出
 });
 
 export function getAssetPath(...segments: string[]): string {
