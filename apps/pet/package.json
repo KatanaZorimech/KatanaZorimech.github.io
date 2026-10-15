@@ -1,0 +1,54 @@
+{
+  "name": "@desktop-pet/pet",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Desktop Pet",
+  "description": "桌面宠物 — 透明置顶窗口（阶段 A）",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
+    "start": "electron .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder"
+  },
+  "build": {
+    "appId": "com.desktoppet.app",
+    "productName": "桌面宠物",
+    "electronVersion": "35.0.1",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "electron": "35.0.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.8.2"
+  }
+}

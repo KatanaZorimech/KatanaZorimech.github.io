@@ -1,2 +1,10 @@
 # Local compression / build tooling (not shipped)
 Demo/.tools/
+
+# Desktop Pet (Electron)
+node_modules/
+apps/pet/dist/
+apps/pet/release/
+*.log
+.DS_Store
+npm-debug.log*

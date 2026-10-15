@@ -1,0 +1,175 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+}
+
+.pet-root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 8px;
+  -webkit-app-region: drag;
+  cursor: grab;
+}
+
+.pet-root:active {
+  cursor: grabbing;
+}
+
+.pet {
+  position: relative;
+  width: 120px;
+  height: 130px;
+  animation: idle-bob 2.4s ease-in-out infinite;
+}
+
+.pet-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 64px;
+  height: 12px;
+  transform: translateX(-50%);
+  background: rgba(40, 28, 18, 0.22);
+  border-radius: 50%;
+  filter: blur(2px);
+  animation: idle-shadow 2.4s ease-in-out infinite;
+}
+
+.pet-body {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  width: 96px;
+  height: 96px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at 35% 30%, #ffe8b8 0%, #f0a45a 55%, #d9783a 100%);
+  border-radius: 48% 48% 42% 42%;
+  box-shadow: inset 0 -8px 16px rgba(120, 60, 20, 0.18);
+}
+
+.pet-ear {
+  position: absolute;
+  top: -14px;
+  width: 28px;
+  height: 32px;
+  background: linear-gradient(160deg, #f4b86a, #d9783a);
+  border-radius: 50% 50% 40% 40%;
+}
+
+.pet-ear--l {
+  left: 10px;
+  transform: rotate(-18deg);
+}
+
+.pet-ear--r {
+  right: 10px;
+  transform: rotate(18deg);
+}
+
+.pet-face {
+  position: absolute;
+  inset: 0;
+}
+
+.pet-eye {
+  position: absolute;
+  top: 38px;
+  width: 12px;
+  height: 14px;
+  background: #2a1c12;
+  border-radius: 50%;
+  animation: blink 4.5s ease-in-out infinite;
+}
+
+.pet-eye--l {
+  left: 28px;
+}
+
+.pet-eye--r {
+  right: 28px;
+}
+
+.pet-blush {
+  position: absolute;
+  top: 52px;
+  width: 14px;
+  height: 8px;
+  background: rgba(255, 120, 120, 0.45);
+  border-radius: 50%;
+}
+
+.pet-blush--l {
+  left: 16px;
+}
+
+.pet-blush--r {
+  right: 16px;
+}
+
+.pet-mouth {
+  position: absolute;
+  left: 50%;
+  top: 62px;
+  width: 16px;
+  height: 8px;
+  transform: translateX(-50%);
+  border: 2px solid #2a1c12;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+
+.pet-hint {
+  margin-top: 2px;
+  font-size: 11px;
+  color: rgba(60, 40, 20, 0.7);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+@keyframes idle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes idle-shadow {
+  0%,
+  100% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateX(-50%) scaleX(0.85);
+    opacity: 0.55;
+  }
+}
+
+@keyframes blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.12);
+  }
+}

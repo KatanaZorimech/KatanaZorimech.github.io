@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>桌面宠物</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="pet-root" class="pet-root" title="拖动我～" aria-label="桌面宠物">
+      <div class="pet" role="img" aria-label="占位宠物">
+        <div class="pet-shadow"></div>
+        <div class="pet-body">
+          <div class="pet-ear pet-ear--l"></div>
+          <div class="pet-ear pet-ear--r"></div>
+          <div class="pet-face">
+            <div class="pet-eye pet-eye--l"></div>
+            <div class="pet-eye pet-eye--r"></div>
+            <div class="pet-blush pet-blush--l"></div>
+            <div class="pet-blush pet-blush--r"></div>
+            <div class="pet-mouth"></div>
+          </div>
+        </div>
+      </div>
+      <p class="pet-hint">按住拖动</p>
+    </div>
+    <script src="./main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "desktop-pet-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Desktop Pet — Electron + TypeScript (Phase A)",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @desktop-pet/pet",
+    "build": "npm run build -w @desktop-pet/pet",
+    "start": "npm run start -w @desktop-pet/pet",
+    "pack": "npm run pack -w @desktop-pet/pet",
+    "dist": "npm run dist -w @desktop-pet/pet",
+    "typecheck": "npm run typecheck -w @desktop-pet/pet"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
