@@ -11,28 +11,88 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="pet-root" class="pet-root" title="单击、拖动或右键" aria-label="桌面宠物">
-      <div class="pet is-idle" data-state="idle" role="img" aria-label="占位宠物">
-        <div class="pet-shadow"></div>
-        <div class="pet-body">
-          <div class="pet-ear pet-ear--l"></div>
-          <div class="pet-ear pet-ear--r"></div>
-          <div class="pet-face">
-            <div class="pet-eye pet-eye--l"></div>
-            <div class="pet-eye pet-eye--r"></div>
-            <div class="pet-blush pet-blush--l"></div>
-            <div class="pet-blush pet-blush--r"></div>
-            <div class="pet-mouth"></div>
-            <div class="pet-brow pet-brow--l"></div>
-            <div class="pet-brow pet-brow--r"></div>
-          </div>
-          <div class="pet-sweat" aria-hidden="true"></div>
-          <div class="pet-heart pet-heart--1" aria-hidden="true"></div>
-          <div class="pet-heart pet-heart--2" aria-hidden="true"></div>
+    <div id="app" class="app mode-compact">
+      <section id="chat-panel" class="side-panel chat-panel" hidden aria-label="聊天">
+        <header class="panel-head">
+          <h1>聊天</h1>
+          <button type="button" id="chat-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <div id="chat-history" class="chat-history" role="log" aria-live="polite"></div>
+        <p id="chat-status" class="chat-status" hidden></p>
+        <form id="chat-form" class="chat-form">
+          <input
+            id="chat-input"
+            type="text"
+            maxlength="2000"
+            placeholder="跟我说点什么…"
+            autocomplete="off"
+          />
+          <button type="submit" id="chat-send">发送</button>
+        </form>
+        <div class="panel-foot">
+          <button type="button" id="chat-to-settings" class="link-btn">打开设置</button>
+          <button type="button" id="chat-clear" class="link-btn">清空会话</button>
         </div>
+      </section>
+
+      <section id="settings-panel" class="side-panel settings-panel" hidden aria-label="设置">
+        <header class="panel-head">
+          <h1>设置</h1>
+          <button type="button" id="settings-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <form id="settings-form" class="settings-form">
+          <label>
+            <span>API Key</span>
+            <input id="set-api-key" type="password" placeholder="sk-…" autocomplete="off" />
+          </label>
+          <label>
+            <span>Base URL</span>
+            <input id="set-base-url" type="url" placeholder="https://api.openai.com/v1" />
+          </label>
+          <label>
+            <span>模型</span>
+            <input id="set-model" type="text" placeholder="gpt-4o-mini" />
+          </label>
+          <label>
+            <span>温度 <em id="temp-value">0.7</em></span>
+            <input id="set-temperature" type="range" min="0" max="2" step="0.1" value="0.7" />
+          </label>
+          <p class="settings-hint">Key 仅保存在本机用户目录；兼容 OpenAI / DeepSeek 等接口。</p>
+          <div class="settings-actions">
+            <button type="submit" id="settings-save">保存</button>
+            <button type="button" id="settings-to-chat" class="secondary-btn">去聊天</button>
+          </div>
+        </form>
+      </section>
+
+      <div id="pet-column" class="pet-column">
+        <div id="pet-hit" class="pet-hit" title="单击、拖动或右键" aria-label="桌面宠物">
+          <div class="pet is-idle" data-state="idle" role="img" aria-label="占位宠物">
+            <div class="pet-shadow"></div>
+            <div class="pet-body">
+              <div class="pet-ear pet-ear--l"></div>
+              <div class="pet-ear pet-ear--r"></div>
+              <div class="pet-face">
+                <div class="pet-eye pet-eye--l"></div>
+                <div class="pet-eye pet-eye--r"></div>
+                <div class="pet-blush pet-blush--l"></div>
+                <div class="pet-blush pet-blush--r"></div>
+                <div class="pet-mouth"></div>
+                <div class="pet-brow pet-brow--l"></div>
+                <div class="pet-brow pet-brow--r"></div>
+              </div>
+              <div class="pet-sweat" aria-hidden="true"></div>
+              <div class="pet-heart pet-heart--1" aria-hidden="true"></div>
+              <div class="pet-heart pet-heart--2" aria-hidden="true"></div>
+              <div class="pet-think-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <p class="pet-hint">单击 / 拖动 / 右键</p>
+        </div>
+        <div id="pet-toast" class="pet-toast" data-visible="false" role="status"></div>
       </div>
-      <p class="pet-hint">单击 / 拖动 / 右键</p>
-      <div id="pet-toast" class="pet-toast" data-visible="false" role="status"></div>
     </div>
     <script type="module" src="./main.js"></script>
   </body>

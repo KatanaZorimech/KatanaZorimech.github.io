@@ -1,17 +1,44 @@
-import { BrowserWindow, Menu, app, ipcMain } from "electron";
+import { BrowserWindow, Menu, app, ipcMain, screen } from "electron";
+import {
+  abortChat,
+  clearChatHistory,
+  getChatHistory,
+  sendChatMessage,
+} from "./chat";
+import { getPublicSettings, loadSettings, saveSettings, type LlmSettings } from "./store";
 
-export type PetSettings = {
-  alwaysOnTop: boolean;
-  sfxEnabled: boolean;
+export type LayoutMode = "compact" | "chat" | "settings";
+
+const LAYOUT: Record<LayoutMode, { width: number; height: number }> = {
+  compact: { width: 190, height: 220 },
+  chat: { width: 420, height: 480 },
+  settings: { width: 380, height: 460 },
 };
 
-const settings: PetSettings = {
-  alwaysOnTop: true,
-  sfxEnabled: false,
-};
+let layoutMode: LayoutMode = "compact";
 
-export function getSettings(): PetSettings {
-  return { ...settings };
+function applyLayout(win: BrowserWindow, mode: LayoutMode): void {
+  layoutMode = mode;
+  const size = LAYOUT[mode];
+  const bounds = win.getBounds();
+  const display = screen.getDisplayMatching(bounds);
+  const work = display.workArea;
+  // 以窗口右下角为锚点向左上展开，并把气泡放在宠物左侧
+  let nextX = bounds.x + bounds.width - size.width;
+  let nextY = bounds.y + bounds.height - size.height;
+  nextX = Math.min(Math.max(work.x + 8, nextX), work.x + work.width - size.width - 8);
+  nextY = Math.min(Math.max(work.y + 8, nextY), work.y + work.height - size.height - 8);
+  win.setBounds({
+    x: Math.round(nextX),
+    y: Math.round(nextY),
+    width: size.width,
+    height: size.height,
+  });
+  win.webContents.send("pet:layout", mode);
+}
+
+export function getSettings() {
+  return getPublicSettings();
 }
 
 export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
@@ -26,7 +53,7 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
 
   ipcMain.handle("pet:set-always-on-top", (_event, enabled: boolean) => {
     const win = getWindow();
-    settings.alwaysOnTop = enabled;
+    saveSettings({ alwaysOnTop: enabled });
     if (win && !win.isDestroyed()) {
       win.setAlwaysOnTop(enabled, enabled ? "floating" : "normal");
       if (enabled) {
@@ -37,17 +64,50 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
   });
 
   ipcMain.handle("pet:set-sfx", (_event, enabled: boolean) => {
-    settings.sfxEnabled = enabled;
+    saveSettings({ sfxEnabled: enabled });
     return getSettings();
   });
 
+  ipcMain.handle("pet:save-llm", (_event, llm: Partial<LlmSettings>) => {
+    saveSettings({ llm });
+    return getSettings();
+  });
+
+  ipcMain.handle("pet:set-layout", (_event, mode: LayoutMode) => {
+    const win = getWindow();
+    if (!win || win.isDestroyed()) return layoutMode;
+    if (mode === "compact" || mode === "chat" || mode === "settings") {
+      applyLayout(win, mode);
+    }
+    return layoutMode;
+  });
+
+  ipcMain.handle("pet:get-layout", () => layoutMode);
+
+  ipcMain.handle("chat:history", () => getChatHistory());
+
+  ipcMain.handle("chat:clear", () => {
+    clearChatHistory();
+    return getChatHistory();
+  });
+
+  ipcMain.handle("chat:abort", () => {
+    abortChat();
+  });
+
+  ipcMain.handle("chat:send", async (event, userText: string) => {
+    return sendChatMessage(event.sender, userText);
+  });
+
   ipcMain.handle("pet:quit", () => {
+    abortChat();
     app.quit();
   });
 
   ipcMain.on("pet:show-context-menu", (event) => {
     const win = BrowserWindow.fromWebContents(event.sender) ?? getWindow();
     if (!win || win.isDestroyed()) return;
+    const settings = loadSettings();
 
     const menu = Menu.buildFromTemplate([
       {
@@ -55,7 +115,7 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
         type: "checkbox",
         checked: settings.alwaysOnTop,
         click: (item) => {
-          settings.alwaysOnTop = item.checked;
+          saveSettings({ alwaysOnTop: item.checked });
           win.setAlwaysOnTop(item.checked, item.checked ? "floating" : "normal");
           event.sender.send("pet:settings-changed", getSettings());
           event.sender.send(
@@ -68,7 +128,8 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
       {
         label: "打开聊天",
         click: () => {
-          event.sender.send("pet:toast", "聊天将在阶段 C 开放");
+          applyLayout(win, "chat");
+          event.sender.send("pet:open-chat");
         },
       },
       {
@@ -86,7 +147,8 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
       {
         label: "设置",
         click: () => {
-          event.sender.send("pet:toast", "设置页将在阶段 C 开放");
+          applyLayout(win, "settings");
+          event.sender.send("pet:open-settings");
         },
       },
       { type: "separator" },
@@ -95,7 +157,7 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
         type: "checkbox",
         checked: settings.sfxEnabled,
         click: (item) => {
-          settings.sfxEnabled = item.checked;
+          saveSettings({ sfxEnabled: item.checked });
           event.sender.send("pet:settings-changed", getSettings());
           event.sender.send(
             "pet:toast",
@@ -106,7 +168,10 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
       { type: "separator" },
       {
         label: "退出",
-        click: () => app.quit(),
+        click: () => {
+          abortChat();
+          app.quit();
+        },
       },
     ]);
 

@@ -1,5 +1,6 @@
 import { BrowserWindow, screen } from "electron";
 import path from "node:path";
+import { loadSettings } from "./store";
 
 const PET_WIDTH = 190;
 const PET_HEIGHT = 220;
@@ -8,6 +9,7 @@ export function createPetWindow(): BrowserWindow {
   const display = screen.getPrimaryDisplay();
   const { width: screenW, height: screenH } = display.workAreaSize;
   const { x: workX, y: workY } = display.workArea;
+  const settings = loadSettings();
 
   const win = new BrowserWindow({
     width: PET_WIDTH,
@@ -16,7 +18,7 @@ export function createPetWindow(): BrowserWindow {
     y: workY + screenH - PET_HEIGHT - 48,
     frame: false,
     transparent: true,
-    alwaysOnTop: true,
+    alwaysOnTop: settings.alwaysOnTop,
     resizable: false,
     maximizable: false,
     minimizable: false,
@@ -33,8 +35,10 @@ export function createPetWindow(): BrowserWindow {
     },
   });
 
-  win.setAlwaysOnTop(true, "floating");
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  if (settings.alwaysOnTop) {
+    win.setAlwaysOnTop(true, "floating");
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  }
 
   const htmlPath = path.join(__dirname, "../renderer/index.html");
   void win.loadFile(htmlPath);

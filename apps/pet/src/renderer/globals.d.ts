@@ -1,11 +1,26 @@
 export {};
 
-type PetSettings = {
-  alwaysOnTop: boolean;
-  sfxEnabled: boolean;
-};
-
 declare global {
+  type LlmSettings = {
+    apiKey: string;
+    baseURL: string;
+    model: string;
+    temperature: number;
+    apiKeyMasked?: string;
+  };
+
+  type PetSettings = {
+    alwaysOnTop: boolean;
+    sfxEnabled: boolean;
+    llm: LlmSettings;
+  };
+
+  type LayoutMode = "compact" | "chat" | "settings";
+
+  type ChatTurn = { role: "user" | "assistant"; content: string };
+
+  type ChatResult = { ok: true; content: string } | { ok: false; error: string };
+
   interface Window {
     desktopPet?: {
       phase: string;
@@ -14,10 +29,25 @@ declare global {
       getSettings: () => Promise<PetSettings>;
       setAlwaysOnTop: (enabled: boolean) => Promise<PetSettings>;
       setSfx: (enabled: boolean) => Promise<PetSettings>;
+      saveLlm: (llm: Partial<LlmSettings>) => Promise<PetSettings>;
+      setLayout: (mode: LayoutMode) => Promise<LayoutMode>;
+      getLayout: () => Promise<LayoutMode>;
       quit: () => Promise<void>;
       showContextMenu: () => void;
+      getChatHistory: () => Promise<ChatTurn[]>;
+      clearChat: () => Promise<ChatTurn[]>;
+      abortChat: () => Promise<void>;
+      sendChat: (text: string) => Promise<ChatResult>;
       onToast: (handler: (message: string) => void) => () => void;
       onSettingsChanged: (handler: (settings: PetSettings) => void) => () => void;
+      onOpenChat: (handler: () => void) => () => void;
+      onOpenSettings: (handler: () => void) => () => void;
+      onLayout: (handler: (mode: LayoutMode) => void) => () => void;
+      onChatUser: (handler: (text: string) => void) => () => void;
+      onChatAssistantStart: (handler: () => void) => () => void;
+      onChatChunk: (handler: (token: string) => void) => () => void;
+      onChatDone: (handler: (text: string) => void) => () => void;
+      onChatError: (handler: (message: string) => void) => () => void;
     };
   }
 }

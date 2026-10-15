@@ -1,30 +1,32 @@
-# 桌面宠物（阶段 B）
+# 桌面宠物（阶段 C）
 
-透明置顶无边框窗口 + FSM 表情交互 + 右键菜单。
+透明置顶宠物 + 交互表情 + 旁侧聊天气泡 / 设置（OpenAI 兼容 API）。
 
 ## 本地运行
 
 ```bash
-# 仓库根目录
 npm install
 npm run build
 npm start
 ```
 
-## 交互
+## 配置 LLM
+
+1. 右键宠物 → **设置**
+2. 填写 **API Key**、**Base URL**（默认 `https://api.openai.com/v1`）、**模型**、**温度**
+3. 保存后右键 → **打开聊天**，即可多轮问答
+
+兼容 DeepSeek 等：Base URL 填提供商的 OpenAI 兼容地址（通常带 `/v1`）。
+
+配置保存在本机 Electron `userData/desktop-pet-settings.json`。
+
+## 交互摘要
 
 | 操作 | 反馈 |
 |------|------|
-| 拖动 | `drag`：倾斜、瞪眼、汗珠 |
-| 单击 | `click`：挤压 + 眯眼 |
-| 双击 | `happy`：跳动 + 爱心 |
-| 右键 | 菜单 + 短暂表情 |
+| 拖动 | drag |
+| 单击 / 双击 | click / happy |
+| 右键 | 菜单 |
+| 发送消息 | think → talk → 回复结束开心一下 |
 
-右键菜单（简体中文）：置顶、打开聊天、摘要、翻译、设置、音效、退出。  
-聊天 / 摘要 / 翻译 / 设置为占位提示；置顶与退出可用。音效默认关闭。
-
-## 打包
-
-```bash
-npm run pack -w @desktop-pet/pet
-```
+摘要 / 翻译仍为阶段 D 占位。

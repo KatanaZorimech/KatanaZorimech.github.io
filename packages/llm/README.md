@@ -1,3 +1,3 @@
 # @desktop-pet/llm
 
-阶段 C 占位包。将提供 OpenAI 兼容 HTTP 客户端（`baseURL` + `apiKey` + `model`）。
+OpenAI 兼容 `chat/completions` 客户端：可配置 `baseURL` / `apiKey` / `model` / `temperature`，优先流式，失败自动有限重试并给出简体中文错误。
