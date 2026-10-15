@@ -20,6 +20,7 @@ declare global {
   type PetSettings = {
     alwaysOnTop: boolean;
     sfxEnabled: boolean;
+    openAtLogin: boolean;
     llm: LlmSettings;
     selection: SelectionSettings;
   };
@@ -38,9 +39,12 @@ declare global {
       getSettings: () => Promise<PetSettings>;
       setAlwaysOnTop: (enabled: boolean) => Promise<PetSettings>;
       setSfx: (enabled: boolean) => Promise<PetSettings>;
+      setOpenAtLogin: (enabled: boolean) => Promise<PetSettings>;
       saveLlm: (llm: Partial<LlmSettings>) => Promise<PetSettings>;
       saveSelection: (selection: Partial<SelectionSettings>) => Promise<PetSettings>;
       ackGuidance: () => Promise<PetSettings>;
+      log: (payload: { level?: string; message: string; meta?: unknown }) => Promise<void>;
+      getLogsDir: () => Promise<string>;
       setLayout: (mode: LayoutMode) => Promise<LayoutMode>;
       getLayout: () => Promise<LayoutMode>;
       quit: () => Promise<void>;

@@ -14,13 +14,16 @@ import {
   type LlmSettings,
   type SelectionSettings,
 } from "./store";
+import { clampWindowToVisibleDisplays } from "./bounds";
+import { applyOpenAtLogin } from "./autostart";
+import { getLogsDirectory, logError, logInfo } from "./logger";
 
 export type LayoutMode = "compact" | "chat" | "settings" | "guidance";
 
 const LAYOUT: Record<LayoutMode, { width: number; height: number }> = {
   compact: { width: 190, height: 220 },
   chat: { width: 420, height: 480 },
-  settings: { width: 400, height: 560 },
+  settings: { width: 400, height: 620 },
   guidance: { width: 400, height: 480 },
 };
 
@@ -65,6 +68,7 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
     if (!win || win.isDestroyed()) return;
     const [x, y] = win.getPosition();
     win.setPosition(Math.round(x + dx), Math.round(y + dy));
+    clampWindowToVisibleDisplays(win);
   });
 
   ipcMain.handle("pet:set-always-on-top", (_event, enabled: boolean) => {
@@ -83,6 +87,19 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
     saveSettings({ sfxEnabled: enabled });
     return getSettings();
   });
+
+  ipcMain.handle("pet:set-open-at-login", (_event, enabled: boolean) => {
+    saveSettings({ openAtLogin: enabled });
+    applyOpenAtLogin(enabled);
+    return getSettings();
+  });
+
+  ipcMain.handle("pet:log", (_event, payload: { level?: string; message: string; meta?: unknown }) => {
+    if (payload.level === "error") logError(`renderer: ${payload.message}`, payload.meta);
+    else logInfo(`renderer: ${payload.message}`, payload.meta);
+  });
+
+  ipcMain.handle("pet:get-logs-dir", () => getLogsDirectory());
 
   ipcMain.handle("pet:save-llm", (_event, llm: Partial<LlmSettings>) => {
     saveSettings({ llm });
@@ -207,6 +224,20 @@ export function registerPetIpc(getWindow: () => BrowserWindow | null): void {
           event.sender.send(
             "pet:toast",
             item.checked ? "音效已开启" : "音效已关闭",
+          );
+        },
+      },
+      {
+        label: "开机自启",
+        type: "checkbox",
+        checked: settings.openAtLogin,
+        click: (item) => {
+          saveSettings({ openAtLogin: item.checked });
+          applyOpenAtLogin(item.checked);
+          event.sender.send("pet:settings-changed", getSettings());
+          event.sender.send(
+            "pet:toast",
+            item.checked ? "已开启开机自启" : "已关闭开机自启",
           );
         },
       },

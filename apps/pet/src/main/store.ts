@@ -25,6 +25,7 @@ export type SelectionSettings = {
 export type AppSettings = {
   alwaysOnTop: boolean;
   sfxEnabled: boolean;
+  openAtLogin: boolean;
   llm: LlmSettings;
   selection: SelectionSettings;
 };
@@ -32,6 +33,7 @@ export type AppSettings = {
 const DEFAULTS: AppSettings = {
   alwaysOnTop: true,
   sfxEnabled: false,
+  openAtLogin: false,
   llm: {
     apiKey: "",
     baseURL: "https://api.openai.com/v1",
@@ -65,6 +67,7 @@ export function loadSettings(): AppSettings {
     cache = {
       alwaysOnTop: parsed.alwaysOnTop ?? DEFAULTS.alwaysOnTop,
       sfxEnabled: parsed.sfxEnabled ?? DEFAULTS.sfxEnabled,
+      openAtLogin: parsed.openAtLogin ?? DEFAULTS.openAtLogin,
       llm: {
         ...DEFAULTS.llm,
         ...(parsed.llm ?? {}),
@@ -83,6 +86,7 @@ export function loadSettings(): AppSettings {
 export function saveSettings(patch: {
   alwaysOnTop?: boolean;
   sfxEnabled?: boolean;
+  openAtLogin?: boolean;
   llm?: Partial<LlmSettings>;
   selection?: Partial<SelectionSettings>;
 }): AppSettings {
@@ -90,6 +94,7 @@ export function saveSettings(patch: {
   const next: AppSettings = {
     alwaysOnTop: patch.alwaysOnTop ?? current.alwaysOnTop,
     sfxEnabled: patch.sfxEnabled ?? current.sfxEnabled,
+    openAtLogin: patch.openAtLogin ?? current.openAtLogin,
     llm: {
       ...current.llm,
       ...(patch.llm ?? {}),

@@ -9,6 +9,11 @@ import {
 } from "./shortcuts";
 import { abortChat } from "./chat";
 import { abortSelection } from "./selection";
+import { installCrashLogging, logInfo } from "./logger";
+import { applyOpenAtLogin } from "./autostart";
+import { loadSettings } from "./store";
+
+installCrashLogging();
 
 let petWindow: BrowserWindow | null = null;
 
@@ -24,6 +29,10 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    const settings = loadSettings();
+    applyOpenAtLogin(settings.openAtLogin);
+    logInfo("app ready", { version: app.getVersion(), platform: process.platform });
+
     registerPetIpc(() => petWindow);
     petWindow = createPetWindow();
     registerSelectionShortcuts(() => petWindow);
@@ -59,6 +68,7 @@ app.on("will-quit", () => {
   unregisterSelectionShortcuts();
   abortChat();
   abortSelection();
+  logInfo("app will-quit");
 });
 
 app.on("window-all-closed", () => {

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "author": "Desktop Pet",
-  "description": "桌面宠物 — 选区摘要/翻译（阶段 D）",
+  "description": "桌面宠物 — 打磨与发布准备（阶段 E）",
   "main": "dist/main/index.js",
   "scripts": {
     "dev": "npm run build && electron .",

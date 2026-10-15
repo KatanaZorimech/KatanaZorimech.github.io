@@ -201,6 +201,7 @@ async function fillSettingsForm(): Promise<void> {
     "set-shortcut-translate",
   ) as HTMLInputElement | null;
   const simulateCopy = document.getElementById("set-simulate-copy") as HTMLInputElement | null;
+  const openAtLogin = document.getElementById("set-open-at-login") as HTMLInputElement | null;
   if (keyInput) keyInput.value = s.llm.apiKey;
   if (baseInput) baseInput.value = s.llm.baseURL;
   if (modelInput) modelInput.value = s.llm.model;
@@ -210,6 +211,7 @@ async function fillSettingsForm(): Promise<void> {
   if (shortcutSummarize) shortcutSummarize.value = s.selection.shortcutSummarize;
   if (shortcutTranslate) shortcutTranslate.value = s.selection.shortcutTranslate;
   if (simulateCopy) simulateCopy.checked = s.selection.simulateCopy;
+  if (openAtLogin) openAtLogin.checked = s.openAtLogin;
 }
 
 function showGuidance(): void {
@@ -384,6 +386,7 @@ document.getElementById("settings-form")?.addEventListener("submit", (event) => 
     "set-shortcut-translate",
   ) as HTMLInputElement;
   const simulateCopy = document.getElementById("set-simulate-copy") as HTMLInputElement;
+  const openAtLogin = document.getElementById("set-open-at-login") as HTMLInputElement;
   void Promise.all([
     api.saveLlm({
       apiKey: keyInput.value.trim(),
@@ -397,12 +400,29 @@ document.getElementById("settings-form")?.addEventListener("submit", (event) => 
       shortcutTranslate: shortcutTranslate.value.trim() || "CommandOrControl+Shift+T",
       simulateCopy: simulateCopy.checked,
     }),
+    api.setOpenAtLogin(openAtLogin.checked),
   ]).then(() => {
     showToast("设置已保存");
   });
 });
 
-console.info("[桌面宠物] 阶段 D 已加载");
+window.addEventListener("error", (event) => {
+  void api.log({
+    level: "error",
+    message: event.message,
+    meta: { source: event.filename, line: event.lineno },
+  });
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  void api.log({
+    level: "error",
+    message: "unhandledrejection",
+    meta: String(event.reason),
+  });
+});
+
+console.info("[桌面宠物] 阶段 E 已加载");
 
 chatForm?.addEventListener("submit", (event) => {
   event.preventDefault();

@@ -74,9 +74,14 @@
             <input id="set-simulate-copy" type="checkbox" checked />
             <span>读选区前先模拟复制（Cmd/Ctrl+C，尽力恢复剪贴板）</span>
           </label>
+          <label class="checkbox-row">
+            <input id="set-open-at-login" type="checkbox" />
+            <span>开机自启（macOS / Windows；Linux 视桌面环境而定）</span>
+          </label>
           <p class="settings-hint">
-            Key 仅保存在本机。选区摘要/翻译会把剪贴板文本发送到你配置的 LLM 接口。macOS
-            模拟复制需在「系统设置 → 隐私与安全性 → 辅助功能」中授权。
+            Key 仅保存在本机用户目录。选区摘要/翻译会把剪贴板文本发送到你配置的 LLM
+            接口（不会发到我们的服务器）。macOS 模拟复制需在「系统设置 → 隐私与安全性 →
+            辅助功能」中授权。英文界面为后续可选增强。
           </p>
           <div class="settings-actions">
             <button type="submit" id="settings-save">保存</button>

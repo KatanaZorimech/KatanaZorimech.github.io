@@ -19,6 +19,7 @@ export type SelectionSettings = {
 export type PetSettings = {
   alwaysOnTop: boolean;
   sfxEnabled: boolean;
+  openAtLogin: boolean;
   llm: LlmSettings;
   selection: SelectionSettings;
 };
@@ -28,7 +29,7 @@ export type LayoutMode = "compact" | "chat" | "settings" | "guidance";
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
 contextBridge.exposeInMainWorld("desktopPet", {
-  phase: "D",
+  phase: "E",
   locale: "zh-CN",
   moveBy: (dx: number, dy: number) => ipcRenderer.invoke("pet:move-by", dx, dy),
   getSettings: (): Promise<PetSettings> => ipcRenderer.invoke("pet:get-settings"),
@@ -36,11 +37,16 @@ contextBridge.exposeInMainWorld("desktopPet", {
     ipcRenderer.invoke("pet:set-always-on-top", enabled),
   setSfx: (enabled: boolean): Promise<PetSettings> =>
     ipcRenderer.invoke("pet:set-sfx", enabled),
+  setOpenAtLogin: (enabled: boolean): Promise<PetSettings> =>
+    ipcRenderer.invoke("pet:set-open-at-login", enabled),
   saveLlm: (llm: Partial<LlmSettings>): Promise<PetSettings> =>
     ipcRenderer.invoke("pet:save-llm", llm),
   saveSelection: (selection: Partial<SelectionSettings>): Promise<PetSettings> =>
     ipcRenderer.invoke("pet:save-selection", selection),
   ackGuidance: (): Promise<PetSettings> => ipcRenderer.invoke("pet:ack-guidance"),
+  log: (payload: { level?: string; message: string; meta?: unknown }) =>
+    ipcRenderer.invoke("pet:log", payload),
+  getLogsDir: (): Promise<string> => ipcRenderer.invoke("pet:get-logs-dir"),
   setLayout: (mode: LayoutMode): Promise<LayoutMode> =>
     ipcRenderer.invoke("pet:set-layout", mode),
   getLayout: (): Promise<LayoutMode> => ipcRenderer.invoke("pet:get-layout"),
