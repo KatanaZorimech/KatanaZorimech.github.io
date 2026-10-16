@@ -1,6 +1,6 @@
 {
   "name": "@desktop-pet/pet",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "author": "Desktop Pet",
   "description": "桌面宠物 — 打磨与发布准备（阶段 E）",
@@ -15,7 +15,7 @@
     "dist:win": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis portable zip --x64"
   },
   "dependencies": {
-    "@desktop-pet/llm": "0.2.0"
+    "@desktop-pet/llm": "0.3.0"
   },
   "build": {
     "appId": "com.desktoppet.app",
