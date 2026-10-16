@@ -1,6 +1,6 @@
 {
   "name": "@desktop-pet/pet-fsm",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "宠物动画有限状态机（阶段 B）",
   "main": "dist/index.js",

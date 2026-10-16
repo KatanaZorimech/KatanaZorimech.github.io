@@ -1,6 +1,6 @@
 {
   "name": "@desktop-pet/llm",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "OpenAI 兼容 LLM 客户端（流式 / 重试）",
   "main": "dist/index.js",
