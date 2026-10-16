@@ -17,15 +17,32 @@ declare global {
     guidanceSeen: boolean;
   };
 
+  type PanelSize = { width: number; height: number };
+
+  type PanelSizes = {
+    chat: PanelSize;
+    settings: PanelSize;
+    calendar: PanelSize;
+    calculator: PanelSize;
+    guidance: PanelSize;
+  };
+
   type PetSettings = {
     alwaysOnTop: boolean;
     sfxEnabled: boolean;
     openAtLogin: boolean;
     llm: LlmSettings;
     selection: SelectionSettings;
+    panelSizes: PanelSizes;
   };
 
-  type LayoutMode = "compact" | "chat" | "settings" | "guidance";
+  type LayoutMode =
+    | "compact"
+    | "chat"
+    | "settings"
+    | "guidance"
+    | "calendar"
+    | "calculator";
 
   type ChatTurn = { role: "user" | "assistant"; content: string };
 
@@ -47,6 +64,10 @@ declare global {
       getLogsDir: () => Promise<string>;
       setLayout: (mode: LayoutMode) => Promise<LayoutMode>;
       getLayout: () => Promise<LayoutMode>;
+      savePanelSize: (
+        mode: Exclude<LayoutMode, "compact">,
+        size: { width: number; height: number },
+      ) => Promise<PetSettings>;
       quit: () => Promise<void>;
       showContextMenu: () => void;
       getChatHistory: () => Promise<ChatTurn[]>;
@@ -60,6 +81,8 @@ declare global {
       onSettingsChanged: (handler: (settings: PetSettings) => void) => () => void;
       onOpenChat: (handler: () => void) => () => void;
       onOpenSettings: (handler: () => void) => () => void;
+      onOpenCalendar: (handler: () => void) => () => void;
+      onOpenCalculator: (handler: () => void) => () => void;
       onLayout: (handler: (mode: LayoutMode) => void) => () => void;
       onShowGuidance: (handler: () => void) => () => void;
       onChatUser: (handler: (text: string) => void) => () => void;

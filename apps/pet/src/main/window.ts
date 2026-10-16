@@ -1,9 +1,8 @@
 import { BrowserWindow, screen } from "electron";
 import path from "node:path";
 import { loadSettings } from "./store";
-
-const PET_WIDTH = 190;
-const PET_HEIGHT = 220;
+import { applyAlwaysOnTop, wireAlwaysOnTopGuards } from "./always-on-top";
+import { PET_HEIGHT, PET_WIDTH } from "./sizes";
 
 export function createPetWindow(): BrowserWindow {
   const display = screen.getPrimaryDisplay();
@@ -35,15 +34,14 @@ export function createPetWindow(): BrowserWindow {
     },
   });
 
-  if (settings.alwaysOnTop) {
-    win.setAlwaysOnTop(true, "floating");
-    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  }
+  applyAlwaysOnTop(win, settings.alwaysOnTop);
+  wireAlwaysOnTopGuards(win);
 
   const htmlPath = path.join(__dirname, "../renderer/index.html");
   void win.loadFile(htmlPath);
 
   win.once("ready-to-show", () => {
+    applyAlwaysOnTop(win, loadSettings().alwaysOnTop);
     win.showInactive();
   });
 

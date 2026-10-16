@@ -12,6 +12,7 @@ import { abortSelection } from "./selection";
 import { installCrashLogging, logInfo } from "./logger";
 import { applyOpenAtLogin } from "./autostart";
 import { loadSettings } from "./store";
+import { applyAlwaysOnTop } from "./always-on-top";
 
 installCrashLogging();
 
@@ -40,8 +41,12 @@ if (!gotLock) {
     createTray({
       getWindow: () => petWindow,
       onShow: () => {
-        petWindow?.show();
-        petWindow?.focus();
+        if (petWindow && !petWindow.isDestroyed()) {
+          applyAlwaysOnTop(petWindow);
+          petWindow.show();
+          petWindow.focus();
+          applyAlwaysOnTop(petWindow);
+        }
       },
       onHide: () => {
         petWindow?.hide();
@@ -57,8 +62,10 @@ if (!gotLock) {
       if (BrowserWindow.getAllWindows().length === 0) {
         petWindow = createPetWindow();
         registerSelectionShortcuts(() => petWindow);
-      } else {
-        petWindow?.show();
+      } else if (petWindow && !petWindow.isDestroyed()) {
+        applyAlwaysOnTop(petWindow);
+        petWindow.show();
+        applyAlwaysOnTop(petWindow);
       }
     });
   });

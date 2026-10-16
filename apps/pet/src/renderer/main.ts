@@ -1,5 +1,5 @@
 /**
- * P3：四帧立绘手势 + 清新手绘面板 + 气泡聊天。
+ * P3：四帧立绘手势 + 清新手绘面板 + 气泡聊天 + 日历/计算器。
  */
 import { createPetFsm, type PetState } from "./fsm.js";
 
@@ -11,6 +11,8 @@ const spriteEl = document.getElementById("pet-sprite") as HTMLImageElement | nul
 const toastEl = document.getElementById("pet-toast");
 const chatPanelEl = document.getElementById("chat-panel");
 const settingsPanelEl = document.getElementById("settings-panel");
+const calendarPanelEl = document.getElementById("calendar-panel");
+const calculatorPanelEl = document.getElementById("calculator-panel");
 const chatHistoryNode = document.getElementById("chat-history");
 const chatStatus = document.getElementById("chat-status");
 const chatForm = document.getElementById("chat-form") as HTMLFormElement | null;
@@ -25,6 +27,8 @@ if (
   !spriteEl ||
   !chatPanelEl ||
   !settingsPanelEl ||
+  !calendarPanelEl ||
+  !calculatorPanelEl ||
   !chatHistoryNode
 ) {
   throw new Error("桌面宠物渲染层初始化失败");
@@ -37,6 +41,8 @@ const pet: HTMLElement = petEl;
 const sprite: HTMLImageElement = spriteEl;
 const chatPanel: HTMLElement = chatPanelEl;
 const settingsPanel: HTMLElement = settingsPanelEl;
+const calendarPanel: HTMLElement = calendarPanelEl;
+const calculatorPanel: HTMLElement = calculatorPanelEl;
 const chatHistoryEl: HTMLElement = chatHistoryNode;
 const fsm = createPetFsm();
 
@@ -147,11 +153,21 @@ function handleTap(): void {
 }
 
 function setLayoutMode(mode: LayoutMode): void {
-  app.classList.remove("mode-compact", "mode-chat", "mode-settings", "mode-guidance");
+  app.classList.remove(
+    "mode-compact",
+    "mode-chat",
+    "mode-settings",
+    "mode-guidance",
+    "mode-calendar",
+    "mode-calculator",
+  );
   app.classList.add(`mode-${mode}`);
   chatPanel.hidden = mode !== "chat";
   settingsPanel.hidden = mode !== "settings";
+  calendarPanel.hidden = mode !== "calendar";
+  calculatorPanel.hidden = mode !== "calculator";
   if (mode !== "guidance") hideGuidance();
+  if (mode === "calendar") renderCalendar();
 }
 
 async function openChat(): Promise<void> {
@@ -164,6 +180,16 @@ async function openSettings(): Promise<void> {
   await api.setLayout("settings");
   setLayoutMode("settings");
   await fillSettingsForm();
+}
+
+async function openCalendar(): Promise<void> {
+  await api.setLayout("calendar");
+  setLayoutMode("calendar");
+}
+
+async function openCalculator(): Promise<void> {
+  await api.setLayout("calculator");
+  setLayoutMode("calculator");
 }
 
 async function closePanels(): Promise<void> {
@@ -235,6 +261,220 @@ function hideGuidance(): void {
   if (overlay) overlay.hidden = true;
 }
 
+/* —— 日历 —— */
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-based
+
+function renderCalendar(): void {
+  const title = document.getElementById("cal-title");
+  const grid = document.getElementById("cal-grid");
+  if (!title || !grid) return;
+  title.textContent = `${calYear}年${calMonth + 1}月`;
+  grid.innerHTML = "";
+
+  const first = new Date(calYear, calMonth, 1);
+  const startPad = first.getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  const today = new Date();
+  const totalCells = Math.ceil((startPad + daysInMonth) / 7) * 7;
+
+  for (let i = 0; i < totalCells; i++) {
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "cal-cell";
+    let dayNum: number;
+    let muted = false;
+    let cellYear = calYear;
+    let cellMonth = calMonth;
+
+    if (i < startPad) {
+      dayNum = prevDays - startPad + i + 1;
+      muted = true;
+      cellMonth = calMonth - 1;
+      if (cellMonth < 0) {
+        cellMonth = 11;
+        cellYear -= 1;
+      }
+    } else if (i >= startPad + daysInMonth) {
+      dayNum = i - startPad - daysInMonth + 1;
+      muted = true;
+      cellMonth = calMonth + 1;
+      if (cellMonth > 11) {
+        cellMonth = 0;
+        cellYear += 1;
+      }
+    } else {
+      dayNum = i - startPad + 1;
+    }
+
+    cell.textContent = String(dayNum);
+    if (muted) cell.classList.add("muted");
+    if (
+      cellYear === today.getFullYear() &&
+      cellMonth === today.getMonth() &&
+      dayNum === today.getDate() &&
+      !muted
+    ) {
+      cell.classList.add("today");
+    }
+    grid.appendChild(cell);
+  }
+}
+
+document.getElementById("cal-prev")?.addEventListener("click", () => {
+  calMonth -= 1;
+  if (calMonth < 0) {
+    calMonth = 11;
+    calYear -= 1;
+  }
+  renderCalendar();
+});
+
+document.getElementById("cal-next")?.addEventListener("click", () => {
+  calMonth += 1;
+  if (calMonth > 11) {
+    calMonth = 0;
+    calYear += 1;
+  }
+  renderCalendar();
+});
+
+document.getElementById("cal-today")?.addEventListener("click", () => {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  renderCalendar();
+});
+
+/* —— 计算器 —— */
+type CalcOp = "+" | "−" | "×" | "÷" | null;
+let calcDisplay = "0";
+let calcAcc: number | null = null;
+let calcOp: CalcOp = null;
+let calcFresh = false;
+
+const calcDisplayEl = document.getElementById("calc-display");
+
+function syncCalcDisplay(): void {
+  if (calcDisplayEl) calcDisplayEl.textContent = calcDisplay;
+}
+
+function calcApplyOp(a: number, b: number, op: CalcOp): number {
+  switch (op) {
+    case "+":
+      return a + b;
+    case "−":
+      return a - b;
+    case "×":
+      return a * b;
+    case "÷":
+      return b === 0 ? NaN : a / b;
+    default:
+      return b;
+  }
+}
+
+function formatCalc(n: number): string {
+  if (!Number.isFinite(n)) return "错误";
+  const rounded = Math.round(n * 1e10) / 1e10;
+  const s = String(rounded);
+  return s.length > 14 ? rounded.toPrecision(10).replace(/\.?0+$/, "") : s;
+}
+
+function onCalcDigit(d: string): void {
+  if (calcDisplay === "错误" || calcFresh) {
+    calcDisplay = d;
+    calcFresh = false;
+  } else if (calcDisplay === "0") {
+    calcDisplay = d;
+  } else if (calcDisplay === "-0") {
+    calcDisplay = `-${d}`;
+  } else if (calcDisplay.replace("-", "").length < 14) {
+    calcDisplay += d;
+  }
+  syncCalcDisplay();
+}
+
+function onCalcDot(): void {
+  if (calcDisplay === "错误" || calcFresh) {
+    calcDisplay = "0.";
+    calcFresh = false;
+  } else if (!calcDisplay.includes(".")) {
+    calcDisplay += ".";
+  }
+  syncCalcDisplay();
+}
+
+function onCalcOp(op: CalcOp): void {
+  const cur = Number(calcDisplay);
+  if (calcDisplay === "错误" || !Number.isFinite(cur)) {
+    calcDisplay = "0";
+    calcAcc = null;
+    calcOp = op;
+    calcFresh = true;
+    syncCalcDisplay();
+    return;
+  }
+  if (calcAcc !== null && calcOp && !calcFresh) {
+    const result = calcApplyOp(calcAcc, cur, calcOp);
+    calcDisplay = formatCalc(result);
+    calcAcc = Number.isFinite(result) ? result : null;
+  } else {
+    calcAcc = cur;
+  }
+  calcOp = op;
+  calcFresh = true;
+  syncCalcDisplay();
+}
+
+function onCalcEq(): void {
+  if (calcOp === null || calcAcc === null) return;
+  const cur = Number(calcDisplay);
+  const result = calcApplyOp(calcAcc, cur, calcOp);
+  calcDisplay = formatCalc(result);
+  calcAcc = null;
+  calcOp = null;
+  calcFresh = true;
+  syncCalcDisplay();
+}
+
+function onCalcClear(): void {
+  calcDisplay = "0";
+  calcAcc = null;
+  calcOp = null;
+  calcFresh = false;
+  syncCalcDisplay();
+}
+
+function onCalcSign(): void {
+  if (calcDisplay === "错误") return;
+  if (calcDisplay.startsWith("-")) calcDisplay = calcDisplay.slice(1) || "0";
+  else if (calcDisplay !== "0") calcDisplay = `-${calcDisplay}`;
+  syncCalcDisplay();
+}
+
+function onCalcPercent(): void {
+  const cur = Number(calcDisplay);
+  if (!Number.isFinite(cur)) return;
+  calcDisplay = formatCalc(cur / 100);
+  calcFresh = true;
+  syncCalcDisplay();
+}
+
+document.querySelector(".calc-keys")?.addEventListener("click", (event) => {
+  const btn = (event.target as HTMLElement).closest("button[data-calc]") as HTMLButtonElement | null;
+  if (!btn) return;
+  const kind = btn.dataset.calc;
+  if (kind === "digit") onCalcDigit(btn.dataset.digit ?? "0");
+  else if (kind === "dot") onCalcDot();
+  else if (kind === "op") onCalcOp((btn.dataset.op as CalcOp) ?? null);
+  else if (kind === "eq") onCalcEq();
+  else if (kind === "clear") onCalcClear();
+  else if (kind === "sign") onCalcSign();
+  else if (kind === "percent") onCalcPercent();
+});
+
 fsm.subscribe((state, prev) => {
   applyState(state);
   if (state === "click" && prev !== "click") playSfx("click");
@@ -260,6 +500,12 @@ api.onOpenChat(() => {
 });
 api.onOpenSettings(() => {
   void openSettings();
+});
+api.onOpenCalendar(() => {
+  void openCalendar();
+});
+api.onOpenCalculator(() => {
+  void openCalculator();
 });
 api.onLayout((mode) => setLayoutMode(mode));
 api.onShowGuidance(() => {
@@ -367,6 +613,12 @@ document.getElementById("chat-close")?.addEventListener("click", () => {
 document.getElementById("settings-close")?.addEventListener("click", () => {
   void closePanels();
 });
+document.getElementById("calendar-close")?.addEventListener("click", () => {
+  void closePanels();
+});
+document.getElementById("calculator-close")?.addEventListener("click", () => {
+  void closePanels();
+});
 document.getElementById("chat-to-settings")?.addEventListener("click", () => {
   void openSettings();
 });
@@ -433,7 +685,7 @@ window.addEventListener("unhandledrejection", (event) => {
   });
 });
 
-console.info("[桌面宠物] P3 立绘手势已加载");
+console.info("[桌面宠物] P3 立绘手势 + 日历/计算器已加载");
 
 chatForm?.addEventListener("submit", (event) => {
   event.preventDefault();

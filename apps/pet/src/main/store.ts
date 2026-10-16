@@ -22,13 +22,37 @@ export type SelectionSettings = {
   guidanceSeen: boolean;
 };
 
+export type PanelSize = { width: number; height: number };
+
+export type PanelSizes = {
+  chat: PanelSize;
+  settings: PanelSize;
+  calendar: PanelSize;
+  calculator: PanelSize;
+  guidance: PanelSize;
+};
+
 export type AppSettings = {
   alwaysOnTop: boolean;
   sfxEnabled: boolean;
   openAtLogin: boolean;
   llm: LlmSettings;
   selection: SelectionSettings;
+  /** 用户拖边调整后的面板尺寸（紧凑模式不持久化） */
+  panelSizes: PanelSizes;
 };
+
+export const DEFAULT_PANEL_SIZES: PanelSizes = {
+  chat: { width: 400, height: 520 },
+  settings: { width: 400, height: 620 },
+  calendar: { width: 360, height: 420 },
+  calculator: { width: 320, height: 440 },
+  guidance: { width: 400, height: 480 },
+};
+
+function clone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
 
 const DEFAULTS: AppSettings = {
   alwaysOnTop: true,
@@ -47,6 +71,13 @@ const DEFAULTS: AppSettings = {
     simulateCopy: true,
     guidanceSeen: false,
   },
+  panelSizes: {
+    chat: { ...DEFAULT_PANEL_SIZES.chat },
+    settings: { ...DEFAULT_PANEL_SIZES.settings },
+    calendar: { ...DEFAULT_PANEL_SIZES.calendar },
+    calculator: { ...DEFAULT_PANEL_SIZES.calculator },
+    guidance: { ...DEFAULT_PANEL_SIZES.guidance },
+  },
 };
 
 function storePath(): string {
@@ -55,8 +86,16 @@ function storePath(): string {
 
 let cache: AppSettings | null = null;
 
-function clone<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+function mergePanelSizes(partial?: Partial<PanelSizes>): PanelSizes {
+  const base = clone(DEFAULT_PANEL_SIZES);
+  if (!partial) return base;
+  for (const key of Object.keys(base) as (keyof PanelSizes)[]) {
+    const p = partial[key];
+    if (p && typeof p.width === "number" && typeof p.height === "number") {
+      base[key] = { width: Math.round(p.width), height: Math.round(p.height) };
+    }
+  }
+  return base;
 }
 
 export function loadSettings(): AppSettings {
@@ -76,6 +115,7 @@ export function loadSettings(): AppSettings {
         ...DEFAULTS.selection,
         ...(parsed.selection ?? {}),
       },
+      panelSizes: mergePanelSizes(parsed.panelSizes),
     };
   } catch {
     cache = clone(DEFAULTS);
@@ -89,6 +129,7 @@ export function saveSettings(patch: {
   openAtLogin?: boolean;
   llm?: Partial<LlmSettings>;
   selection?: Partial<SelectionSettings>;
+  panelSizes?: Partial<PanelSizes>;
 }): AppSettings {
   const current = loadSettings();
   const next: AppSettings = {
@@ -103,6 +144,9 @@ export function saveSettings(patch: {
       ...current.selection,
       ...(patch.selection ?? {}),
     },
+    panelSizes: patch.panelSizes
+      ? mergePanelSizes({ ...current.panelSizes, ...patch.panelSizes })
+      : current.panelSizes,
   };
   if (typeof next.llm.temperature === "number") {
     next.llm.temperature = Math.min(2, Math.max(0, next.llm.temperature));

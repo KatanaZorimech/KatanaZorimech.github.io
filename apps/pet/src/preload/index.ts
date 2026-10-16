@@ -16,15 +16,32 @@ export type SelectionSettings = {
   guidanceSeen: boolean;
 };
 
+export type PanelSize = { width: number; height: number };
+
+export type PanelSizes = {
+  chat: PanelSize;
+  settings: PanelSize;
+  calendar: PanelSize;
+  calculator: PanelSize;
+  guidance: PanelSize;
+};
+
 export type PetSettings = {
   alwaysOnTop: boolean;
   sfxEnabled: boolean;
   openAtLogin: boolean;
   llm: LlmSettings;
   selection: SelectionSettings;
+  panelSizes: PanelSizes;
 };
 
-export type LayoutMode = "compact" | "chat" | "settings" | "guidance";
+export type LayoutMode =
+  | "compact"
+  | "chat"
+  | "settings"
+  | "guidance"
+  | "calendar"
+  | "calculator";
 
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
@@ -50,6 +67,10 @@ contextBridge.exposeInMainWorld("desktopPet", {
   setLayout: (mode: LayoutMode): Promise<LayoutMode> =>
     ipcRenderer.invoke("pet:set-layout", mode),
   getLayout: (): Promise<LayoutMode> => ipcRenderer.invoke("pet:get-layout"),
+  savePanelSize: (
+    mode: Exclude<LayoutMode, "compact">,
+    size: { width: number; height: number },
+  ): Promise<PetSettings> => ipcRenderer.invoke("pet:save-panel-size", mode, size),
   quit: () => ipcRenderer.invoke("pet:quit"),
   showContextMenu: () => ipcRenderer.send("pet:show-context-menu"),
   getChatHistory: (): Promise<ChatTurn[]> => ipcRenderer.invoke("chat:history"),
@@ -86,6 +107,16 @@ contextBridge.exposeInMainWorld("desktopPet", {
     const listener = () => handler();
     ipcRenderer.on("pet:open-settings", listener);
     return () => ipcRenderer.removeListener("pet:open-settings", listener);
+  },
+  onOpenCalendar: (handler: () => void) => {
+    const listener = () => handler();
+    ipcRenderer.on("pet:open-calendar", listener);
+    return () => ipcRenderer.removeListener("pet:open-calendar", listener);
+  },
+  onOpenCalculator: (handler: () => void) => {
+    const listener = () => handler();
+    ipcRenderer.on("pet:open-calculator", listener);
+    return () => ipcRenderer.removeListener("pet:open-calculator", listener);
   },
   onLayout: (handler: (mode: LayoutMode) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, mode: LayoutMode) => {

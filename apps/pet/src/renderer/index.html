@@ -36,6 +36,58 @@
         <span class="chat-tail" aria-hidden="true"></span>
       </section>
 
+      <section id="calendar-panel" class="side-panel tool-panel calendar-panel" hidden aria-label="日历">
+        <header class="panel-head">
+          <h1>日历</h1>
+          <button type="button" id="calendar-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <div class="calendar-body">
+          <div class="calendar-nav">
+            <button type="button" id="cal-prev" class="icon-btn" title="上个月">‹</button>
+            <h2 id="cal-title" class="calendar-title">—</h2>
+            <button type="button" id="cal-next" class="icon-btn" title="下个月">›</button>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+          </div>
+          <div id="cal-grid" class="calendar-grid" role="grid"></div>
+          <button type="button" id="cal-today" class="link-btn calendar-today-btn">回到今天</button>
+        </div>
+        <span class="chat-tail" aria-hidden="true"></span>
+      </section>
+
+      <section id="calculator-panel" class="side-panel tool-panel calculator-panel" hidden aria-label="计算器">
+        <header class="panel-head">
+          <h1>计算器</h1>
+          <button type="button" id="calculator-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <div class="calc-body">
+          <div id="calc-display" class="calc-display" aria-live="polite">0</div>
+          <div class="calc-keys" role="group" aria-label="计算器按键">
+            <button type="button" data-calc="clear" class="calc-key calc-fn">C</button>
+            <button type="button" data-calc="sign" class="calc-key calc-fn">±</button>
+            <button type="button" data-calc="percent" class="calc-key calc-fn">%</button>
+            <button type="button" data-calc="op" data-op="÷" class="calc-key calc-op">÷</button>
+            <button type="button" data-calc="digit" data-digit="7" class="calc-key">7</button>
+            <button type="button" data-calc="digit" data-digit="8" class="calc-key">8</button>
+            <button type="button" data-calc="digit" data-digit="9" class="calc-key">9</button>
+            <button type="button" data-calc="op" data-op="×" class="calc-key calc-op">×</button>
+            <button type="button" data-calc="digit" data-digit="4" class="calc-key">4</button>
+            <button type="button" data-calc="digit" data-digit="5" class="calc-key">5</button>
+            <button type="button" data-calc="digit" data-digit="6" class="calc-key">6</button>
+            <button type="button" data-calc="op" data-op="−" class="calc-key calc-op">−</button>
+            <button type="button" data-calc="digit" data-digit="1" class="calc-key">1</button>
+            <button type="button" data-calc="digit" data-digit="2" class="calc-key">2</button>
+            <button type="button" data-calc="digit" data-digit="3" class="calc-key">3</button>
+            <button type="button" data-calc="op" data-op="+" class="calc-key calc-op">+</button>
+            <button type="button" data-calc="digit" data-digit="0" class="calc-key calc-zero">0</button>
+            <button type="button" data-calc="dot" class="calc-key">.</button>
+            <button type="button" data-calc="eq" class="calc-key calc-eq">=</button>
+          </div>
+        </div>
+        <span class="chat-tail" aria-hidden="true"></span>
+      </section>
+
       <section id="settings-panel" class="side-panel settings-panel" hidden aria-label="设置">
         <header class="panel-head">
           <h1>设置</h1>
@@ -129,8 +181,8 @@
               src="./assets/pet/frame-04.png"
               alt=""
               draggable="false"
-              width="140"
-              height="140"
+              width="112"
+              height="112"
             />
             <div class="pet-think-dots" aria-hidden="true">
               <span></span><span></span><span></span>
