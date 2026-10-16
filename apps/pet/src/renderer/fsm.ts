@@ -1,9 +1,22 @@
 /**
  * 宠物动画有限状态机。
- * 状态：idle / drag / click / happy / think / talk
+ * 状态：idle / drag / click / happy / think / talk / wave
+ *
+ * 表情帧映射（P3）：
+ * - click → frame-03 惊喜
+ * - happy → frame-02 开心
+ * - drag → frame-01 犯困
+ * - wave / idle → frame-04 招手
  */
 
-export type PetState = "idle" | "drag" | "click" | "happy" | "think" | "talk";
+export type PetState =
+  | "idle"
+  | "drag"
+  | "click"
+  | "happy"
+  | "think"
+  | "talk"
+  | "wave";
 
 export type PetEvent =
   | "DRAG_START"
@@ -27,7 +40,7 @@ export type PetFsm = {
 
 const CLICK_MS = 900;
 const HAPPY_MS = 1600;
-const CONTEXT_MS = 500;
+const CONTEXT_MS = 700;
 const TALK_TAIL_MS = 900;
 
 export function createPetFsm(): PetFsm {
@@ -77,7 +90,7 @@ export function createPetFsm(): PetFsm {
         if (state === "think" || state === "talk") return state;
         return setState("happy", HAPPY_MS);
       case "CONTEXT":
-        return setState("click", CONTEXT_MS);
+        return setState("wave", CONTEXT_MS);
       case "THINK_START":
         return setState("think");
       case "TALK_START":

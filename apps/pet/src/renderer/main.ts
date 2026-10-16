@@ -1,5 +1,5 @@
 /**
- * 阶段 C：宠物交互 + 旁侧聊天气泡 / 设置面板 + think/talk 联动。
+ * P3：四帧立绘手势 + 清新手绘面板 + 气泡聊天。
  */
 import { createPetFsm, type PetState } from "./fsm.js";
 
@@ -7,7 +7,7 @@ const apiRef = window.desktopPet;
 const appEl = document.getElementById("app");
 const petHitEl = document.getElementById("pet-hit");
 const petEl = document.querySelector<HTMLElement>(".pet");
-const hint = document.querySelector<HTMLParagraphElement>(".pet-hint");
+const spriteEl = document.getElementById("pet-sprite") as HTMLImageElement | null;
 const toastEl = document.getElementById("pet-toast");
 const chatPanelEl = document.getElementById("chat-panel");
 const settingsPanelEl = document.getElementById("settings-panel");
@@ -22,6 +22,7 @@ if (
   !appEl ||
   !petHitEl ||
   !petEl ||
+  !spriteEl ||
   !chatPanelEl ||
   !settingsPanelEl ||
   !chatHistoryNode
@@ -33,10 +34,22 @@ const api = apiRef;
 const app: HTMLElement = appEl;
 const petHit: HTMLElement = petHitEl;
 const pet: HTMLElement = petEl;
+const sprite: HTMLImageElement = spriteEl;
 const chatPanel: HTMLElement = chatPanelEl;
 const settingsPanel: HTMLElement = settingsPanelEl;
 const chatHistoryEl: HTMLElement = chatHistoryNode;
 const fsm = createPetFsm();
+
+/** 手势 ↔ 表情帧（见 docs/pet-gesture-mapping.md） */
+const FRAME_BY_STATE: Record<PetState, string> = {
+  idle: "./assets/pet/frame-04.png",
+  wave: "./assets/pet/frame-04.png",
+  drag: "./assets/pet/frame-01.png",
+  click: "./assets/pet/frame-03.png",
+  happy: "./assets/pet/frame-02.png",
+  think: "./assets/pet/frame-04.png",
+  talk: "./assets/pet/frame-02.png",
+};
 
 let sfxEnabled = false;
 let dragArmed = false;
@@ -53,30 +66,28 @@ let streamingEl: HTMLElement | null = null;
 const DRAG_THRESHOLD = 12;
 const DOUBLE_TAP_MS = 320;
 
-const STATE_HINT: Record<PetState, string> = {
-  idle: "单击 / 拖动 / 右键",
-  drag: "拖动中…",
-  click: "嘿～",
-  happy: "超级开心！",
-  think: "思考中…",
-  talk: "说话中…",
-};
+const STATE_CLASS: PetState[] = [
+  "idle",
+  "drag",
+  "click",
+  "happy",
+  "think",
+  "talk",
+  "wave",
+];
 
 function applyState(state: PetState): void {
   pet.dataset.state = state;
-  pet.classList.remove(
-    "is-idle",
-    "is-drag",
-    "is-click",
-    "is-happy",
-    "is-think",
-    "is-talk",
-  );
-  pet.classList.add(`is-${state}`);
+  for (const name of STATE_CLASS) {
+    pet.classList.toggle(`is-${name}`, name === state);
+  }
+  const nextSrc = FRAME_BY_STATE[state];
+  if (sprite.getAttribute("src") !== nextSrc) {
+    sprite.src = nextSrc;
+  }
   pet.style.animation = "none";
   void pet.offsetWidth;
   pet.style.animation = "";
-  if (hint) hint.textContent = STATE_HINT[state];
 }
 
 function showToast(message: string): void {
@@ -422,7 +433,7 @@ window.addEventListener("unhandledrejection", (event) => {
   });
 });
 
-console.info("[桌面宠物] 阶段 E 已加载");
+console.info("[桌面宠物] P3 立绘手势已加载");
 
 chatForm?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -432,7 +443,6 @@ chatForm?.addEventListener("submit", (event) => {
   chatInput.value = "";
   void api.sendChat(text).then((result) => {
     if (!result.ok) {
-      // error bubble also arrives via chat:error; ensure UX if invoke returns first
       showToast(result.error);
     }
   });

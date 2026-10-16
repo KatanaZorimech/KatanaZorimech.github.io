@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>桌面宠物</title>
@@ -33,6 +33,7 @@
           <button type="button" id="chat-to-settings" class="link-btn">打开设置</button>
           <button type="button" id="chat-clear" class="link-btn">清空会话</button>
         </div>
+        <span class="chat-tail" aria-hidden="true"></span>
       </section>
 
       <section id="settings-panel" class="side-panel settings-panel" hidden aria-label="设置">
@@ -119,30 +120,22 @@
       </div>
 
       <div id="pet-column" class="pet-column">
-        <div id="pet-hit" class="pet-hit" title="单击、拖动或右键" aria-label="桌面宠物">
-          <div class="pet is-idle" data-state="idle" role="img" aria-label="占位宠物">
+        <div id="pet-hit" class="pet-hit" title="桌面宠物" aria-label="桌面宠物">
+          <div class="pet is-idle" data-state="idle" role="img" aria-label="桌面宠物">
             <div class="pet-shadow"></div>
-            <div class="pet-body">
-              <div class="pet-ear pet-ear--l"></div>
-              <div class="pet-ear pet-ear--r"></div>
-              <div class="pet-face">
-                <div class="pet-eye pet-eye--l"></div>
-                <div class="pet-eye pet-eye--r"></div>
-                <div class="pet-blush pet-blush--l"></div>
-                <div class="pet-blush pet-blush--r"></div>
-                <div class="pet-mouth"></div>
-                <div class="pet-brow pet-brow--l"></div>
-                <div class="pet-brow pet-brow--r"></div>
-              </div>
-              <div class="pet-sweat" aria-hidden="true"></div>
-              <div class="pet-heart pet-heart--1" aria-hidden="true"></div>
-              <div class="pet-heart pet-heart--2" aria-hidden="true"></div>
-              <div class="pet-think-dots" aria-hidden="true">
-                <span></span><span></span><span></span>
-              </div>
+            <img
+              id="pet-sprite"
+              class="pet-sprite"
+              src="./assets/pet/frame-04.png"
+              alt=""
+              draggable="false"
+              width="140"
+              height="140"
+            />
+            <div class="pet-think-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
             </div>
           </div>
-          <p class="pet-hint">单击 / 拖动 / 右键</p>
         </div>
         <div id="pet-toast" class="pet-toast" data-visible="false" role="status"></div>
       </div>

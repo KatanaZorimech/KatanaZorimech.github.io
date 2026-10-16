@@ -22,7 +22,8 @@ export type LayoutMode = "compact" | "chat" | "settings" | "guidance";
 
 const LAYOUT: Record<LayoutMode, { width: number; height: number }> = {
   compact: { width: 190, height: 220 },
-  chat: { width: 420, height: 480 },
+  /** C2：聊天更窄更高，气泡感侧栏 */
+  chat: { width: 400, height: 520 },
   settings: { width: 400, height: 620 },
   guidance: { width: 400, height: 480 },
 };
