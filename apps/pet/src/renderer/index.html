@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>桌面宠物</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app" class="app mode-compact">
+      <section id="chat-panel" class="side-panel chat-panel" hidden aria-label="聊天">
+        <header class="panel-head">
+          <h1>聊天</h1>
+          <button type="button" id="chat-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <div id="chat-history" class="chat-history" role="log" aria-live="polite"></div>
+        <p id="chat-status" class="chat-status" hidden></p>
+        <form id="chat-form" class="chat-form">
+          <input
+            id="chat-input"
+            type="text"
+            maxlength="2000"
+            placeholder="跟我说点什么…"
+            autocomplete="off"
+          />
+          <button type="submit" id="chat-send">发送</button>
+        </form>
+        <div class="panel-foot">
+          <button type="button" id="chat-to-settings" class="link-btn">打开设置</button>
+          <button type="button" id="chat-clear" class="link-btn">清空会话</button>
+        </div>
+        <span class="chat-tail" aria-hidden="true"></span>
+      </section>
+
+      <section id="calendar-panel" class="side-panel tool-panel calendar-panel" hidden aria-label="日历">
+        <header class="panel-head">
+          <h1>日历</h1>
+          <button type="button" id="calendar-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <div class="calendar-body">
+          <div class="calendar-nav">
+            <button type="button" id="cal-prev" class="icon-btn" title="上个月">‹</button>
+            <h2 id="cal-title" class="calendar-title">—</h2>
+            <button type="button" id="cal-next" class="icon-btn" title="下个月">›</button>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+          </div>
+          <div id="cal-grid" class="calendar-grid" role="grid"></div>
+          <button type="button" id="cal-today" class="link-btn calendar-today-btn">回到今天</button>
+        </div>
+        <span class="chat-tail" aria-hidden="true"></span>
+      </section>
+
+      <section id="calculator-panel" class="side-panel tool-panel calculator-panel" hidden aria-label="计算器">
+        <header class="panel-head">
+          <h1>计算器</h1>
+          <button type="button" id="calculator-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <div class="calc-body">
+          <div id="calc-display" class="calc-display" aria-live="polite">0</div>
+          <div class="calc-keys" role="group" aria-label="计算器按键">
+            <button type="button" data-calc="clear" class="calc-key calc-fn">C</button>
+            <button type="button" data-calc="sign" class="calc-key calc-fn">±</button>
+            <button type="button" data-calc="percent" class="calc-key calc-fn">%</button>
+            <button type="button" data-calc="op" data-op="÷" class="calc-key calc-op">÷</button>
+            <button type="button" data-calc="digit" data-digit="7" class="calc-key">7</button>
+            <button type="button" data-calc="digit" data-digit="8" class="calc-key">8</button>
+            <button type="button" data-calc="digit" data-digit="9" class="calc-key">9</button>
+            <button type="button" data-calc="op" data-op="×" class="calc-key calc-op">×</button>
+            <button type="button" data-calc="digit" data-digit="4" class="calc-key">4</button>
+            <button type="button" data-calc="digit" data-digit="5" class="calc-key">5</button>
+            <button type="button" data-calc="digit" data-digit="6" class="calc-key">6</button>
+            <button type="button" data-calc="op" data-op="−" class="calc-key calc-op">−</button>
+            <button type="button" data-calc="digit" data-digit="1" class="calc-key">1</button>
+            <button type="button" data-calc="digit" data-digit="2" class="calc-key">2</button>
+            <button type="button" data-calc="digit" data-digit="3" class="calc-key">3</button>
+            <button type="button" data-calc="op" data-op="+" class="calc-key calc-op">+</button>
+            <button type="button" data-calc="digit" data-digit="0" class="calc-key calc-zero">0</button>
+            <button type="button" data-calc="dot" class="calc-key">.</button>
+            <button type="button" data-calc="eq" class="calc-key calc-eq">=</button>
+          </div>
+        </div>
+        <span class="chat-tail" aria-hidden="true"></span>
+      </section>
+
+      <section id="settings-panel" class="side-panel settings-panel" hidden aria-label="设置">
+        <header class="panel-head">
+          <h1>设置</h1>
+          <button type="button" id="settings-close" class="icon-btn" title="关闭">×</button>
+        </header>
+        <form id="settings-form" class="settings-form">
+          <label>
+            <span>API Key</span>
+            <input id="set-api-key" type="password" placeholder="sk-…" autocomplete="off" />
+          </label>
+          <label>
+            <span>Base URL</span>
+            <input id="set-base-url" type="url" placeholder="https://api.deepseek.com/v1" />
+          </label>
+          <label>
+            <span>模型</span>
+            <input id="set-model" type="text" placeholder="deepseek-chat" />
+          </label>
+          <label>
+            <span>温度 <em id="temp-value">0.7</em></span>
+            <input id="set-temperature" type="range" min="0" max="2" step="0.1" value="0.7" />
+          </label>
+          <hr class="settings-sep" />
+          <label>
+            <span>选区动作快捷键</span>
+            <input id="set-shortcut-action" type="text" placeholder="CommandOrControl+Shift+D" />
+          </label>
+          <label>
+            <span>摘要快捷键</span>
+            <input id="set-shortcut-summarize" type="text" placeholder="CommandOrControl+Shift+S" />
+          </label>
+          <label>
+            <span>翻译快捷键</span>
+            <input id="set-shortcut-translate" type="text" placeholder="CommandOrControl+Shift+T" />
+          </label>
+          <label class="checkbox-row">
+            <input id="set-simulate-copy" type="checkbox" checked />
+            <span>读选区前先模拟复制（Cmd/Ctrl+C，尽力恢复剪贴板）</span>
+          </label>
+          <label class="checkbox-row">
+            <input id="set-open-at-login" type="checkbox" checked />
+            <span>开机自启（默认开启；macOS / Windows；Linux 视桌面环境而定）</span>
+          </label>
+          <p class="settings-hint">
+            Key 仅保存在本机用户目录。选区摘要/翻译会把剪贴板文本发送到你配置的 LLM
+            接口（不会发到我们的服务器）。macOS 模拟复制需在「系统设置 → 隐私与安全性 →
+            辅助功能」中授权。英文界面为后续可选增强。
+          </p>
+          <div class="settings-actions">
+            <button type="submit" id="settings-save">保存</button>
+            <button type="button" id="settings-to-chat" class="secondary-btn">去聊天</button>
+          </div>
+        </form>
+      </section>
+
+      <div id="guidance-overlay" class="guidance-overlay" hidden>
+        <div class="guidance-card" role="dialog" aria-labelledby="guidance-title">
+          <h2 id="guidance-title">选区功能说明</h2>
+          <ol>
+            <li>先在其他应用中<strong>选中文字</strong>。</li>
+            <li>
+              使用快捷键或右键「摘要所选 / 翻译所选」。默认会<strong>模拟复制</strong>后读取剪贴板。
+            </li>
+            <li>
+              <strong>macOS</strong>：请到「系统设置 → 隐私与安全性 →
+              <strong>辅助功能</strong>」允许本应用，否则模拟复制可能失败（可改为手动复制）。
+            </li>
+            <li>
+              <strong>隐私</strong>：选中的文本会发送到你在设置中配置的 LLM
+              服务（不会发到我们的服务器）。请勿选择敏感信息。
+            </li>
+            <li>过长文本会截断至约 4000 字后再处理。</li>
+          </ol>
+          <p class="guidance-defaults">
+            默认快捷键：动作菜单
+            <code>Ctrl/Cmd+Shift+D</code> · 摘要
+            <code>Ctrl/Cmd+Shift+S</code> · 翻译
+            <code>Ctrl/Cmd+Shift+T</code>
+          </p>
+          <button type="button" id="guidance-ack">我知道了</button>
+        </div>
+      </div>
+
+      <div id="pet-column" class="pet-column">
+        <div id="pet-hit" class="pet-hit" title="桌面宠物" aria-label="桌面宠物">
+          <div class="pet is-idle" data-state="idle" role="img" aria-label="桌面宠物">
+            <div class="pet-shadow"></div>
+            <img
+              id="pet-sprite"
+              class="pet-sprite"
+              src="./assets/pet/frame-04.png"
+              alt=""
+              draggable="false"
+              width="112"
+              height="112"
+            />
+            <div class="pet-think-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+        <div id="pet-toast" class="pet-toast" data-visible="false" role="status"></div>
+      </div>
+    </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

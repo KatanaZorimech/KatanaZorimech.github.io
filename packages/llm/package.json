@@ -1,0 +1,15 @@
+{
+  "name": "@desktop-pet/llm",
+  "version": "0.3.0",
+  "private": true,
+  "description": "OpenAI 兼容 LLM 客户端（流式 / 重试）",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

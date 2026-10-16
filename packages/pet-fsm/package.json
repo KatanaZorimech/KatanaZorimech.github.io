@@ -1,0 +1,15 @@
+{
+  "name": "@desktop-pet/pet-fsm",
+  "version": "0.3.0",
+  "private": true,
+  "description": "宠物动画有限状态机（阶段 B）",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

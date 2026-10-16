@@ -1,0 +1,101 @@
+{
+  "name": "@desktop-pet/pet",
+  "version": "0.3.0",
+  "private": true,
+  "author": "Desktop Pet",
+  "description": "桌面宠物 — 打磨与发布准备（阶段 E）",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "build": "npm run build -w @desktop-pet/llm && npm run build -w @desktop-pet/pet-fsm && node scripts/sync-fsm.mjs && tsc -p tsconfig.main.json && tsc -p tsconfig.renderer.json && node scripts/copy-static.mjs",
+    "start": "electron .",
+    "typecheck": "npm run build -w @desktop-pet/llm && npm run build -w @desktop-pet/pet-fsm && node scripts/sync-fsm.mjs && tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --win nsis portable zip --x64"
+  },
+  "dependencies": {
+    "@desktop-pet/llm": "0.3.0"
+  },
+  "build": {
+    "appId": "com.desktoppet.app",
+    "productName": "桌面宠物",
+    "electronVersion": "35.0.1",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*",
+      "package.json",
+      {
+        "from": "../../node_modules/@desktop-pet/llm",
+        "to": "node_modules/@desktop-pet/llm",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../../packages/llm/dist",
+        "to": "node_modules/@desktop-pet/llm/dist",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "../../packages/llm/package.json",
+        "to": "node_modules/@desktop-pet/llm/package.json"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.entertainment",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "executableName": "DesktopPet",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "桌面宠物",
+      "artifactName": "DesktopPet-Setup-Windows.${ext}",
+      "installerLanguages": ["zh_CN", "en_US"],
+      "language": "2052"
+    },
+    "portable": {
+      "artifactName": "DesktopPet-Portable-Windows.${ext}"
+    },
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "electron": "35.0.1",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.8.2"
+  }
+}
